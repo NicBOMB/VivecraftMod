@@ -1525,9 +1525,9 @@ public class VRSettings
             this(isfloat, isbool, 0.0F, 1.0F, 0.0F, 0);
         }
 
-        VrOptions(boolean isfloat, boolean isbool, String trueLangKey, String falseKangKey)
+        VrOptions(boolean isfloat, boolean isbool, String trueLangKey, String falseLangKey)
         {
-            this(isfloat, isbool, 0.0F, 1.0F, 0.0F, 0, trueLangKey, falseKangKey);
+            this(isfloat, isbool, 0.0F, 1.0F, 0.0F, 0, trueLangKey, falseLangKey);
         }
 
         /**
@@ -1543,7 +1543,7 @@ public class VRSettings
             this(isfloat, isbool, min, max, step, decimalPlaces, LangHelper.ON_KEY, LangHelper.OFF_KEY);
         }
 
-        VrOptions(boolean isfloat, boolean isboolean, float min, float max, float step, int decimalPlaces, String trueLangKey, String falseKangKey)
+        VrOptions(boolean isfloat, boolean isboolean, float min, float max, float step, int decimalPlaces, String trueLangKey, String falseLangKey)
         {
             this.enumFloat = isfloat;
             this.enumBoolean = isboolean;
@@ -1551,7 +1551,7 @@ public class VRSettings
             this.valueMax = max;
             this.valueStep = step;
             this.decimalPlaces = decimalPlaces;
-            this.booleanLangKeys = Pair.of(trueLangKey, falseKangKey);
+            this.booleanLangKeys = Pair.of(trueLangKey, falseLangKey);
         }
 
         Object convertOption(String value) {
