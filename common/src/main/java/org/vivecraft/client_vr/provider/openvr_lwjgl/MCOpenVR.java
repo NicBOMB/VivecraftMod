@@ -551,8 +551,8 @@ public class MCOpenVR extends MCVR {
         return !arraylist.isEmpty();
     }
 
-    public Matrix4f getControllerComponentTransform(int controllerIndex, String componenetName) {
-        return this.controllerComponentTransforms != null && this.controllerComponentTransforms.containsKey(componenetName) && ((Matrix4f[]) this.controllerComponentTransforms.get(componenetName))[controllerIndex] != null ? (this.controllerComponentTransforms.get(componenetName))[controllerIndex] : Utils.Matrix4fSetIdentity(new Matrix4f());
+    public Matrix4f getControllerComponentTransform(int controllerIndex, String componentName) {
+        return this.controllerComponentTransforms != null && this.controllerComponentTransforms.containsKey(componentName) && ((Matrix4f[]) this.controllerComponentTransforms.get(componentName))[controllerIndex] != null ? (this.controllerComponentTransforms.get(componentName))[controllerIndex] : Utils.Matrix4fSetIdentity(new Matrix4f());
     }
 
     private Matrix4f getControllerComponentTransformFromButton(int controllerIndex, long button) {
