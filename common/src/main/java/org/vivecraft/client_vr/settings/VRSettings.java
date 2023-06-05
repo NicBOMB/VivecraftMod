@@ -189,6 +189,8 @@ public class VRSettings
     public boolean alwaysSimulateKeyboard = false;
     @SettingField(VrOptions.BOW_MODE)
     public BowMode bowMode = BowMode.ON;
+    @SettingField(VrOptions.SKELETAL_INPUT)
+    public boolean skeletalInput = false;
     @SettingField
     public String keyboardKeys =  "`1234567890-=qwertyuiop[]\\asdfghjkl;\':\"zxcvbnm,./?<>";
     @SettingField
@@ -1437,6 +1439,7 @@ public class VRSettings
                 }
             }
         },
+        SKELETAL_INPUT(false, true), // Skeletal Input Enabled
         TELEPORT_DOWN_LIMIT(true, false, 0, 16, 1, 0) { // Down Limit
             @Override
             String getDisplayString(String prefix, Object value) {

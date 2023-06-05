@@ -57,8 +57,10 @@ public class MCOpenVR extends MCVR {
     protected static MCOpenVR ome;
     private final String ACTION_EXTERNAL_CAMERA = "/actions/mixedreality/in/externalcamera";
     private final String ACTION_LEFT_HAND = "/actions/global/in/lefthand";
+    private final String ACTION_LEFT_HAND_GESTURE = "/actions/global/in/lefthandbones";
     private final String ACTION_LEFT_HAPTIC = "/actions/global/out/lefthaptic";
     private final String ACTION_RIGHT_HAND = "/actions/global/in/righthand";
+    private final String ACTION_RIGHT_HAND_GESTURE = "/actions/global/in/righthandbones";
     private final String ACTION_RIGHT_HAPTIC = "/actions/global/out/righthaptic";
     private Map<VRInputActionSet, Long> actionSetHandles = new EnumMap<>(VRInputActionSet.class);
     private VRActiveActionSet.Buffer activeActionSetsBuffer;
@@ -76,12 +78,14 @@ public class MCOpenVR extends MCVR {
     private long leftControllerHandle;
     private long leftHapticHandle;
     private long leftPoseHandle;
+    private long leftGestureHandle;
     private InputOriginInfo originInfo;
     private boolean paused = false;
     private InputPoseActionData poseData;
     private long rightControllerHandle;
     private long rightHapticHandle;
     private long rightPoseHandle;
+    private long rightGestureHandle;
     private final VRTextureBounds texBounds = VRTextureBounds.calloc();
     private Map<String, TrackpadSwipeSampler> trackpadSwipeSamplers = new HashMap<>();
     private boolean tried;
@@ -450,10 +454,12 @@ public class MCOpenVR extends MCVR {
         }
 
         list2.add(ImmutableMap.<String, Object>builder().put("name", ACTION_LEFT_HAND).put("requirement", "suggested").put("type", "pose").build());
-        list2.add(ImmutableMap.<String, Object>builder().put("name", ACTION_RIGHT_HAND).put("requirement", "suggested").put("type", "pose").build());
-        list2.add(ImmutableMap.<String, Object>builder().put("name", ACTION_EXTERNAL_CAMERA).put("requirement", "optional").put("type", "pose").build());
+        list2.add(ImmutableMap.<String, Object>builder().put("name", ACTION_LEFT_HAND_GESTURE).put("requirement", "optional").put("type", "skeleton").put("skeleton", "/skeleton/hand/left").build());
         list2.add(ImmutableMap.<String, Object>builder().put("name", ACTION_LEFT_HAPTIC).put("requirement", "suggested").put("type", "vibration").build());
+        list2.add(ImmutableMap.<String, Object>builder().put("name", ACTION_RIGHT_HAND).put("requirement", "suggested").put("type", "pose").build());
+        list2.add(ImmutableMap.<String, Object>builder().put("name", ACTION_RIGHT_HAND_GESTURE).put("requirement", "optional").put("type", "skeleton").put("skeleton", "/skeleton/hand/right").build());
         list2.add(ImmutableMap.<String, Object>builder().put("name", ACTION_RIGHT_HAPTIC).put("requirement", "suggested").put("type", "vibration").build());
+        list2.add(ImmutableMap.<String, Object>builder().put("name", ACTION_EXTERNAL_CAMERA).put("requirement", "optional").put("type", "pose").build());
         map.put("actions", list2);
         Map<String, Object> map1 = new HashMap<>();
 
@@ -468,10 +474,12 @@ public class MCOpenVR extends MCVR {
         }
 
         map1.put(ACTION_LEFT_HAND, "Left Hand Pose");
-        map1.put(ACTION_RIGHT_HAND, "Right Hand Pose");
-        map1.put(ACTION_EXTERNAL_CAMERA, "External Camera");
+        map1.put(ACTION_LEFT_HAND_GESTURE, "Left Hand Gestures");
         map1.put(ACTION_LEFT_HAPTIC, "Left Hand Haptic");
+        map1.put(ACTION_RIGHT_HAND, "Right Hand Pose");
+        map1.put(ACTION_RIGHT_HAND_GESTURE, "Right Hand Gestures");
         map1.put(ACTION_RIGHT_HAPTIC, "Right Hand Haptic");
+        map1.put(ACTION_EXTERNAL_CAMERA, "External Camera");
         map1.put("languageag", "en_US");
         map.put("localization", ImmutableList.<Map<String, Object>>builder().add(map1).build());
         List<Map<String, Object>> list3 = new ArrayList<>();
@@ -837,8 +845,10 @@ public class MCOpenVR extends MCVR {
             }
 
             this.leftPoseHandle = this.getActionHandle(ACTION_LEFT_HAND);
-            this.rightPoseHandle = this.getActionHandle(ACTION_RIGHT_HAND);
+            this.leftGestureHandle = this.getActionHandle(ACTION_LEFT_HAND_GESTURE);
             this.leftHapticHandle = this.getActionHandle(ACTION_LEFT_HAPTIC);
+            this.rightPoseHandle = this.getActionHandle(ACTION_RIGHT_HAND);
+            this.rightGestureHandle = this.getActionHandle(ACTION_RIGHT_HAND_GESTURE);
             this.rightHapticHandle = this.getActionHandle(ACTION_RIGHT_HAPTIC);
             this.externalCameraPoseHandle = this.getActionHandle(ACTION_EXTERNAL_CAMERA);
 
@@ -1016,6 +1026,30 @@ public class MCOpenVR extends MCVR {
         }
     }
 
+    private void updateControllerGesture(int controller, long gestureHandle) {
+        IntBuffer TrackingLevel = MemoryUtil.memCallocInt(1);
+        System.out.println("Controller: " + controller);
+        IntBuffer BoneCount = MemoryUtil.memCallocInt(1);
+        try (
+                VRSkeletalSummaryData DevBoneSum = VRSkeletalSummaryData.calloc();
+        ) {
+            VRInput_GetBoneCount(gestureHandle, BoneCount);
+            System.out.println("Bone Count: " + BoneCount.get(0));
+            VRInput_GetSkeletalTrackingLevel(gestureHandle, TrackingLevel);
+            System.out.println("Skeletal Tracking Level: " + TrackingLevel);
+            VRInput_GetSkeletalSummaryData(gestureHandle, EVRSummaryType_VRSummaryType_FromDevice, DevBoneSum);
+            System.out.println("Thumb Curl: " + DevBoneSum.flFingerCurl(EVRFinger_VRFinger_Thumb));
+            System.out.println("Index Curl: " + DevBoneSum.flFingerCurl(EVRFinger_VRFinger_Index));
+            System.out.println("Middle Curl: " + DevBoneSum.flFingerCurl(EVRFinger_VRFinger_Middle));
+            System.out.println("Ring Curl: " + DevBoneSum.flFingerCurl(EVRFinger_VRFinger_Ring));
+            System.out.println("Pinky Curl: " + DevBoneSum.flFingerCurl(EVRFinger_VRFinger_Pinky));
+            System.out.println("Thumb Index Splay: " + DevBoneSum.flFingerSplay(EVRFingerSplay_VRFingerSplay_Thumb_Index));
+            System.out.println("Index Middle Splay: " + DevBoneSum.flFingerSplay(EVRFingerSplay_VRFingerSplay_Index_Middle));
+            System.out.println("Middle Ring Splay: " + DevBoneSum.flFingerSplay(EVRFingerSplay_VRFingerSplay_Middle_Ring));
+            System.out.println("Ring Pinky Splay: " + DevBoneSum.flFingerSplay(EVRFingerSplay_VRFingerSplay_Ring_Pinky));
+        }
+    }
+
     private void updatePose() {
         if (OpenVR.VRSystem != null && OpenVR.VRSystem != null) {
             int i = VRCompositor_WaitGetPoses(this.hmdTrackedDevicePoses, null);
@@ -1098,17 +1132,29 @@ public class MCOpenVR extends MCVR {
                 }
 
                 this.inputActions.values().forEach(this::readNewData);
+
                 this.mc.getProfiler().pop();
+                this.mc.getProfiler().push("updateControllerPose");
 
                 if (this.dh.vrSettings.reverseHands) {
                     this.updateControllerPose(0, this.leftPoseHandle);
                     this.updateControllerPose(1, this.rightPoseHandle);
+                    if (this.dh.vrSettings.skeletalInput){
+                        this.updateControllerGesture(0, this.leftGestureHandle);
+                        this.updateControllerGesture(1, this.rightGestureHandle);
+                    }
                 } else {
                     this.updateControllerPose(0, this.rightPoseHandle);
                     this.updateControllerPose(1, this.leftPoseHandle);
+                    if (this.dh.vrSettings.skeletalInput){
+                        this.updateControllerGesture(0, this.rightGestureHandle);
+                        this.updateControllerGesture(1, this.leftGestureHandle);
+                    }
                 }
 
                 this.updateControllerPose(2, this.externalCameraPoseHandle);
+
+                this.mc.getProfiler().pop();
             }
 
             this.updateAim();
