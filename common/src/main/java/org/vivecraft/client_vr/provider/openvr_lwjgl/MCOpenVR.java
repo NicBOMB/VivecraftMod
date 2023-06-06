@@ -1030,13 +1030,25 @@ public class MCOpenVR extends MCVR {
         IntBuffer TrackingLevel = MemoryUtil.memCallocInt(1);
         System.out.println("Controller: " + controller);
         IntBuffer BoneCount = MemoryUtil.memCallocInt(1);
+        VRInput_GetBoneCount(gestureHandle, BoneCount);
+        System.out.println("Bone Count: " + BoneCount.get(0));
         try (
+                InputSkeletalActionData BoneActDat = InputSkeletalActionData.calloc();
+                VRBoneTransform.Buffer BoneTransDat = VRBoneTransform.calloc(BoneCount.get(0));
                 VRSkeletalSummaryData DevBoneSum = VRSkeletalSummaryData.calloc();
         ) {
-            VRInput_GetBoneCount(gestureHandle, BoneCount);
-            System.out.println("Bone Count: " + BoneCount.get(0));
             VRInput_GetSkeletalTrackingLevel(gestureHandle, TrackingLevel);
-            System.out.println("Skeletal Tracking Level: " + TrackingLevel);
+            System.out.println("Skeletal Tracking Level: " + TrackingLevel.get(0));
+            VRInput.VRInput_GetSkeletalActionData(gestureHandle, BoneActDat);
+            System.out.println("Skeletal Action Data: " + BoneActDat.bActive() + " " + BoneActDat.activeOrigin());
+            VRInput.VRInput_GetSkeletalBoneData(gestureHandle, EVRSkeletalTransformSpace_VRSkeletalTransformSpace_Model, EVRSkeletalMotionRange_VRSkeletalMotionRange_WithController, BoneTransDat);
+            System.out.println("Skeletal Bone Data: " + BoneTransDat);
+            int i = 0;
+            for (VRBoneTransform BoneTrans: BoneTransDat) {
+                System.out.println("Skeletal Bone Index: " + i++);
+                System.out.println("Skeletal Bone Position: " + BoneTrans.position$());
+                System.out.println("Skeletal Bone Orientation: " + BoneTrans.orientation());
+            }
             VRInput_GetSkeletalSummaryData(gestureHandle, EVRSummaryType_VRSummaryType_FromDevice, DevBoneSum);
             System.out.println("Thumb Curl: " + DevBoneSum.flFingerCurl(EVRFinger_VRFinger_Thumb));
             System.out.println("Index Curl: " + DevBoneSum.flFingerCurl(EVRFinger_VRFinger_Index));

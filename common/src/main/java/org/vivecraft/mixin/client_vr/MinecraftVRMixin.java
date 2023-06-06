@@ -30,6 +30,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.util.FrameTimer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfileResults;
@@ -52,6 +53,9 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import org.vivecraft.client.gui.VivecraftClickEvent;
+import org.vivecraft.client.gui.screens.UpdateScreen;
+import org.vivecraft.client.utils.UpdateChecker;
 import org.vivecraft.client_vr.extensions.*;
 import org.vivecraft.mod_compat_vr.iris.IrisHelper;
 import org.vivecraft.mod_compat_vr.sodium.SodiumHelper;
@@ -66,7 +70,7 @@ import org.vivecraft.client_vr.gameplay.screenhandlers.GuiHandler;
 import org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler;
 import org.vivecraft.client_vr.gameplay.screenhandlers.RadialHandler;
 import org.vivecraft.client_vr.gameplay.trackers.TelescopeTracker;
-import org.vivecraft.client_vr.gui.ErrorScreen;
+import org.vivecraft.client.gui.screens.ErrorScreen;
 import org.vivecraft.client_vr.provider.openvr_lwjgl.VRInputAction;
 import org.vivecraft.client.VRPlayersClient;
 import org.vivecraft.client_vr.render.RenderConfigException;
@@ -118,6 +122,9 @@ public abstract class MinecraftVRMixin extends ReentrantBlockableEventLoop<Runna
 
     @Unique
     private float fov = 1.0F;
+
+    @Unique
+    private long currentNanoTime;
 
     @Shadow
     protected int missTime;
@@ -366,6 +373,9 @@ public abstract class MinecraftVRMixin extends ReentrantBlockableEventLoop<Runna
 
     //Replaces normal runTick
     public void newRunTick(boolean bl) {
+
+        currentNanoTime = Util.getNanos();
+
         // v
         this.profiler.push("setupRenderConfiguration");
         //
@@ -434,7 +444,7 @@ public abstract class MinecraftVRMixin extends ReentrantBlockableEventLoop<Runna
         // only draw the gui when the level was rendered once, since some mods expect that
         ((GameRendererExtension) this.gameRenderer).setShouldDrawGui(bl && this.entityRenderDispatcher.camera != null);
 
-        this.gameRenderer.render(f, System.nanoTime(), false);
+        this.gameRenderer.render(f, currentNanoTime, false);
         // draw cursor
         if (Minecraft.getInstance().screen != null) {
             PoseStack poseStack = RenderSystem.getModelViewStack();
@@ -856,6 +866,19 @@ public abstract class MinecraftVRMixin extends ReentrantBlockableEventLoop<Runna
     public void vrTick(CallbackInfo info) {
         ++ClientDataHolderVR.getInstance().tickCounter;
 
+        // general chat notifications
+        if (this.level != null) {
+            if (!ClientDataHolderVR.getInstance().showedUpdateNotification && UpdateChecker.hasUpdate && (ClientDataHolderVR.getInstance().vrSettings.alwaysShowUpdates || !UpdateChecker.newestVersion.equals(ClientDataHolderVR.getInstance().vrSettings.lastUpdate))) {
+                ClientDataHolderVR.getInstance().vrSettings.lastUpdate = UpdateChecker.newestVersion;
+                ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+                ClientDataHolderVR.getInstance().showedUpdateNotification = true;
+                this.gui.getChat().addMessage(Component.translatable("vivecraft.messages.updateAvailable", Component.literal(UpdateChecker.newestVersion).withStyle(ChatFormatting.ITALIC, ChatFormatting.GREEN))
+                        .withStyle(style -> style
+                        .withClickEvent(new VivecraftClickEvent(VivecraftClickEvent.VivecraftAction.OPEN_SCREEN, new UpdateScreen()))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("vivecraft.messages.click")))));
+            }
+        }
+
         if (VRState.vrRunning) {
             this.profiler.push("vrProcessInputs");
             ClientDataHolderVR.getInstance().vr.processInputs();
@@ -874,6 +897,7 @@ public abstract class MinecraftVRMixin extends ReentrantBlockableEventLoop<Runna
             if (this.level != null && ClientDataHolderVR.getInstance().vrPlayer != null) {
                 ClientDataHolderVR.getInstance().vrPlayer.updateFreeMove();
 
+                // VR enabled only chat notifications
                 if (ClientDataHolderVR.getInstance().vrPlayer.teleportWarningTimer >= 0 && --ClientDataHolderVR.getInstance().vrPlayer.teleportWarningTimer == 0) {
                     this.gui.getChat().addMessage(Component.translatable("vivecraft.messages.noserverplugin"));
                 }
@@ -1029,7 +1053,7 @@ public abstract class MinecraftVRMixin extends ReentrantBlockableEventLoop<Runna
         RenderSystem.clear(16384, ON_OSX);
         RenderSystem.enableDepthTest();
         this.profiler.push("updateCameraAndRender");
-        this.gameRenderer.render(nano, System.nanoTime(), renderworld);
+        this.gameRenderer.render(nano, currentNanoTime, renderworld);
         this.profiler.pop();
         this.checkGLError("post game render " + eye.name());
 

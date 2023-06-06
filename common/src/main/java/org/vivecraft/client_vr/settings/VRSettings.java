@@ -142,6 +142,12 @@ public class VRSettings
         OPENVR,
         NULLVR
     }
+
+    public enum ChatServerPluginMessage implements OptionEnum<VRProvider> {
+        ALWAYS,
+        SERVER_ONLY,
+        NEVER
+    }
     
     @SettingField
     public int version = UNKNOWN_VERSION;
@@ -400,6 +406,12 @@ public class VRSettings
     public boolean guiAppearOverBlock = true;
     @SettingField(VrOptions.SHADER_GUI_RENDER)
     public ShaderGUIRender shaderGUIRender = ShaderGUIRender.AFTER_SHADER;
+    @SettingField(VrOptions.SHOW_UPDATES)
+    public boolean alwaysShowUpdates = true;
+    @SettingField
+    public String lastUpdate = "";
+    @SettingField(VrOptions.SHOW_PLUGIN)
+    public ChatServerPluginMessage showServerPluginMessage = ChatServerPluginMessage.SERVER_ONLY;
 
     /**
      * This isn't actually used, it's only a dummy field to save the value from vanilla Options.
@@ -1079,6 +1091,8 @@ public class VRSettings
                 }
             }
         },
+        SHOW_UPDATES(false, true, "vivecraft.options.always", "vivecraft.options.once"),
+        SHOW_PLUGIN(false, true),
         AUTO_OPEN_KEYBOARD(false, true), // Always Open Keyboard
         RADIAL_MODE_HOLD(false, true, "vivecraft.options.hold", "vivecraft.options.press"), // Radial Menu Mode
         PHYSICAL_KEYBOARD(false, true, "vivecraft.options.keyboard.physical", "vivecraft.options.keyboard.pointer"), // Keyboard Type
