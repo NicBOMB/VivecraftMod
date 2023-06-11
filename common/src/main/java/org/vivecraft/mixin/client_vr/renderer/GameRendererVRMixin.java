@@ -182,6 +182,11 @@ public abstract class GameRendererVRMixin
     @Shadow
     private float zoomY;
     @Shadow
+    private float fov;
+
+    @Shadow
+    private float oldFov;
+    @Shadow
     @Final
     private RenderBuffers renderBuffers;
     @Shadow
@@ -263,9 +268,17 @@ public abstract class GameRendererVRMixin
 
     //TODO Vivecraft add riding check in case your hand is somewhere inappropriate
 
+    @Inject(at = @At("HEAD"), method = "tickFov", cancellable = true)
+    public void noFOVchangeInVR(CallbackInfo ci){
+        if (!RenderPassType.isVanilla()) {
+            this.oldFov = this.fov = 1.0f;
+            ci.cancel();
+        }
+    }
+
     @Inject(at = @At("HEAD"), method = "getFov(Lnet/minecraft/client/Camera;FZ)D", cancellable = true)
     public void fov(Camera camera, float f, boolean bl, CallbackInfoReturnable<Double> info) {
-        if (this.minecraft.level == null) { // Vivecraft: using this on the main menu
+        if (this.minecraft.level == null || isInMenuRoom()) { // Vivecraft: using this on the main menu
             info.setReturnValue(Double.valueOf(this.minecraft.options.fov().get()));
         }
     }
