@@ -1602,8 +1602,8 @@ public abstract class GameRendererVRMixin
 
     }
 
-    public void renderVRFabulous(float partialTicks, LevelRenderer worldrendererin, boolean menuhandright,
-                                 boolean menuhandleft, PoseStack pMatrix) {
+    public void renderVRFabulous(float partialTicks, LevelRenderer worldrendererin, boolean menuHandRight,
+                                 boolean menuHandLeft, PoseStack pMatrix) {
         if (ClientDataHolderVR.getInstance().currentPass == RenderPass.SCOPEL || ClientDataHolderVR.getInstance().currentPass == RenderPass.SCOPER)
             return;
         this.minecraft.getProfiler().popPush("VR");
@@ -1658,11 +1658,11 @@ public abstract class GameRendererVRMixin
         VRWidgetHelper.renderVRThirdPersonCamWidget();
         VRWidgetHelper.renderVRHandheldCameraWidget();
         boolean flag = this.shouldRenderHands();
-        this.renderVRHands(partialTicks, flag && menuhandright, flag && menuhandleft, true, true, pMatrix);
+        this.renderVRHands(partialTicks, flag && menuHandRight, flag && menuHandLeft, true, true, pMatrix);
         ((LevelRendererExtension) worldrendererin).getAlphaSortVRHandsFramebuffer().clear(Minecraft.ON_OSX);
         ((LevelRendererExtension) worldrendererin).getAlphaSortVRHandsFramebuffer().copyDepthFrom(this.minecraft.getMainRenderTarget());
         ((LevelRendererExtension) worldrendererin).getAlphaSortVRHandsFramebuffer().bindWrite(true);
-        this.renderVRHands(partialTicks, flag && !menuhandright, flag && !menuhandleft, false, false, pMatrix);
+        this.renderVRHands(partialTicks, flag && !menuHandRight, flag && !menuHandLeft, false, false, pMatrix);
         RenderSystem.defaultBlendFunc();
         // RenderSystem.defaultAlphaFunc();
         RenderSystem.setShaderColor(1, 1, 1, 1);

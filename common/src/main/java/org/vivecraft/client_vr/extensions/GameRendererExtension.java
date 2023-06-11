@@ -52,9 +52,9 @@ public interface GameRendererExtension {
 
 	double getRveY();
 
-	void renderVrFast(float f, boolean b, boolean menuhandright, boolean menuHandleft, PoseStack poseStack);
+	void renderVrFast(float f, boolean b, boolean menuHandRight, boolean menuHandLeft, PoseStack poseStack);
 
-	void renderVRFabulous(float f, LevelRenderer levelRenderer, boolean menuhandright, boolean menuHandleft, PoseStack poseStack);
+	void renderVRFabulous(float f, LevelRenderer levelRenderer, boolean menuHandRight, boolean menuHandLeft, PoseStack poseStack);
 
 	void restoreRVEPos(LivingEntity e);
 

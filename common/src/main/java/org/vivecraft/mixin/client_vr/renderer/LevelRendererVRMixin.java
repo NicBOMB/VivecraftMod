@@ -229,15 +229,15 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
         if (RenderPassType.isVanilla()) {
             return;
         }
-        boolean menuHandleft = ((GameRendererExtension) gameRenderer).isInMenuRoom() || this.minecraft.screen != null || KeyboardHandler.Showing;
-        boolean menuhandright = menuHandleft || ClientDataHolderVR.getInstance().interactTracker.hotbar >= 0 && ClientDataHolderVR.getInstance().vrSettings.vrTouchHotbar;
-        ((GameRendererExtension) gameRenderer).renderVRFabulous(f, (LevelRenderer) (Object) this, menuhandright, menuHandleft, poseStack);
+        boolean menuHandLeft = ((GameRendererExtension) gameRenderer).isInMenuRoom() || this.minecraft.screen != null || KeyboardHandler.Showing;
+        boolean menuHandRight = menuHandLeft || ClientDataHolderVR.getInstance().interactTracker.hotbar >= 0 && ClientDataHolderVR.getInstance().vrSettings.vrTouchHotbar;
+        ((GameRendererExtension) gameRenderer).renderVRFabulous(f, (LevelRenderer) (Object) this, menuHandRight, menuHandLeft, poseStack);
     }
 
     @Unique
-    private boolean menuHandleft;
+    private boolean menuHandLeft;
     @Unique
-    private boolean menuhandright;
+    private boolean menuHandRight;
     @Unique
     private boolean guiRendered = false;
 
@@ -253,13 +253,13 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
             return;
         }
 
-        menuHandleft = ((GameRendererExtension) gameRenderer).isInMenuRoom() || this.minecraft.screen != null || KeyboardHandler.Showing;
-        menuhandright = menuHandleft || ClientDataHolderVR.getInstance().interactTracker.hotbar >= 0 && ClientDataHolderVR.getInstance().vrSettings.vrTouchHotbar;
-        ((GameRendererExtension) gameRenderer).renderVrFast(f, false, menuhandright, menuHandleft, poseStack);
+        menuHandLeft = ((GameRendererExtension) gameRenderer).isInMenuRoom() || this.minecraft.screen != null || KeyboardHandler.Showing;
+        menuHandRight = menuHandLeft || ClientDataHolderVR.getInstance().interactTracker.hotbar >= 0 && ClientDataHolderVR.getInstance().vrSettings.vrTouchHotbar;
+        ((GameRendererExtension) gameRenderer).renderVrFast(f, false, menuHandRight, menuHandLeft, poseStack);
 
         if ((Xplat.isModLoaded("iris") || Xplat.isModLoaded("oculus")) && IrisHelper.isShaderActive() && ClientDataHolderVR.getInstance().vrSettings.shaderGUIRender == VRSettings.ShaderGUIRender.BEFORE_TRANSLUCENT_SOLID) {
             // shaders active, and render gui before translucents
-            ((GameRendererExtension) gameRenderer).renderVrFast(f, true, menuhandright, menuHandleft, poseStack);
+            ((GameRendererExtension) gameRenderer).renderVrFast(f, true, menuHandRight, menuHandLeft, poseStack);
             guiRendered = true;
         }
     }
@@ -273,7 +273,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
 
         if (transparencyChain == null && (!((Xplat.isModLoaded("iris") || Xplat.isModLoaded("oculus")) && IrisHelper.isShaderActive()) || ClientDataHolderVR.getInstance().vrSettings.shaderGUIRender == VRSettings.ShaderGUIRender.AFTER_TRANSLUCENT)) {
             // no shaders, or shaders, and gui after translucents
-            ((GameRendererExtension) gameRenderer).renderVrFast(f, true, menuhandright, menuHandleft, poseStack);
+            ((GameRendererExtension) gameRenderer).renderVrFast(f, true, menuHandRight, menuHandLeft, poseStack);
             guiRendered = true;
         }
     }
@@ -287,7 +287,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
         }
 
         if (!guiRendered && transparencyChain == null) {
-            ((GameRendererExtension) gameRenderer).renderVrFast(f, true, menuhandright, menuHandleft, poseStack);
+            ((GameRendererExtension) gameRenderer).renderVrFast(f, true, menuHandRight, menuHandLeft, poseStack);
             guiRendered = true;
         }
     }
