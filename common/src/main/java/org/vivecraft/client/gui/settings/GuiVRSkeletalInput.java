@@ -1,6 +1,7 @@
 package org.vivecraft.client.gui.settings;
 
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
+import org.vivecraft.client.gui.framework.VROptionEntry;
 import org.vivecraft.client.gui.framework.VROptionLayout;
 import org.vivecraft.client_vr.settings.VRSettings;
 
@@ -33,14 +34,6 @@ public class GuiVRSkeletalInput extends GuiVROptionsBase {
             VRSettings.VrOptions.MAIN_PINKY_THRESHOLD
     };
 
-    private static final VROptionLayout[] skeletal_input = new VROptionLayout[] {
-            new VROptionLayout(VRSettings.VrOptions.SKELETAL_INPUT, VROptionLayout.Position.POS_CENTER, 6.0F, true, null)
-    };
-
-    private static final VRSettings.VrOptions[] finger_count = new VRSettings.VrOptions[] {
-            VRSettings.VrOptions.FINGER_COUNT
-    };
-
     public GuiVRSkeletalInput(Screen par1GuiScreen)
     {
         super(par1GuiScreen);
@@ -50,9 +43,9 @@ public class GuiVRSkeletalInput extends GuiVROptionsBase {
     {
         this.vrTitle = "vivecraft.options.screen.controls.skeletal_input";
         super.init(this.dataholder.vrSettings.reverseHands ? fingerThresholdsReversed : fingerThresholds, true);
-        super.init(finger_count, false);
-        super.init(GuiVRFingerMapping.class, null, "vivecraft.options.screen.controls.skeletal_input.finger_displays.button", false);
-        super.init(skeletal_input, false);
+        super.init(VRSettings.VrOptions.FINGER_COUNT);
+        super.init(GuiVRFingerMapping.class, null, "vivecraft.options.screen.controls.skeletal_input.finger_displays.button");
+        super.init(new VROptionEntry(VRSettings.VrOptions.SKELETAL_INPUT, VROptionLayout.Position.POS_CENTER));
         super.addDefaultButtons();
     }
 }

@@ -129,7 +129,9 @@ public class GuiMainVRSettings extends GuiVROptionsBase
 
     protected void resetOrigin()
     {
-        MCVR.get().resetPosition();
+        if (MCVR.get() != null) {
+            MCVR.get().resetPosition();
+        }
         this.settings.saveOptions();
         this.minecraft.setScreen(null);
     }
