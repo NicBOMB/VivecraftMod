@@ -8,24 +8,6 @@ import org.vivecraft.client_vr.settings.VRSettings;
 
 public class GuiOtherHUDSettings extends GuiVROptionsBase
 {
-    static VRSettings.VrOptions[] hudOptions = new VRSettings.VrOptions[] {
-            VRSettings.VrOptions.CROSSHAIR_SCALE,
-            VRSettings.VrOptions.RENDER_CROSSHAIR_MODE,
-            VRSettings.VrOptions.RENDER_BLOCK_OUTLINE_MODE,
-            VRSettings.VrOptions.MENU_CROSSHAIR_SCALE,
-            VRSettings.VrOptions.CROSSHAIR_OCCLUSION,
-            VRSettings.VrOptions.CROSSHAIR_SCALES_WITH_DISTANCE,
-            VRSettings.VrOptions.CHAT_NOTIFICATIONS
-    };
-    static VRSettings.VrOptions[] chat = new VRSettings.VrOptions[] {
-            VRSettings.VrOptions.CHAT_NOTIFICATION_SOUND
-    };
-
-    static VRSettings.VrOptions[] messages = new VRSettings.VrOptions[] {
-            VRSettings.VrOptions.SHOW_UPDATES,
-            VRSettings.VrOptions.SHOW_PLUGIN
-    };
-
     public GuiOtherHUDSettings(Screen guiScreen)
     {
         super(guiScreen);
@@ -34,15 +16,22 @@ public class GuiOtherHUDSettings extends GuiVROptionsBase
     public void init()
     {
         this.vrTitle = "vivecraft.options.screen.guiother";
-        super.init(hudOptions, true);
+        super.init(VRSettings.VrOptions.CROSSHAIR_SCALE, true);
+        super.init(VRSettings.VrOptions.RENDER_CROSSHAIR_MODE);
+        super.init(VRSettings.VrOptions.RENDER_BLOCK_OUTLINE_MODE);
+        super.init(VRSettings.VrOptions.MENU_CROSSHAIR_SCALE);
+        super.init(VRSettings.VrOptions.CROSSHAIR_OCCLUSION);
+        super.init(VRSettings.VrOptions.CROSSHAIR_SCALES_WITH_DISTANCE);
+        super.init(VRSettings.VrOptions.CHAT_NOTIFICATIONS);
 
         if (this.dataholder.vrSettings.chatNotifications == VRSettings.ChatNotifications.SOUND || this.dataholder.vrSettings.chatNotifications == VRSettings.ChatNotifications.BOTH)
         {
-            super.init(chat, false);
+            super.init(VRSettings.VrOptions.CHAT_NOTIFICATION_SOUND);
         } else {
-            super.init(new VRSettings.VrOptions[]{VRSettings.VrOptions.DUMMY}, false);
+            super.init(VRSettings.VrOptions.DUMMY);
         }
-        super.init(messages, false);
+        super.init(VRSettings.VrOptions.SHOW_UPDATES);
+        super.init(VRSettings.VrOptions.SHOW_PLUGIN);
 
         super.addDefaultButtons();
     }

@@ -12,31 +12,6 @@ import org.vivecraft.client_vr.settings.VRSettings;
 
 public class GuiHUDSettings extends GuiVROptionsBase
 {
-    private VROptionEntry[] hudOptions = new VROptionEntry[] {
-            new VROptionEntry(VRSettings.VrOptions.HUD_HIDE),
-            new VROptionEntry(VRSettings.VrOptions.HUD_LOCK_TO),
-            new VROptionEntry(VRSettings.VrOptions.HUD_SCALE),
-            new VROptionEntry(VRSettings.VrOptions.HUD_DISTANCE),
-            new VROptionEntry(VRSettings.VrOptions.HUD_OCCLUSION),
-            new VROptionEntry(VRSettings.VrOptions.HUD_OPACITY),
-            new VROptionEntry(VRSettings.VrOptions.RENDER_MENU_BACKGROUND),
-            new VROptionEntry(VRSettings.VrOptions.TOUCH_HOTBAR),
-            new VROptionEntry(VRSettings.VrOptions.AUTO_OPEN_KEYBOARD),
-            new VROptionEntry(VRSettings.VrOptions.MENU_ALWAYS_FOLLOW_FACE),
-            new VROptionEntry(VRSettings.VrOptions.PHYSICAL_KEYBOARD, (button, mousePos) -> {
-                KeyboardHandler.setOverlayShowing(false);
-                return false;
-            }),
-            new VROptionEntry(VRSettings.VrOptions.GUI_APPEAR_OVER_BLOCK),
-            new VROptionEntry(VRSettings.VrOptions.PHYSICAL_KEYBOARD_SCALE),
-            new VROptionEntry("vivecraft.options.screen.menuworld.button", (button, mousePos) -> {
-                Minecraft.getInstance().setScreen(new GuiMenuWorldSettings(this));
-                return true;
-            }),
-            new VROptionEntry(VRSettings.VrOptions.PHYSICAL_KEYBOARD_THEME),
-            new VROptionEntry(VRSettings.VrOptions.SHADER_GUI_RENDER)
-    };
-
     public GuiHUDSettings(Screen guiScreen)
     {
         super(guiScreen);
@@ -45,7 +20,28 @@ public class GuiHUDSettings extends GuiVROptionsBase
     public void init()
     {
         this.vrTitle = "vivecraft.options.screen.gui";
-        super.init(this.hudOptions, true);
+        super.init(new VROptionEntry(VRSettings.VrOptions.HUD_HIDE), true);
+        super.init(VRSettings.VrOptions.HUD_LOCK_TO);
+        super.init(VRSettings.VrOptions.HUD_SCALE);
+        super.init(VRSettings.VrOptions.HUD_DISTANCE);
+        super.init(VRSettings.VrOptions.HUD_OCCLUSION);
+        super.init(VRSettings.VrOptions.HUD_OPACITY);
+        super.init(VRSettings.VrOptions.RENDER_MENU_BACKGROUND);
+        super.init(VRSettings.VrOptions.TOUCH_HOTBAR);
+        super.init(VRSettings.VrOptions.AUTO_OPEN_KEYBOARD);
+        super.init(VRSettings.VrOptions.MENU_ALWAYS_FOLLOW_FACE);
+        super.init(new VROptionEntry(VRSettings.VrOptions.PHYSICAL_KEYBOARD, (button, mousePos) -> {
+            KeyboardHandler.setOverlayShowing(false);
+            return false;
+        }));
+        super.init(VRSettings.VrOptions.GUI_APPEAR_OVER_BLOCK);
+        super.init(VRSettings.VrOptions.PHYSICAL_KEYBOARD_SCALE);
+        super.init(new VROptionEntry("vivecraft.options.screen.menuworld.button", (button, mousePos) -> {
+            Minecraft.getInstance().setScreen(new GuiMenuWorldSettings(this));
+            return true;
+        }));
+        super.init(VRSettings.VrOptions.PHYSICAL_KEYBOARD_THEME);
+        super.init(VRSettings.VrOptions.SHADER_GUI_RENDER);
         super.addDefaultButtons();
     }
 

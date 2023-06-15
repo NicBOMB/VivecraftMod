@@ -8,16 +8,6 @@ import org.vivecraft.client_vr.settings.VRSettings;
 
 public class GuiTeleportSettings extends GuiVROptionsBase
 {
-    private static VRSettings.VrOptions[] teleportSettings = new VRSettings.VrOptions[] {
-            VRSettings.VrOptions.SIMULATE_FALLING,
-            VRSettings.VrOptions.LIMIT_TELEPORT
-    };
-    private static VRSettings.VrOptions[] limitedTeleportSettings = new VRSettings.VrOptions[] {
-            VRSettings.VrOptions.TELEPORT_UP_LIMIT,
-            VRSettings.VrOptions.TELEPORT_DOWN_LIMIT,
-            VRSettings.VrOptions.TELEPORT_HORIZ_LIMIT
-    };
-
     public GuiTeleportSettings(Screen guiScreen)
     {
         super(guiScreen);
@@ -26,11 +16,14 @@ public class GuiTeleportSettings extends GuiVROptionsBase
     public void init()
     {
         this.vrTitle = "vivecraft.options.screen.teleport";
-        super.init(teleportSettings, true);
+        super.init(VRSettings.VrOptions.SIMULATE_FALLING, true);
+        super.init(VRSettings.VrOptions.LIMIT_TELEPORT);
 
         if (this.settings.vrLimitedSurvivalTeleport)
         {
-            super.init(limitedTeleportSettings, false);
+            super.init(VRSettings.VrOptions.TELEPORT_UP_LIMIT);
+            super.init(VRSettings.VrOptions.TELEPORT_DOWN_LIMIT);
+            super.init(VRSettings.VrOptions.TELEPORT_HORIZ_LIMIT);
         }
 
         super.addDefaultButtons();

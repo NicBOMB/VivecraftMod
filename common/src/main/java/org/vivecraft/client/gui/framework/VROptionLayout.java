@@ -113,14 +113,11 @@ public class VROptionLayout
 
     public int getX(int screenWidth)
     {
-        if (this._pos == Position.POS_LEFT)
-        {
-            return screenWidth / 2 - 155 + 0;
-        }
-        else
-        {
-            return this._pos == Position.POS_RIGHT ? screenWidth / 2 - 155 + 160 : screenWidth / 2 - 155 + 80;
-        }
+        return switch (this._pos){
+            case POS_LEFT -> screenWidth / 2 - 155;
+            case POS_RIGHT -> screenWidth / 2 - 155 + 160;
+            default -> screenWidth / 2 - 155 + 80;
+        };
     }
 
     public int getY(int screenHeight)

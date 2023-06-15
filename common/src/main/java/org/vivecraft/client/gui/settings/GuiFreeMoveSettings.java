@@ -8,25 +8,6 @@ import org.vivecraft.client_vr.settings.VRSettings;
 
 public class GuiFreeMoveSettings extends GuiVROptionsBase
 {
-    private static VRSettings.VrOptions[] standingSettings = new VRSettings.VrOptions[] {
-    		VRSettings.VrOptions.FREEMOVE_MODE,
-			VRSettings.VrOptions.FOV_REDUCTION,
-			VRSettings.VrOptions.INERTIA_FACTOR,
-			VRSettings.VrOptions.MOVEMENT_MULTIPLIER,
-			VRSettings.VrOptions.AUTO_SPRINT,
-			VRSettings.VrOptions.AUTO_SPRINT_THRESHOLD,
-			VRSettings.VrOptions.ANALOG_MOVEMENT
-    };
-    private static VRSettings.VrOptions[] seatedSettings = new VRSettings.VrOptions[] {
-    		VRSettings.VrOptions.SEATED_HMD,
-			VRSettings.VrOptions.FOV_REDUCTION,
-			VRSettings.VrOptions.INERTIA_FACTOR
-    };
-    private static VRSettings.VrOptions[] fovRed = new VRSettings.VrOptions[] {
-    		VRSettings.VrOptions.FOV_REDUCTION_MIN,
-			VRSettings.VrOptions.FOV_REDUCTION_OFFSET
-    };
-
     public GuiFreeMoveSettings(Screen guiScreen)
     {
         super(guiScreen);
@@ -38,16 +19,25 @@ public class GuiFreeMoveSettings extends GuiVROptionsBase
 
         if (this.dataholder.vrSettings.seated)
         {
-            super.init(seatedSettings, true);
+            super.init(VRSettings.VrOptions.SEATED_HMD, true);
+            super.init(VRSettings.VrOptions.FOV_REDUCTION);
+            super.init(VRSettings.VrOptions.INERTIA_FACTOR);
         }
         else
         {
-            super.init(standingSettings, true);
+            super.init(VRSettings.VrOptions.FREEMOVE_MODE, true);
+            super.init(VRSettings.VrOptions.FOV_REDUCTION);
+            super.init(VRSettings.VrOptions.INERTIA_FACTOR);
+            super.init(VRSettings.VrOptions.MOVEMENT_MULTIPLIER);
+            super.init( VRSettings.VrOptions.AUTO_SPRINT);
+            super.init(VRSettings.VrOptions.AUTO_SPRINT_THRESHOLD);
+            super.init( VRSettings.VrOptions.ANALOG_MOVEMENT);
         }
 
         if (this.dataholder.vrSettings.useFOVReduction)
         {
-            super.init(fovRed, false);
+            super.init(VRSettings.VrOptions.FOV_REDUCTION_MIN);
+            super.init(VRSettings.VrOptions.FOV_REDUCTION_OFFSET);
         }
 
         super.addDefaultButtons();

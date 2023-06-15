@@ -96,52 +96,45 @@ public class EatingTracker extends Tracker
             Vec3 controllerPos = this.dh.vr.controllerHistory[c].averagePosition(0.333D).add(vrplayer.vrdata_room_pre.getController(c).getCustomVector(new Vec3(0.0D, 0.0D, -0.1D)));
             controllerPos = controllerPos.add(this.dh.vrPlayer.vrdata_room_pre.getController(c).getDirection().scale(0.1D));
 
-            if (mouthPos.distanceTo(controllerPos) < (double)this.threshold)	{
+            if (mouthPos.distanceTo(controllerPos) < (double)this.threshold) {
                 ItemStack itemstack = c == 0 ? player.getMainHandItem() : player.getOffhandItem();
                 if (itemstack == ItemStack.EMPTY) continue;
 
                 int crunchiness = 0;
 
-                if (itemstack.getUseAnimation() == UseAnim.DRINK){//thats how liquid works.
-                    if(vrplayer.vrdata_room_pre.getController(c).getCustomVector(new Vec3(0,1,0)).y > 0) continue;
-                }
-                else if (itemstack.getUseAnimation() == UseAnim.EAT) {
-                    crunchiness = 2;
-                }
-                else if (itemstack.getUseAnimation() == UseAnim.TOOT_HORN) {
-                    crunchiness = 1;
-                }
-                else {
-                    continue;
+                switch(itemstack.getUseAnimation()){
+                    case DRINK -> { //that's how liquid works.
+                        if(vrplayer.vrdata_room_pre.getController(c).getCustomVector(new Vec3(0,1,0)).y > 0) continue;
+                    }
+                    case EAT -> crunchiness = 2;
+                    case TOOT_HORN -> crunchiness = 1;
+                    default -> {
+                        continue;
+                    }
                 }
 
-                if (!this.eating[c])
-                        {
-                            //Minecraft.getInstance().physicalGuiManager.preClickAction();
+                if (!this.eating[c]){
+                    //Minecraft.getInstance().physicalGuiManager.preClickAction();
 
-                            if (this.mc.gameMode.useItem(player, c == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND).consumesAction())
-                            {
+                    if (this.mc.gameMode.useItem(player, c == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND).consumesAction()){
                         this.mc.gameRenderer.itemInHandRenderer.itemUsed(c == 0 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND);
                         this.eating[c] = true;
-                                this.eatStart = Util.getMillis();
-                            }
-                        }
-
-                if (this.eating[c])
-                        {
-                            long k = (long)player.getUseItemRemainingTicks();
-
-                    if (k > 0L && k % 5L <= (long)crunchiness)
-                            {
-                        this.dh.vr.triggerHapticPulse(c, 700);
-                            }
-                        }
-
-                        if (Util.getMillis() - this.eatStart > (long)this.eattime)
-                        {
-                    this.eating[c] = false;
-                        }
+                        this.eatStart = Util.getMillis();
                     }
+                }
+
+                if (this.eating[c]){
+                    long k = (long)player.getUseItemRemainingTicks();
+
+                    if (k > 0L && k % 5L <= (long)crunchiness){
+                        this.dh.vr.triggerHapticPulse(c, 700);
+                    }
+                }
+
+                if (Util.getMillis() - this.eatStart > (long)this.eattime){
+                    this.eating[c] = false;
+                }
+            }
             else
             {
                 this.eating[c] = false;

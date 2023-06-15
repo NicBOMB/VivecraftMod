@@ -6,18 +6,6 @@ import org.vivecraft.client_vr.settings.VRSettings;
 
 public class GuiRoomscaleSettings extends GuiVROptionsBase
 {
-    static VRSettings.VrOptions[] roomscaleSettings = new VRSettings.VrOptions[] {
-            VRSettings.VrOptions.WEAPON_COLLISION,
-            VRSettings.VrOptions.REALISTIC_JUMP,
-            VRSettings.VrOptions.REALISTIC_SNEAK,
-            VRSettings.VrOptions.REALISTIC_CLIMB,
-            VRSettings.VrOptions.REALISTIC_ROW,
-            VRSettings.VrOptions.REALISTIC_SWIM,
-            VRSettings.VrOptions.BOW_MODE,
-            VRSettings.VrOptions.BACKPACK_SWITCH,
-            VRSettings.VrOptions.ALLOW_CRAWLING
-    };
-
     public GuiRoomscaleSettings(Screen guiScreen)
     {
         super(guiScreen);
@@ -26,7 +14,15 @@ public class GuiRoomscaleSettings extends GuiVROptionsBase
     public void init()
     {
         this.vrTitle = "vivecraft.options.screen.roomscale";
-        super.init(roomscaleSettings, true);
+        super.init(VRSettings.VrOptions.WEAPON_COLLISION, true);
+        super.init(VRSettings.VrOptions.REALISTIC_JUMP);
+        super.init(VRSettings.VrOptions.REALISTIC_SNEAK);
+        super.init(VRSettings.VrOptions.REALISTIC_CLIMB);
+        super.init(VRSettings.VrOptions.REALISTIC_ROW);
+        super.init(VRSettings.VrOptions.REALISTIC_SWIM);
+        super.init(VRSettings.VrOptions.BOW_MODE);
+        super.init(VRSettings.VrOptions.BACKPACK_SWITCH);
+        super.init(VRSettings.VrOptions.ALLOW_CRAWLING);
         super.addDefaultButtons();
     }
 }

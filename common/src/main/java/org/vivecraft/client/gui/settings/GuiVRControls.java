@@ -1,6 +1,7 @@
 package org.vivecraft.client.gui.settings;
 
 import org.vivecraft.client.gui.framework.VROptionEntry;
+import org.vivecraft.client.gui.framework.VROptionLayout;
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
 import org.vivecraft.client_vr.settings.VRSettings;
 
@@ -11,20 +12,6 @@ import net.minecraft.network.chat.Component;
 
 public class GuiVRControls extends GuiVROptionsBase
 {
-    private static VROptionEntry[] controlsSettings = new VROptionEntry[] {
-            new VROptionEntry(VRSettings.VrOptions.DUMMY, true),
-            new VROptionEntry(VRSettings.VrOptions.DUMMY, true),
-            new VROptionEntry(VRSettings.VrOptions.DUMMY, true),
-            new VROptionEntry(VRSettings.VrOptions.DUMMY, true),
-            new VROptionEntry(VRSettings.VrOptions.DUMMY, true),
-            new VROptionEntry(VRSettings.VrOptions.DUMMY),
-            new VROptionEntry(VRSettings.VrOptions.SKELETAL_INPUT),
-            new VROptionEntry(VRSettings.VrOptions.REVERSE_HANDS),
-            new VROptionEntry(VRSettings.VrOptions.RIGHT_CLICK_DELAY),
-            new VROptionEntry(VRSettings.VrOptions.ALLOW_ADVANCED_BINDINGS),
-            new VROptionEntry(VRSettings.VrOptions.THIRDPERSON_ITEMTRANSFORMS)
-    };
-
     public GuiVRControls(Screen par1GuiScreen)
     {
         super(par1GuiScreen);
@@ -33,13 +20,24 @@ public class GuiVRControls extends GuiVROptionsBase
     public void init()
     {
         this.vrTitle = "vivecraft.options.screen.controls";
-        super.init(controlsSettings, true);
+        super.init(new VROptionEntry(VRSettings.VrOptions.DUMMY, VROptionLayout.Position.POS_CENTER), true);
+        super.init(new VROptionEntry(VRSettings.VrOptions.DUMMY, VROptionLayout.Position.POS_CENTER));
+        super.init(new VROptionEntry(VRSettings.VrOptions.DUMMY, VROptionLayout.Position.POS_CENTER));
+        super.init(new VROptionEntry(VRSettings.VrOptions.DUMMY, VROptionLayout.Position.POS_CENTER));
+        super.init(new VROptionEntry(VRSettings.VrOptions.DUMMY, VROptionLayout.Position.POS_CENTER));
+        super.init(new VROptionEntry(VRSettings.VrOptions.DUMMY, VROptionLayout.Position.POS_CENTER));
+        // TODO: generate empty space on this page relative to the height of the message end rather than using rough static dummies
+        // super.init(GuiVRSkeletalInput.class, VROptionLayout.Position.POS_RIGHT, "vivecraft.options.screen.controls.skeletal_input.button");
+        super.init(VRSettings.VrOptions.REVERSE_HANDS);
+        super.init(VRSettings.VrOptions.RIGHT_CLICK_DELAY);
+        super.init(VRSettings.VrOptions.ALLOW_ADVANCED_BINDINGS);
+        super.init(VRSettings.VrOptions.THIRDPERSON_ITEMTRANSFORMS);
         super.addDefaultButtons();
     }
 
     public void render(PoseStack pMatrixStack, int pMouseX, int pMouseY, float pPartialTicks)
     {
-        super.render(pMatrixStack, pMouseX, pMouseY, pPartialTicks); // TODO: draw the message on this page better
+        super.render(pMatrixStack, pMouseX, pMouseY, pPartialTicks);
         drawCenteredString(pMatrixStack, this.minecraft.font, Component.translatable("vivecraft.messages.controls.1"), this.width / 2, this.height / 2 - 9 / 2 - 9 - 9 - 9 - 3, 16777215);
         drawCenteredString(pMatrixStack, this.minecraft.font, Component.translatable("vivecraft.messages.controls.2"), this.width / 2, this.height / 2 - 9 / 2 - 9 - 9, 16777215);
         drawCenteredString(pMatrixStack, this.minecraft.font, Component.translatable("vivecraft.messages.controls.3"), this.width / 2, this.height / 2 - 9 / 2 + 9 - 9 - 6, 16777215);

@@ -1060,6 +1060,8 @@ public class MCOpenVR extends MCVR {
             System.out.println("Middle Ring Splay: " + DevBoneSum.flFingerSplay(EVRFingerSplay_VRFingerSplay_Middle_Ring));
             System.out.println("Ring Pinky Splay: " + DevBoneSum.flFingerSplay(EVRFingerSplay_VRFingerSplay_Ring_Pinky));
         }
+        MemoryUtil.memFree(TrackingLevel);
+        MemoryUtil.memFree(BoneCount);
     }
 
     private void updatePose() {
