@@ -211,8 +211,8 @@ public class VRSettings
     public float main_middle_threshold = 0.75f;
     @SettingField(VrOptions.MAIN_RING_THRESHOLD)
     public float main_ring_threshold = 0.10f;
-    @SettingField(VrOptions.MAIN_PINKY_THRESHOLD)
-    public float main_pinky_threshold = 0.75f;
+    @SettingField(VrOptions.MAIN_LITTLE_THRESHOLD)
+    public float main_little_threshold = 0.75f;
     @SettingField(VrOptions.OFF_THUMB_THRESHOLD)
     public float off_thumb_threshold = 0.75f;
     @SettingField(VrOptions.OFF_INDEX_THRESHOLD)
@@ -221,8 +221,8 @@ public class VRSettings
     public float off_middle_threshold = 0.75f;
     @SettingField(VrOptions.OFF_RING_THRESHOLD)
     public float off_ring_threshold = 0.10f;
-    @SettingField(VrOptions.OFF_PINKY_THRESHOLD)
-    public float off_pinky_threshold = 0.75f;
+    @SettingField(VrOptions.OFF_LITTLE_THRESHOLD)
+    public float off_little_threshold = 0.75f;
     @SettingField(VrOptions.MAIN_THUMB_DISPLAY)
     public int main_thumb_display = 5;
     @SettingField(VrOptions.MAIN_INDEX_DISPLAY)
@@ -231,8 +231,8 @@ public class VRSettings
     public int main_middle_display = 3;
     @SettingField(VrOptions.MAIN_RING_DISPLAY)
     public int main_ring_display = 2;
-    @SettingField(VrOptions.MAIN_PINKY_DISPLAY)
-    public int main_pinky_display = 1;
+    @SettingField(VrOptions.MAIN_LITTLE_DISPLAY)
+    public int main_little_display = 1;
     @SettingField(VrOptions.OFF_THUMB_DISPLAY)
     public int off_thumb_display = 6;
     @SettingField(VrOptions.OFF_INDEX_DISPLAY)
@@ -241,8 +241,8 @@ public class VRSettings
     public int off_middle_display = 8;
     @SettingField(VrOptions.OFF_RING_DISPLAY)
     public int off_ring_display = 9;
-    @SettingField(VrOptions.OFF_PINKY_DISPLAY)
-    public int off_pinky_display = 0;
+    @SettingField(VrOptions.OFF_LITTLE_DISPLAY)
+    public int off_little_display = 0;
     @SettingField(VrOptions.FINGER_COUNT)
     public FingerCount fingerCount = FingerCount.EXTENSION;
     @SettingField
@@ -1509,22 +1509,22 @@ public class VRSettings
         MAIN_INDEX_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         MAIN_MIDDLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         MAIN_RING_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        MAIN_PINKY_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
+        MAIN_LITTLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         OFF_THUMB_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         OFF_INDEX_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         OFF_MIDDLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         OFF_RING_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        OFF_PINKY_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
+        OFF_LITTLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         MAIN_THUMB_DISPLAY(true, false, 0, 9, 1, 0),
         MAIN_INDEX_DISPLAY(true, false, 0, 9, 1, 0),
         MAIN_MIDDLE_DISPLAY(true, false, 0, 9, 1, 0),
         MAIN_RING_DISPLAY(true, false, 0, 9, 1, 0),
-        MAIN_PINKY_DISPLAY(true, false, 0, 9, 1, 0),
+        MAIN_LITTLE_DISPLAY(true, false, 0, 9, 1, 0),
         OFF_THUMB_DISPLAY(true, false, 0, 9, 1, 0),
         OFF_INDEX_DISPLAY(true, false, 0, 9, 1, 0),
         OFF_MIDDLE_DISPLAY(true, false, 0, 9, 1, 0),
         OFF_RING_DISPLAY(true, false, 0, 9, 1, 0),
-        OFF_PINKY_DISPLAY(true, false, 0, 9, 1, 0),
+        OFF_LITTLE_DISPLAY(true, false, 0, 9, 1, 0),
         TELEPORT_DOWN_LIMIT(true, false, 0, 16, 1, 0) { // Down Limit
             @Override
             String getDisplayString(String prefix, Object value) {

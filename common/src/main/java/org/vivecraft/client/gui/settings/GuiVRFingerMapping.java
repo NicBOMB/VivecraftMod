@@ -16,8 +16,8 @@ public class GuiVRFingerMapping extends GuiVROptionsBase {
             VRSettings.VrOptions.OFF_MIDDLE_DISPLAY,
             VRSettings.VrOptions.MAIN_RING_DISPLAY,
             VRSettings.VrOptions.OFF_RING_DISPLAY,
-            VRSettings.VrOptions.MAIN_PINKY_DISPLAY,
-            VRSettings.VrOptions.OFF_PINKY_DISPLAY
+            VRSettings.VrOptions.MAIN_LITTLE_DISPLAY,
+            VRSettings.VrOptions.OFF_LITTLE_DISPLAY
     };
 
     private static final VRSettings.VrOptions[] fingerDisplaysReversed = new VRSettings.VrOptions[] {
@@ -29,8 +29,8 @@ public class GuiVRFingerMapping extends GuiVROptionsBase {
             VRSettings.VrOptions.MAIN_MIDDLE_DISPLAY,
             VRSettings.VrOptions.OFF_RING_DISPLAY,
             VRSettings.VrOptions.MAIN_RING_DISPLAY,
-            VRSettings.VrOptions.OFF_PINKY_DISPLAY,
-            VRSettings.VrOptions.MAIN_PINKY_DISPLAY
+            VRSettings.VrOptions.OFF_LITTLE_DISPLAY,
+            VRSettings.VrOptions.MAIN_LITTLE_DISPLAY
     };
 
     public GuiVRFingerMapping(Screen par1GuiScreen)

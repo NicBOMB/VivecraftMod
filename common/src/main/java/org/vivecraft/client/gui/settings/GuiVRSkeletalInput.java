@@ -17,8 +17,8 @@ public class GuiVRSkeletalInput extends GuiVROptionsBase {
             VRSettings.VrOptions.OFF_MIDDLE_THRESHOLD,
             VRSettings.VrOptions.MAIN_RING_THRESHOLD,
             VRSettings.VrOptions.OFF_RING_THRESHOLD,
-            VRSettings.VrOptions.MAIN_PINKY_THRESHOLD,
-            VRSettings.VrOptions.OFF_PINKY_THRESHOLD
+            VRSettings.VrOptions.MAIN_LITTLE_THRESHOLD,
+            VRSettings.VrOptions.OFF_LITTLE_THRESHOLD
     };
 
     private static final VRSettings.VrOptions[] fingerThresholdsReversed = new VRSettings.VrOptions[] {
@@ -30,8 +30,8 @@ public class GuiVRSkeletalInput extends GuiVROptionsBase {
             VRSettings.VrOptions.MAIN_MIDDLE_THRESHOLD,
             VRSettings.VrOptions.OFF_RING_THRESHOLD,
             VRSettings.VrOptions.MAIN_RING_THRESHOLD,
-            VRSettings.VrOptions.OFF_PINKY_THRESHOLD,
-            VRSettings.VrOptions.MAIN_PINKY_THRESHOLD
+            VRSettings.VrOptions.OFF_LITTLE_THRESHOLD,
+            VRSettings.VrOptions.MAIN_LITTLE_THRESHOLD
     };
 
     public GuiVRSkeletalInput(Screen par1GuiScreen)
