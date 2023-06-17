@@ -26,6 +26,7 @@ public class GuiFreeMoveSettings extends GuiVROptionsBase
         else
         {
             super.init(VRSettings.VrOptions.FREEMOVE_MODE, true);
+            super.init(VRSettings.VrOptions.FREEMOVE_FLY_MODE);
             super.init(VRSettings.VrOptions.FOV_REDUCTION);
             super.init(VRSettings.VrOptions.INERTIA_FACTOR);
             super.init(VRSettings.VrOptions.MOVEMENT_MULTIPLIER);

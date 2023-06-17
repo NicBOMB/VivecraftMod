@@ -52,7 +52,8 @@ public interface GameRendererExtension {
 
 	double getRveY();
 
-	void renderVrFast(float f, boolean b, boolean menuHandRight, boolean menuHandLeft, PoseStack poseStack);
+	void renderVrFast(float partialTicks, boolean secondpass, boolean menuHandRight, boolean menuHandLeft,
+					  PoseStack poseStack);
 
 	void renderVRFabulous(float f, LevelRenderer levelRenderer, boolean menuHandRight, boolean menuHandLeft, PoseStack poseStack);
 
