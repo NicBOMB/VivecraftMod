@@ -7,29 +7,29 @@ import net.minecraft.client.gui.screens.Screen;
 
 public class GuiVRFingerDisplays extends GuiVROptionsBase {
     private static final VRSettings.VrOptions[] fingerDisplaysReversed = new VRSettings.VrOptions[] {
-            VRSettings.VrOptions.MAIN_THUMB_DISPLAY,
-            VRSettings.VrOptions.OFF_THUMB_DISPLAY,
-            VRSettings.VrOptions.MAIN_INDEX_DISPLAY,
-            VRSettings.VrOptions.OFF_INDEX_DISPLAY,
-            VRSettings.VrOptions.MAIN_MIDDLE_DISPLAY,
-            VRSettings.VrOptions.OFF_MIDDLE_DISPLAY,
-            VRSettings.VrOptions.MAIN_RING_DISPLAY,
-            VRSettings.VrOptions.OFF_RING_DISPLAY,
-            VRSettings.VrOptions.MAIN_LITTLE_DISPLAY,
-            VRSettings.VrOptions.OFF_LITTLE_DISPLAY
+        VRSettings.VrOptions.MAIN_THUMB_DISPLAY,
+        VRSettings.VrOptions.OFF_THUMB_DISPLAY,
+        VRSettings.VrOptions.MAIN_INDEX_DISPLAY,
+        VRSettings.VrOptions.OFF_INDEX_DISPLAY,
+        VRSettings.VrOptions.MAIN_MIDDLE_DISPLAY,
+        VRSettings.VrOptions.OFF_MIDDLE_DISPLAY,
+        VRSettings.VrOptions.MAIN_RING_DISPLAY,
+        VRSettings.VrOptions.OFF_RING_DISPLAY,
+        VRSettings.VrOptions.MAIN_LITTLE_DISPLAY,
+        VRSettings.VrOptions.OFF_LITTLE_DISPLAY
     };
 
     private static final VRSettings.VrOptions[] fingerDisplays = new VRSettings.VrOptions[] {
-            VRSettings.VrOptions.OFF_THUMB_DISPLAY,
-            VRSettings.VrOptions.MAIN_THUMB_DISPLAY,
-            VRSettings.VrOptions.OFF_INDEX_DISPLAY,
-            VRSettings.VrOptions.MAIN_INDEX_DISPLAY,
-            VRSettings.VrOptions.OFF_MIDDLE_DISPLAY,
-            VRSettings.VrOptions.MAIN_MIDDLE_DISPLAY,
-            VRSettings.VrOptions.OFF_RING_DISPLAY,
-            VRSettings.VrOptions.MAIN_RING_DISPLAY,
-            VRSettings.VrOptions.OFF_LITTLE_DISPLAY,
-            VRSettings.VrOptions.MAIN_LITTLE_DISPLAY
+        VRSettings.VrOptions.OFF_THUMB_DISPLAY,
+        VRSettings.VrOptions.MAIN_THUMB_DISPLAY,
+        VRSettings.VrOptions.OFF_INDEX_DISPLAY,
+        VRSettings.VrOptions.MAIN_INDEX_DISPLAY,
+        VRSettings.VrOptions.OFF_MIDDLE_DISPLAY,
+        VRSettings.VrOptions.MAIN_MIDDLE_DISPLAY,
+        VRSettings.VrOptions.OFF_RING_DISPLAY,
+        VRSettings.VrOptions.MAIN_RING_DISPLAY,
+        VRSettings.VrOptions.OFF_LITTLE_DISPLAY,
+        VRSettings.VrOptions.MAIN_LITTLE_DISPLAY
     };
 
     public GuiVRFingerDisplays(Screen par1GuiScreen)
