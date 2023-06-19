@@ -158,7 +158,7 @@ public class NullVR extends MCVR
     }
 
     @Override
-    public Matrix4f getControllerComponentTransform(int controllerIndex, String componenetName)
+    public Matrix4f getControllerComponentTransform(int controllerIndex, String componentName)
     {
         return new Matrix4f();
     }
@@ -183,7 +183,7 @@ public class NullVR extends MCVR
     }
 
     @Override
-    public List<Long> getOrigins(VRInputAction var1) {
+    public List<Long> getOrigins(VRInputAction action) {
         return null;
     }
 

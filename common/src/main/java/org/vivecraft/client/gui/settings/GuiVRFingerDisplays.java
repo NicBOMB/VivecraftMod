@@ -1,13 +1,12 @@
 package org.vivecraft.client.gui.settings;
 
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
-import org.vivecraft.client.gui.framework.VROptionLayout;
 import org.vivecraft.client_vr.settings.VRSettings;
 
 import net.minecraft.client.gui.screens.Screen;
 
-public class GuiVRFingerMapping extends GuiVROptionsBase {
-    private static final VRSettings.VrOptions[] fingerDisplays = new VRSettings.VrOptions[] {
+public class GuiVRFingerDisplays extends GuiVROptionsBase {
+    private static final VRSettings.VrOptions[] fingerDisplaysReversed = new VRSettings.VrOptions[] {
             VRSettings.VrOptions.MAIN_THUMB_DISPLAY,
             VRSettings.VrOptions.OFF_THUMB_DISPLAY,
             VRSettings.VrOptions.MAIN_INDEX_DISPLAY,
@@ -20,7 +19,7 @@ public class GuiVRFingerMapping extends GuiVROptionsBase {
             VRSettings.VrOptions.OFF_LITTLE_DISPLAY
     };
 
-    private static final VRSettings.VrOptions[] fingerDisplaysReversed = new VRSettings.VrOptions[] {
+    private static final VRSettings.VrOptions[] fingerDisplays = new VRSettings.VrOptions[] {
             VRSettings.VrOptions.OFF_THUMB_DISPLAY,
             VRSettings.VrOptions.MAIN_THUMB_DISPLAY,
             VRSettings.VrOptions.OFF_INDEX_DISPLAY,
@@ -33,7 +32,7 @@ public class GuiVRFingerMapping extends GuiVROptionsBase {
             VRSettings.VrOptions.MAIN_LITTLE_DISPLAY
     };
 
-    public GuiVRFingerMapping(Screen par1GuiScreen)
+    public GuiVRFingerDisplays(Screen par1GuiScreen)
     {
         super(par1GuiScreen);
     }

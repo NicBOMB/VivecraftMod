@@ -44,7 +44,7 @@ public class GuiVRSkeletalInput extends GuiVROptionsBase {
         this.vrTitle = "vivecraft.options.screen.controls.skeletal_input";
         super.init(this.dataholder.vrSettings.reverseHands ? fingerThresholdsReversed : fingerThresholds, true);
         super.init(VRSettings.VrOptions.FINGER_COUNT);
-        super.init(GuiVRFingerMapping.class, null, "vivecraft.options.screen.controls.skeletal_input.finger_displays.button");
+        super.init(GuiVRFingerDisplays.class, null, "vivecraft.options.screen.controls.skeletal_input.finger_displays.button");
         super.init(new VROptionEntry(VRSettings.VrOptions.SKELETAL_INPUT, VROptionLayout.Position.POS_CENTER));
         super.addDefaultButtons();
     }

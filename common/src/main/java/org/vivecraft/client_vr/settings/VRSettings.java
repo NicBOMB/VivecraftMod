@@ -203,6 +203,8 @@ public class VRSettings
     public BowMode bowMode = BowMode.ON;
     @SettingField(VrOptions.SKELETAL_INPUT)
     public boolean skeletalInput = false;
+    @SettingField(VrOptions.FINGER_VIEW)
+    public boolean fingerView = true;
     @SettingField(VrOptions.MAIN_THUMB_THRESHOLD)
     public float main_thumb_threshold = 0.75f;
     @SettingField(VrOptions.MAIN_INDEX_THRESHOLD)
@@ -242,7 +244,7 @@ public class VRSettings
     @SettingField(VrOptions.OFF_RING_DISPLAY)
     public int off_ring_display = 9;
     @SettingField(VrOptions.OFF_LITTLE_DISPLAY)
-    public int off_little_display = 0;
+    public int off_little_display = 10;
     @SettingField(VrOptions.FINGER_COUNT)
     public FingerCount fingerCount = FingerCount.EXTENSION;
     @SettingField
@@ -1527,6 +1529,7 @@ public class VRSettings
         },
         FINGER_COUNT(false, false),
         SKELETAL_INPUT(false, true), // Skeletal Input Enabled
+        FINGER_VIEW(false, true), // Finger View Enabled
         MAIN_THUMB_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         MAIN_INDEX_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         MAIN_MIDDLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
@@ -1537,32 +1540,122 @@ public class VRSettings
         OFF_MIDDLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         OFF_RING_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         OFF_LITTLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        MAIN_THUMB_DISPLAY(true, false, 0, 9, 1, 0),
-        MAIN_INDEX_DISPLAY(true, false, 0, 9, 1, 0),
-        MAIN_MIDDLE_DISPLAY(true, false, 0, 9, 1, 0),
-        MAIN_RING_DISPLAY(true, false, 0, 9, 1, 0),
-        MAIN_LITTLE_DISPLAY(true, false, 0, 9, 1, 0),
-        OFF_THUMB_DISPLAY(true, false, 0, 9, 1, 0),
-        OFF_INDEX_DISPLAY(true, false, 0, 9, 1, 0),
-        OFF_MIDDLE_DISPLAY(true, false, 0, 9, 1, 0),
-        OFF_RING_DISPLAY(true, false, 0, 9, 1, 0),
-        OFF_LITTLE_DISPLAY(true, false, 0, 9, 1, 0),
+        MAIN_THUMB_DISPLAY(true, false, 1, 11, 1, 0) {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        MAIN_INDEX_DISPLAY(true, false, 1, 11, 1, 0) {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        MAIN_MIDDLE_DISPLAY(true, false, 1, 11, 1, 0) {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        MAIN_RING_DISPLAY(true, false, 1, 11, 1, 0) {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        MAIN_LITTLE_DISPLAY(true, false, 1, 11, 1, 0) {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        OFF_THUMB_DISPLAY(true, false, 1, 11, 1, 0) {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        OFF_INDEX_DISPLAY(true, false, 1, 11, 1, 0) {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        OFF_MIDDLE_DISPLAY(true, false, 1, 11, 1, 0) {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        OFF_RING_DISPLAY(true, false, 1, 11, 1, 0) {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        OFF_LITTLE_DISPLAY(true, false, 1, 11, 1, 0) {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
         TELEPORT_DOWN_LIMIT(true, false, 0, 16, 1, 0) { // Down Limit
             @Override
             String getDisplayString(String prefix, Object value) {
-                return (int)value > 0 ? prefix + LangHelper.get("vivecraft.options.teleportlimit", (int)value) : prefix + "OFF";
+                return (int)value > 0 ? prefix + LangHelper.get("vivecraft.options.teleportlimit", (int)value) : prefix + LangHelper.get("options.off");
             }
         },
         TELEPORT_UP_LIMIT(true, false, 0, 4, 1, 0) { // Up Limit
             @Override
             String getDisplayString(String prefix, Object value) {
-                return (int)value > 0 ? prefix + LangHelper.get("vivecraft.options.teleportlimit", (int)value) : prefix + "OFF";
+                return (int)value > 0 ? prefix + LangHelper.get("vivecraft.options.teleportlimit", (int)value) : prefix + LangHelper.get("options.off");
             }
         },
         TELEPORT_HORIZ_LIMIT(true, false, 0, 32, 1, 0) { // Distance Limit
             @Override
             String getDisplayString(String prefix, Object value) {
-                return (int)value > 0 ? prefix + LangHelper.get("vivecraft.options.teleportlimit", (int)value) : prefix + "OFF";
+                return (int)value > 0 ? prefix + LangHelper.get("vivecraft.options.teleportlimit", (int)value) : prefix + LangHelper.get("options.off");
             }
         },
         ALLOW_STANDING_ORIGIN_OFFSET(false, true, LangHelper.YES_KEY, LangHelper.NO_KEY), // Allow Origin Offset

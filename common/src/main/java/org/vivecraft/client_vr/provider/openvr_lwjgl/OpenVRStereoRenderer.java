@@ -15,6 +15,7 @@ import org.vivecraft.client_vr.provider.VRRenderer;
 import org.vivecraft.client_vr.render.RenderConfigException;
 import org.vivecraft.client_vr.render.RenderPass;
 
+import static org.lwjgl.openvr.VR.*;
 import static org.lwjgl.openvr.VRCompositor.*;
 import static org.lwjgl.openvr.VRSystem.*;
 
@@ -121,43 +122,22 @@ public class OpenVRStereoRenderer extends VRRenderer {
     }
 
     public static String getCompostiorError(int code) {
-        switch (code) {
-            case 0:
-                return "None:";
-
-            case 1:
-                return "RequestFailed";
-
-            case 100:
-                return "IncompatibleVersion";
-
-            case 101:
-                return "DoesNotHaveFocus";
-
-            case 102:
-                return "InvalidTexture";
-
-            case 103:
-                return "IsNotSceneApplication";
-
-            case 104:
-                return "TextureIsOnWrongDevice";
-
-            case 105:
-                return "TextureUsesUnsupportedFormat:";
-
-            case 106:
-                return "SharedTexturesNotSupported";
-
-            case 107:
-                return "IndexOutOfRange";
-
-            case 108:
-                return "AlreadySubmitted:";
-
-            default:
-                return "Unknown";
-        }
+        return switch (code) {
+            case EVRCompositorError_VRCompositorError_None -> "None";
+            case EVRCompositorError_VRCompositorError_RequestFailed -> "RequestFailed";
+            case EVRCompositorError_VRCompositorError_IncompatibleVersion -> "IncompatibleVersion";
+            case EVRCompositorError_VRCompositorError_DoNotHaveFocus -> "DoesNotHaveFocus";
+            case EVRCompositorError_VRCompositorError_InvalidTexture -> "InvalidTexture";
+            case EVRCompositorError_VRCompositorError_IsNotSceneApplication -> "IsNotSceneApplication";
+            case EVRCompositorError_VRCompositorError_TextureIsOnWrongDevice -> "TextureIsOnWrongDevice";
+            case EVRCompositorError_VRCompositorError_TextureUsesUnsupportedFormat -> "TextureUsesUnsupportedFormat";
+            case EVRCompositorError_VRCompositorError_SharedTexturesNotSupported -> "SharedTexturesNotSupported";
+            case EVRCompositorError_VRCompositorError_IndexOutOfRange -> "IndexOutOfRange";
+            case EVRCompositorError_VRCompositorError_AlreadySubmitted -> "AlreadySubmitted";
+            case EVRCompositorError_VRCompositorError_InvalidBounds -> "InvalidBounds";
+            case EVRCompositorError_VRCompositorError_AlreadySet -> "AlreadySet";
+            default -> "Unknown";
+        };
     }
 
     public boolean providesStencilMask() {

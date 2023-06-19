@@ -25,9 +25,8 @@ public class GuiVRControls extends GuiVROptionsBase
         super.init(new VROptionEntry(VRSettings.VrOptions.DUMMY, VROptionLayout.Position.POS_CENTER));
         super.init(new VROptionEntry(VRSettings.VrOptions.DUMMY, VROptionLayout.Position.POS_CENTER));
         super.init(new VROptionEntry(VRSettings.VrOptions.DUMMY, VROptionLayout.Position.POS_CENTER));
-        super.init(new VROptionEntry(VRSettings.VrOptions.DUMMY, VROptionLayout.Position.POS_CENTER));
         // TODO: generate empty space on this page relative to the height of the message end rather than using rough static dummies
-        // super.init(GuiVRSkeletalInput.class, VROptionLayout.Position.POS_RIGHT, "vivecraft.options.screen.controls.skeletal_input.button");
+        super.init(GuiVRSkeletalInput.class, VROptionLayout.Position.POS_RIGHT, "vivecraft.options.screen.controls.skeletal_input.button");
         super.init(VRSettings.VrOptions.REVERSE_HANDS);
         super.init(VRSettings.VrOptions.RIGHT_CLICK_DELAY);
         super.init(VRSettings.VrOptions.ALLOW_ADVANCED_BINDINGS);
