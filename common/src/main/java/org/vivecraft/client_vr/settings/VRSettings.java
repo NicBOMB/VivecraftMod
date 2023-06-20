@@ -1528,7 +1528,39 @@ public class VRSettings
             }
         },
         FINGER_COUNT(false, false),
-        SKELETAL_INPUT(false, true), // Skeletal Input Enabled
+        SKELETAL_INPUT(false, true){
+            @Override
+            public String getTooltipString(String key){
+                int MainLevel = -1; //-1;
+                int OffLevel = -1; //-1;
+                if (ClientDataHolderVR.getInstance().vr != null) {
+                    MainLevel = ClientDataHolderVR.getInstance().vr.getControllerSkeletalTrackingLevel(0);
+                    OffLevel = ClientDataHolderVR.getInstance().vr.getControllerSkeletalTrackingLevel(1);
+                }
+                boolean MainUnknown = MainLevel > 3 || MainLevel < 0;
+                boolean OffUnknown = OffLevel > 3 || OffLevel < 0;
+                return LangHelper.get(key,
+                    (ClientDataHolderVR.getInstance().vr != null) ?
+                    LangHelper.get(
+                        key + ".controller",
+                        LangHelper.get("options.mainHand"),
+                        LangHelper.get(
+                            key + "." + (MainUnknown ? "unknown" : MainLevel),
+                            MainUnknown ? MainLevel : null
+                        )
+                    ) + '\n' +
+                    LangHelper.get(
+                        key + ".controller",
+                        LangHelper.get("vivecraft.options.offhand"),
+                        LangHelper.get(
+                            key + "." + (OffUnknown ? "unknown" : OffLevel),
+                            OffUnknown ? OffLevel : null
+                        )
+                    )
+                    : LangHelper.get(key + ".nonvr")
+                );
+            }
+        }, // Skeletal Input Enabled
         FINGER_VIEW(false, true), // Finger View Enabled
         MAIN_THUMB_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
         MAIN_INDEX_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
@@ -1814,6 +1846,10 @@ public class VRSettings
 
         public int getDecimalPlaces() {
             return decimalPlaces;
+        }
+
+        public String getTooltipString(String key){
+            return null;
         }
 
         public Pair<String, String> getBooleanLangKeys() {

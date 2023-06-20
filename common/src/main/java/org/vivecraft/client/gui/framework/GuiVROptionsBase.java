@@ -429,11 +429,14 @@ public abstract class GuiVROptionsBase extends Screen
         }
         if (hover != null ) {
             if (hover instanceof GuiVROption guiHover) {
-                if (guiHover.getOption() != null) {
+                VRSettings.VrOptions option = guiHover.getOption();
+                if (option != null) {
                     String tooltipString = "vivecraft.options." + guiHover.getOption().name() + ".tooltip";
-                    // check if it has a tooltip
-                    if (I18n.exists(tooltipString)) {
-                        String tooltip = I18n.get(tooltipString, (Object) null);
+                    String tooltip = option.getTooltipString(tooltipString);
+                    if (tooltip == null && I18n.exists(tooltipString)) {
+                        tooltip = I18n.get(tooltipString, (Object) null);
+                    }
+                    if (tooltip != null){
                         // add format reset at line ends
                         tooltip = tooltip.replace("\n", "§r\n");
 
