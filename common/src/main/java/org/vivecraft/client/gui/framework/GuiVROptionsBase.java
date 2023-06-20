@@ -169,8 +169,11 @@ public abstract class GuiVROptionsBase extends Screen
             this.nextButtonIndex = this.children().size();
         }
 
-        if (pos != null && ((pos != VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 0) || (pos == VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 1)))
-            ++nextButtonIndex;
+        if (pos != null &&
+            (pos != VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 0) ||
+            (pos == VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 1) ||
+            (pos == VROptionLayout.Position.POS_CENTER && nextButtonIndex % 2 == 1)
+        ) ++nextButtonIndex;
 
         this.init(
                 new VROptionLayout(
@@ -200,8 +203,11 @@ public abstract class GuiVROptionsBase extends Screen
             this.nextButtonIndex = this.children().size();
         }
 
-        if (setting.pos != null && ((setting.pos != VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 0) || (setting.pos == VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 1)))
-            ++nextButtonIndex;
+        if (setting.pos != null && (
+            (setting.pos != VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 0) ||
+            (setting.pos == VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 1) ||
+            setting.pos == VROptionLayout.Position.POS_CENTER && nextButtonIndex % 2 == 1)
+        ) ++nextButtonIndex;
 
         VROptionLayout.Position pos = setting.pos != null ? setting.pos : nextButtonIndex % 2 == 0 ? VROptionLayout.Position.POS_LEFT : VROptionLayout.Position.POS_RIGHT;
 
