@@ -38,7 +38,7 @@ public class GuiVRControls extends GuiVROptionsBase
     {
         super.render(pMatrixStack, pMouseX, pMouseY, pPartialTicks);
 
-        int middle = 240 / 2 - this.minecraft.font.lineHeight / 2;
+        int middle = 240 / 2 - this.minecraft.font.lineHeight;
         int lineHeight = this.minecraft.font.lineHeight + 3;
 
         drawCenteredString(pMatrixStack, this.minecraft.font, Component.translatable("vivecraft.messages.controls.1"), this.width / 2, middle - lineHeight, 16777215);
