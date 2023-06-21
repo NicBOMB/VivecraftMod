@@ -94,98 +94,129 @@ public class TeleportTracker extends Tracker
     public void doProcess(LocalPlayer player)
     {
         Random random = new Random();
+        PlayerExtension playerExt = (PlayerExtension) player;
 
         if (this.teleportEnergy < 100.0F)
         {
             ++this.teleportEnergy;
         }
 
-        boolean flag = false;
-        Vec3 vec3 = null;
-        boolean flag1 = VivecraftVRMod.INSTANCE.keyTeleport.isDown() && this.dh.vrPlayer.isTeleportEnabled();
-        boolean flag2 = this.dh.vrSettings.seated && !this.dh.vrPlayer.getFreeMove() && (player.input.forwardImpulse != 0.0F || player.input.leftImpulse != 0.0F);
+        boolean doTeleport = false;
+        Vec3 dest = null;
+        boolean bindingTeleport = VivecraftVRMod.INSTANCE.keyTeleport.isDown() && this.dh.vrPlayer.isTeleportEnabled();
+        boolean seatedTeleport = this.dh.vrSettings.seated && !this.dh.vrPlayer.getFreeMove() && (player.input.forwardImpulse != 0.0F || player.input.leftImpulse != 0.0F);
 
-        if ((flag1 || flag2) && !player.isPassenger())
+        if ((bindingTeleport || seatedTeleport) && !player.isPassenger())
         {
-            vec3 = this.movementTeleportDestination;
+            dest = this.movementTeleportDestination;
 
             if (this.vrMovementStyle.teleportOnRelease)
             {
-                if (((PlayerExtension) player).getMovementTeleportTimer() == 0)
+                if (playerExt.getMovementTeleportTimer() == 0)
                 {
                     String playCustomTeleportSound = this.vrMovementStyle.startTeleportingSound;
+                    // if (playCustomTeleportSound != null)
+                    // {
+                    //     player.playSound(SoundEvents(playCustomTeleportSound), vrMovementStyle.startTeleportingSoundVolume,
+                    //     1.0F / (rand.nextFloat() * 0.4F + 1.2F) + 1.0f * 0.5F);
+                    // }
                 }
 
-                ((PlayerExtension) player).setMovementTeleportTimer(((PlayerExtension) player).getMovementTeleportTimer() +1);
+                playerExt.setMovementTeleportTimer(playerExt.getMovementTeleportTimer() +1);
 
-                if (((PlayerExtension) player).getMovementTeleportTimer() > 0)
+                if (playerExt.getMovementTeleportTimer() > 0)
                 {
-                    this.movementTeleportProgress = (double)((float)((PlayerExtension) player).getMovementTeleportTimer() / 1.0F);
+                    this.movementTeleportProgress = playerExt.getMovementTeleportTimer();
 
                     if (this.movementTeleportProgress >= 1.0D)
                     {
                         this.movementTeleportProgress = 1.0D;
                     }
 
-                    if (vec3.x != 0.0D || vec3.y != 0.0D || vec3.z != 0.0D)
+                    if (dest.x != 0.0D || dest.y != 0.0D || dest.z != 0.0D)
                     {
-                        Vec3 vec38 = this.dh.vrPlayer.vrdata_world_pre.hmd.getPosition();
-                        Vec3 vec31 = vec3.add(-vec38.x, -vec38.y, -vec38.z).normalize();
-                        Vec3 vec32 = player.getLookAngle();
-                        Vec3 vec33 = vec32.cross(new Vec3(0.0D, 1.0D, 0.0D));
-                        Vec3 vec34 = vec33.cross(vec32);
+                        Vec3 eyeCenterPos = this.dh.vrPlayer.vrdata_world_pre.hmd.getPosition();
+
+                        // cloud of sparks moving past you
+                        Vec3 motionDir = dest.add(-eyeCenterPos.x, -eyeCenterPos.y, -eyeCenterPos.z).normalize();
+                        Vec3 forward = player.getLookAngle();
+
+                        Vec3 right = forward.cross(new Vec3(0.0D, 1.0D, 0.0D));
+                        Vec3 up = right.cross(forward);
 
                         if (this.vrMovementStyle.airSparkles)
                         {
-                            for (int i = 0; i < 3; ++i)
+                            for (int iParticle = 0; iParticle < 3; ++iParticle)
                             {
-                                double d0 = random.nextDouble() * 1.0D + 3.5D;
-                                double d1 = random.nextDouble() * 2.5D;
-                                double d2 = random.nextDouble() * 4.0D - 2.0D;
-                                Vec3 vec36 = new Vec3(vec38.x + vec32.x * d0, vec38.y + vec32.y * d0, vec38.z + vec32.z * d0);
-                                vec36 = vec36.add(vec33.x * d2, vec33.y * d2, vec33.z * d2);
-                                vec36.add(vec34.x * d1, vec34.y * d1, vec34.z * d1);
-                                double d3 = -0.6D;
+                                double forwardDist = random.nextDouble() * 1.0D + 3.5D;
+                                double upDist = random.nextDouble() * 2.5D;
+                                double rightDist = random.nextDouble() * 4.0D - 2.0D;
+                                Vec3 sparkPos = new Vec3(eyeCenterPos.x + forward.x * forwardDist, eyeCenterPos.y + forward.y * forwardDist, eyeCenterPos.z + forward.z * forwardDist);
+                                sparkPos = sparkPos.add(right.x * rightDist, right.y * rightDist, right.z * rightDist);
+                                sparkPos.add(up.x * upDist, up.y * upDist, up.z * upDist);
+                                double speed = -0.6D;
+                                // EntityFX particle = new ParticleVRTeleportFX(
+                                //     player.world,
+                                //     sparkPos.x, sparkPos.y, sparkPos.z,
+                                //     motionDir.x * speed, motionDir.y * speed, motionDir.z * speed,
+                                //     1.0f
+                                // );
+                                // mc.effectRenderer.addEffect(particle);
                             }
                         }
                     }
                 }
             }
-            else if (((PlayerExtension) player).getMovementTeleportTimer() >= 0 && (vec3.x != 0.0D || vec3.y != 0.0D || vec3.z != 0.0D))
+            else if (playerExt.getMovementTeleportTimer() >= 0 && (dest.x != 0.0D || dest.y != 0.0D || dest.z != 0.0D))
             {
-                if (((PlayerExtension) player).getMovementTeleportTimer() == 0)
+                if (playerExt.getMovementTeleportTimer() == 0)
                 {
+//                        String sound = vrMovementStyle.startTeleportingSound;
+//                        if (sound != null)
+//                        {
+//                            player.playSound(SoundEvents.getRegisteredSoundEvent(sound), vrMovementStyle.startTeleportingSoundVolume,
+//                                    1.0F / (rand.nextFloat() * 0.4F + 1.2F) + 1.0f * 0.5F);
+//                        }
                 }
 
-                ((PlayerExtension) player).setMovementTeleportTimer(((PlayerExtension) player).getMovementTeleportTimer() + 1);
-                Vec3 vec39 = player.position();
-                double d6 = vec3.distanceTo(vec39);
-                double d7 = (double)((PlayerExtension) player).getMovementTeleportTimer() * 1.0D / (d6 + 3.0D);
+                playerExt.setMovementTeleportTimer(playerExt.getMovementTeleportTimer() + 1);
+                Vec3 playerPos = player.position();
+                double dist = dest.distanceTo(playerPos);
+                double progress = (playerExt.getMovementTeleportTimer() * 1.0D) / (dist + 3.0D);
 
-                if (((PlayerExtension) player).getMovementTeleportTimer() > 0)
+                if (playerExt.getMovementTeleportTimer() > 0)
                 {
-                    this.movementTeleportProgress = d7;
+                    this.movementTeleportProgress = progress;
 
+                    // spark at dest point
                     if (this.vrMovementStyle.destinationSparkles)
                     {
+                        //  player.world.spawnParticle("instantSpell", dest.x, dest.y, dest.z, 0, 1.0, 0);
                     }
 
-                    Vec3 vec310 = vec3.add(-player.getX(), -player.getY(), -player.getZ()).normalize();
-                    Vec3 vec311 = player.getLookAngle();
-                    Vec3 vec35 = vec311.cross(new Vec3(0.0D, 1.0D, 0.0D));
-                    Vec3 vec312 = vec35.cross(vec311);
+                    // cloud of sparks moving past you
+                    Vec3 motionDir = dest.add(-player.getX(), -player.getY(), -player.getZ()).normalize();
+                    Vec3 forward = player.getLookAngle();
+                    Vec3 right = forward.cross(new Vec3(0.0D, 1.0D, 0.0D));
+                    Vec3 up = right.cross(forward);
 
                     if (this.vrMovementStyle.airSparkles)
                     {
-                        for (int j = 0; j < 3; ++j)
+                        for (int iParticle = 0; iParticle < 3; ++iParticle)
                         {
-                            double d8 = random.nextDouble() * 1.0D + 3.5D;
-                            double d9 = random.nextDouble() * 2.5D;
-                            double d4 = random.nextDouble() * 4.0D - 2.0D;
-                            Vec3 vec37 = new Vec3(player.getX() + vec311.x * d8, player.getY() + vec311.y * d8, player.getZ() + vec311.z * d8);
-                            vec37 = vec37.add(vec35.x * d4, vec35.y * d4, vec35.z * d4);
-                            vec37.add(vec312.x * d9, vec312.y * d9, vec312.z * d9);
-                            double d5 = -0.6D;
+                            double forwardDist = random.nextDouble() * 1.0D + 3.5D;
+                            double upDist = random.nextDouble() * 2.5D;
+                            double rightDist = random.nextDouble() * 4.0D - 2.0D;
+                            Vec3 sparkPos = new Vec3(player.getX() + forward.x * forwardDist, player.getY() + forward.y * forwardDist, player.getZ() + forward.z * forwardDist);
+                            sparkPos = sparkPos.add(right.x * rightDist, right.y * rightDist, right.z * rightDist);
+                            sparkPos.add(up.x * upDist, up.y * upDist, up.z * upDist);
+                            double speed = -0.6D;
+//                                EntityFX particle = new ParticleVRTeleportFX(
+//                                        player.world,
+//                                        sparkPos.x, sparkPos.y, sparkPos.z,
+//                                        motionDir.x * speed, motionDir.y * speed, motionDir.z * speed,
+//                                        1.0f);
+//                                mc.effectRenderer.addEffect(particle);
                         }
                     }
                 }
@@ -194,9 +225,9 @@ public class TeleportTracker extends Tracker
                     this.movementTeleportProgress = 0.0D;
                 }
 
-                if (d7 >= 1.0D)
+                if (progress >= 1.0D)
                 {
-                    flag = true;
+                    doTeleport = true;
                 }
             }
         }
@@ -204,46 +235,38 @@ public class TeleportTracker extends Tracker
         {
             if (this.vrMovementStyle.teleportOnRelease && this.movementTeleportProgress >= 1.0D)
             {
-                vec3 = this.movementTeleportDestination;
-                flag = true;
+                dest = this.movementTeleportDestination;
+                doTeleport = true;
             }
 
-            ((PlayerExtension) player).setMovementTeleportTimer(0);
+            playerExt.setMovementTeleportTimer(0);
             this.movementTeleportProgress = 0.0D;
         }
 
-        if (flag && vec3 != null && (vec3.x != 0.0D || vec3.y != 0.0D || vec3.z != 0.0D))
+        if (doTeleport && dest != null && (dest.x != 0.0D || dest.y != 0.0D || dest.z != 0.0D))
         {
-            this.movementTeleportDistance = vec3.distanceTo(player.position());
+            this.movementTeleportDistance = dest.distanceTo(player.position());
 
-            if (this.movementTeleportDistance > 0.0D && this.vrMovementStyle.endTeleportingSound != null)
-            {
-                boolean flag3 = true;
-            }
-            else
-            {
-                boolean flag4 = false;
-            }
-
+            boolean playCustomTeleportSound = this.movementTeleportDistance > 0.0D && this.vrMovementStyle.endTeleportingSound != null;
             Block block = null;
 
             if (!this.dh.vrPlayer.isTeleportSupported())
             {
-                String s1 = "tp " + vec3.x + " " + vec3.y + " " + vec3.z;
+                String s1 = "tp " + dest.x + " " + dest.y + " " + dest.z;
                 this.mc.player.connection.sendCommand(s1);
             }
             else
             {
                 if (ClientNetworking.serverSupportsDirectTeleport)
                 {
-                	((PlayerExtension) player).setTeleported(true);
+                	playerExt.setTeleported(true);
                 }
 
-                player.moveTo(vec3.x, vec3.y, vec3.z);
+                player.moveTo(dest.x, dest.y, dest.z);
             }
 
             this.doTeleportCallback();
-            ((PlayerExtension) this.mc.player).stepSound(BlockPos.containing(vec3), vec3);
+            ((PlayerExtension) this.mc.player).stepSound(BlockPos.containing(dest), dest);
         }
     }
 
@@ -266,87 +289,96 @@ public class TeleportTracker extends Tracker
 
     private void updateTeleportArc(Minecraft mc, LocalPlayer player)
     {
-        Vec3 vec3 = dh.vrPlayer.vrdata_world_render.getController(1).getPosition();
-        Vec3 vec31 = dh.vrPlayer.vrdata_world_render.getController(1).getDirection();
-        Matrix4f matrix4f = dh.vr.getAimRotation(1);
+        Vec3 start = dh.vrPlayer.vrdata_world_render.getController(1).getPosition();
+        Vec3 tiltedAim = dh.vrPlayer.vrdata_world_render.getController(1).getDirection();
+        Matrix4f handRotation = dh.vr.getAimRotation(1);
 
         if (dh.vrSettings.seated)
         {
-            vec3 = ((GameRendererExtension) mc.gameRenderer).getControllerRenderPos(0);
-            vec31 = dh.vrPlayer.vrdata_world_render.getController(0).getDirection();
-            matrix4f = dh.vr.getAimRotation(0);
+            start = ((GameRendererExtension) mc.gameRenderer).getControllerRenderPos(0);
+            tiltedAim = dh.vrPlayer.vrdata_world_render.getController(0).getDirection();
+            handRotation = dh.vr.getAimRotation(0);
         }
 
-        Matrix4f matrix4f1 = Matrix4f.rotationY(dh.vrPlayer.vrdata_world_render.rotation_radians);
-        matrix4f = Matrix4f.multiply(matrix4f1, matrix4f);
-        Quaternion quaternion = OpenVRUtil.convertMatrix4ftoRotationQuat(matrix4f);
-        Angle angle = quaternion.toEuler();
-        int i = 50;
-        this.movementTeleportArc[0] = new Vec3(vec3.x, vec3.y, vec3.z);
+        Matrix4f rot = Matrix4f.rotationY(dh.vrPlayer.vrdata_world_render.rotation_radians);
+        handRotation = Matrix4f.multiply(rot, handRotation);
+
+        // extract hand roll
+        Quaternion handQuat = OpenVRUtil.convertMatrix4ftoRotationQuat(handRotation);
+        Angle angle = handQuat.toEuler();
+        //TODO: use vrdata for this
+
+        int maxSteps = 50;
+        this.movementTeleportArc[0] = new Vec3(start.x, start.y, start.z);
         this.movementTeleportArcSteps = 1;
+
+        // calculate gravity vector for arc
         float f = 0.098F;
-        Matrix4f matrix4f2 = Utils.rotationZMatrix((float)Math.toRadians((double)(-angle.getRoll())));
-        Matrix4f matrix4f3 = Utils.rotationXMatrix(-2.5132742F);
-        Matrix4f matrix4f4 = Matrix4f.multiply(matrix4f, matrix4f2);
-        Vector3 vector3 = new Vector3(0.0F, 1.0F, 0.0F);
-        Vector3 vector31 = matrix4f4.transform(vector3);
-        Vec3 vec32 = vector31.negate().toVector3d();
-        vec32 = vec32.scale((double)f);
-        float f1 = 0.5F;
-        Vec3 vec33 = new Vec3(vec31.x * (double)f1, vec31.y * (double)f1, vec31.z * (double)f1);
-        Vec3 vec34 = new Vec3(vec3.x, vec3.y, vec3.z);
+        Matrix4f rollCounter = Utils.rotationZMatrix((float)Math.toRadians((double)(-angle.getRoll())));
+        Matrix4f gravityTilt = Utils.rotationXMatrix(-2.5132742F);
+        Matrix4f gravityRotation = Matrix4f.multiply(handRotation, rollCounter);
 
-        for (int j = this.movementTeleportArcSteps; j < i && !((float)(j * 4) > this.teleportEnergy); ++j)
+        Vector3 forward = new Vector3(0.0F, 1.0F, 0.0F);
+        Vector3 gravityDirection = gravityRotation.transform(forward);
+        Vec3 gravity = gravityDirection.negate().toVector3d();
+
+        gravity = gravity.scale(f);
+
+
+        //   gravity.rotateAroundY(this.worldRotationRadians);
+
+        // calculate initial move step
+        float speed = 0.5F;
+        Vec3 velocity = new Vec3(tiltedAim.x * (double)speed, tiltedAim.y * (double)speed, tiltedAim.z * (double)speed);
+        Vec3 pos = new Vec3(start.x, start.y, start.z);
+
+        for (int i = this.movementTeleportArcSteps; i < maxSteps && !((float)(i * 4) > this.teleportEnergy); ++i)
         {
-            Vec3 vec35 = new Vec3(vec34.x + vec33.x, vec34.y + vec33.y, vec34.z + vec33.z);
-            boolean flag = false;
+            Vec3 newPos = new Vec3(pos.x + velocity.x, pos.y + velocity.y, pos.z + velocity.z);
+            boolean water = dh.vrSettings.seated ? ((GameRendererExtension) mc.gameRenderer).isInWater() : !mc.level.getFluidState(BlockPos.containing(start)).isEmpty();
 
-            if (dh.vrSettings.seated)
-            {
-                flag = ((GameRendererExtension) mc.gameRenderer).isInWater();
-            }
-            else
-            {
-                flag = !mc.level.getFluidState(BlockPos.containing(vec3)).isEmpty();
-            }
-
-            BlockHitResult blockhitresult = mc.level.clip(new ClipContext(vec34, vec35, ClipContext.Block.COLLIDER, flag ? ClipContext.Fluid.ANY : ClipContext.Fluid.ANY, mc.player));
+            BlockHitResult blockhitresult = mc.level.clip(new ClipContext(pos, newPos, ClipContext.Block.COLLIDER, water ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE, mc.player));
 
             if (blockhitresult != null && blockhitresult.getType() != HitResult.Type.MISS)
             {
-                this.movementTeleportArc[j] = blockhitresult.getLocation();
-                this.movementTeleportArcSteps = j + 1;
-                Vec3 vec36 = vec34.subtract(vec35).normalize();
-                Vec3 vec37 = new Vec3(-vec36.x * 0.02D, -vec36.y * 0.02D, -vec36.z * 0.02D);
-                this.checkAndSetTeleportDestination(mc, player, vec3, blockhitresult, vec37);
-                Vec3 vec38 = mc.player.position().subtract(this.movementTeleportDestination);
-                double d0 = vec38.y;
-                this.movementTeleportDistance = vec38.length();
-                double d1 = Math.sqrt(vec38.x * vec38.x + vec38.z * vec38.z);
-                boolean flag1 = true;
+                this.movementTeleportArc[i] = blockhitresult.getLocation();
+                this.movementTeleportArcSteps = i + 1;
 
-                if (mc.player.isShiftKeyDown() && d0 > 0.2D)
+                Vec3 traceDir = pos.subtract(newPos).normalize();
+                Vec3 reverseEpsilon = new Vec3(-traceDir.x * 0.02D, -traceDir.y * 0.02D, -traceDir.z * 0.02D);
+
+                this.checkAndSetTeleportDestination(mc, player, start, blockhitresult, reverseEpsilon);
+
+                Vec3 diff = mc.player.position().subtract(this.movementTeleportDestination);
+
+                double yDiff = diff.y;
+                this.movementTeleportDistance = diff.length();
+                double xzdiff = Math.sqrt(diff.x * diff.x + diff.z * diff.z);
+
+                boolean ok = true;
+
+                if (mc.player.isShiftKeyDown() && yDiff > 0.2D)
                 {
-                    flag1 = false;
+                    ok = false;
                 }
 
                 if (!mc.player.getAbilities().mayfly && ClientNetworking.isLimitedSurvivalTeleport())
                 {
-                    if (ClientNetworking.getTeleportDownLimit() > 0 && d0 > (double) ClientNetworking.getTeleportDownLimit() + 0.2D)
+                    if (ClientNetworking.getTeleportDownLimit() > 0 && yDiff > (double) ClientNetworking.getTeleportDownLimit() + 0.2D)
                     {
-                        flag1 = false;
+                        ok = false;
                     }
-                    else if (ClientNetworking.getTeleportUpLimit() > 0 && -d0 > (double) ClientNetworking.getTeleportUpLimit() * (double)((PlayerExtension) player).getMuhJumpFactor() + 0.2D)
+                    else if (ClientNetworking.getTeleportUpLimit() > 0 && -yDiff > (double) ClientNetworking.getTeleportUpLimit() * (double)((PlayerExtension) player).getMuhJumpFactor() + 0.2D)
                     {
-                        flag1 = false;
+                        ok = false;
                     }
-                    else if (ClientNetworking.getTeleportHorizLimit() > 0 && d1 > (double) ClientNetworking.getTeleportHorizLimit() * (double)((PlayerExtension) player).getMuhSpeedFactor() + 0.2D)
+                    else if (ClientNetworking.getTeleportHorizLimit() > 0 && xzdiff > (double) ClientNetworking.getTeleportHorizLimit() * (double)((PlayerExtension) player).getMuhSpeedFactor() + 0.2D)
                     {
-                        flag1 = false;
+                        ok = false;
                     }
                 }
 
-                if (!flag1)
+                if (!ok)
                 {
                     this.movementTeleportDestination = new Vec3(0.0D, 0.0D, 0.0D);
                     this.movementTeleportDistance = 0.0D;
@@ -355,10 +387,12 @@ public class TeleportTracker extends Tracker
                 break;
             }
 
-            vec34 = new Vec3(vec35.x, vec35.y, vec35.z);
-            this.movementTeleportArc[j] = new Vec3(vec35.x, vec35.y, vec35.z);
-            this.movementTeleportArcSteps = j + 1;
-            vec33 = vec33.add(vec32);
+            pos = new Vec3(newPos.x, newPos.y, newPos.z);
+
+            this.movementTeleportArc[i] = new Vec3(newPos.x, newPos.y, newPos.z);
+            this.movementTeleportArcSteps = i + 1;
+
+            velocity = velocity.add(gravity);
         }
     }
 
@@ -370,11 +404,11 @@ public class TeleportTracker extends Tracker
 
         if (ClientNetworking.isLimitedSurvivalTeleport())
         {
-            minecraft.player.causeFoodExhaustion((float)(this.movementTeleportDistance / 16.0D * (double)1.2F));
+            minecraft.player.causeFoodExhaustion((float)((this.movementTeleportDistance / 16.0D) * 1.2F));
 
             if (minecraft.gameMode.hasMissTime() && this.vrMovementStyle.arcAiming)
             {
-                this.teleportEnergy = (float)((double)this.teleportEnergy - this.movementTeleportDistance * 4.0D);
+                this.teleportEnergy = (float)(((double)this.teleportEnergy) - this.movementTeleportDistance * 4.0D);
             }
         }
 
@@ -384,51 +418,47 @@ public class TeleportTracker extends Tracker
 
     private boolean checkAndSetTeleportDestination(Minecraft mc, LocalPlayer player, Vec3 start, BlockHitResult collision, Vec3 reverseEpsilon)
     {
-        BlockPos blockpos = collision.getBlockPos();
-        BlockState blockstate = player.level.getBlockState(blockpos);
+        BlockPos bp = collision.getBlockPos();
+        BlockState testClimb = player.level.getBlockState(bp);
 
-        if (!mc.level.getFluidState(blockpos).isEmpty())
+        if (!mc.level.getFluidState(bp).isEmpty())
         {
-            Vec3 vec3 = new Vec3(collision.getLocation().x, (double)blockpos.getY(), collision.getLocation().z);
-            Vec3 vec31 = vec3.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
-            AABB aabb = player.getBoundingBox().move(vec31.x, vec31.y, vec31.z);
-            boolean flag = mc.level.noCollision(player, aabb);
+            Vec3 hitVec = new Vec3(collision.getLocation().x, (double)bp.getY(), collision.getLocation().z);
+            Vec3 offset = hitVec.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
+            AABB aabb = player.getBoundingBox().move(offset.x, offset.y, offset.z);
+            boolean emptySpotReq = mc.level.noCollision(player, aabb);
 
-            if (!flag)
+            if (!emptySpotReq)
             {
-                Vec3 vec32 = Vec3.atBottomCenterOf(blockpos);
-                vec31 = vec32.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
-                aabb = player.getBoundingBox().move(vec31.x, vec31.y, vec31.z);
-                flag = mc.level.noCollision(player, aabb);
+                Vec3 center = Vec3.atBottomCenterOf(bp);
+                offset = center.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
+                aabb = player.getBoundingBox().move(offset.x, offset.y, offset.z);
+                emptySpotReq = mc.level.noCollision(player, aabb);
             }
 
-            float f = 0.0F;
+            float ex = dh.vrSettings.seated ? 0.5F : 0.0F;
 
-            if (dh.vrSettings.seated)
+            if (emptySpotReq)
             {
-                f = 0.5F;
-            }
-
-            if (flag)
-            {
-                this.movementTeleportDestination = new Vec3(aabb.getCenter().x, aabb.minY + (double)f, aabb.getCenter().z);
+                this.movementTeleportDestination = new Vec3(aabb.getCenter().x, aabb.minY + (double)ex, aabb.getCenter().z);
                 this.movementTeleportDestinationSideHit = collision.getDirection();
                 return true;
             }
         }
         else if (collision.getDirection() != Direction.UP)
-        {
-            if (blockstate.getBlock() instanceof LadderBlock || blockstate.getBlock() instanceof VineBlock || blockstate.is(BlockTags.VIVECRAFT_CLIMBABLE))
+        { //sides
+            //jrbudda require arc hitting top of block.	unless ladder or vine or creative or limits off.
+            if (testClimb.getBlock() instanceof LadderBlock || testClimb.getBlock() instanceof VineBlock || testClimb.is(BlockTags.VIVECRAFT_CLIMBABLE))
             {
-                Vec3 vec36 = new Vec3((double)blockpos.getX() + 0.5D, (double)blockpos.getY() + 0.5D, (double)blockpos.getZ() + 0.5D);
-                Block block = mc.level.getBlockState(blockpos.below()).getBlock();
+                Vec3 dest = new Vec3((double)bp.getX() + 0.5D, (double)bp.getY() + 0.5D, (double)bp.getZ() + 0.5D);
+                Block playerblock = mc.level.getBlockState(bp.below()).getBlock();
 
-                if (block == blockstate.getBlock())
+                if (playerblock == testClimb.getBlock())
                 {
-                    vec36 = vec36.add(0.0D, -1.0D, 0.0D);
+                    dest = dest.add(0.0D, -1.0D, 0.0D);
                 }
 
-                this.movementTeleportDestination = vec36.scale(1.0D);
+                this.movementTeleportDestination = dest.scale(1.0D);
                 this.movementTeleportDestinationSideHit = collision.getDirection();
                 return true;
             }
@@ -439,48 +469,43 @@ public class TeleportTracker extends Tracker
             }
         }
 
-        double d1 = 0.0D;
-        BlockPos blockpos1 = collision.getBlockPos().below();
+        double y = 0.0D;
+        BlockPos hitBlock = collision.getBlockPos().below();
 
         for (int i = 0; i < 2; ++i)
         {
-            blockstate = player.level.getBlockState(blockpos1);
+            testClimb = player.level.getBlockState(hitBlock);
 
-            if (blockstate.getCollisionShape(mc.level, blockpos1).isEmpty())
+            if (testClimb.getCollisionShape(mc.level, hitBlock).isEmpty())
             {
-                blockpos1 = blockpos1.above();
+                hitBlock = hitBlock.above();
             }
             else
             {
-                double d2 = blockstate.getCollisionShape(mc.level, blockpos1).max(Direction.Axis.Y);
-                Vec3 vec33 = new Vec3(collision.getLocation().x, (double)blockpos1.getY() + d2, collision.getLocation().z);
-                Vec3 vec34 = vec33.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
-                AABB aabb1 = player.getBoundingBox().move(vec34.x, vec34.y, vec34.z);
-                double d0 = 0.0D;
+                double height = testClimb.getCollisionShape(mc.level, hitBlock).max(Direction.Axis.Y);
+                Vec3 hitVec = new Vec3(collision.getLocation().x, (double)hitBlock.getY() + height, collision.getLocation().z);
+                Vec3 offset = hitVec.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
+                AABB bb = player.getBoundingBox().move(offset.x, offset.y, offset.z);
+                double ex = testClimb.getBlock() == Blocks.SOUL_SAND || testClimb.getBlock() == Blocks.HONEY_BLOCK ? 0.05D : 0.0D;
 
-                if (blockstate.getBlock() == Blocks.SOUL_SAND || blockstate.getBlock() == Blocks.HONEY_BLOCK)
+                boolean emptySpotReq = mc.level.noCollision(player, bb) && !mc.level.noCollision(player, bb.inflate(0.0D, 0.125D + ex, 0.0D));
+
+                if (!emptySpotReq)
                 {
-                    d0 = 0.05D;
+                    Vec3 center = Vec3.upFromBottomCenterOf(hitBlock, height);
+                    offset = center.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
+                    bb = player.getBoundingBox().move(offset.x, offset.y, offset.z);
+                    emptySpotReq = mc.level.noCollision(player, bb) && !mc.level.noCollision(player, bb.inflate(0.0D, 0.125D + ex, 0.0D));
                 }
 
-                boolean flag1 = mc.level.noCollision(player, aabb1) && !mc.level.noCollision(player, aabb1.inflate(0.0D, 0.125D + d0, 0.0D));
-
-                if (!flag1)
+                if (emptySpotReq)
                 {
-                    Vec3 vec35 = Vec3.upFromBottomCenterOf(blockpos1, d2);
-                    vec34 = vec35.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
-                    aabb1 = player.getBoundingBox().move(vec34.x, vec34.y, vec34.z);
-                    flag1 = mc.level.noCollision(player, aabb1) && !mc.level.noCollision(player, aabb1.inflate(0.0D, 0.125D + d0, 0.0D));
-                }
-
-                if (flag1)
-                {
-                    Vec3 vec37 = new Vec3(aabb1.getCenter().x, (double)blockpos1.getY() + d2, aabb1.getCenter().z);
-                    this.movementTeleportDestination = vec37.scale(1.0D);
+                    Vec3 dest = new Vec3(bb.getCenter().x, (double)hitBlock.getY() + height, bb.getCenter().z);
+                    this.movementTeleportDestination = dest.scale(1.0D);
                     return true;
                 }
 
-                blockpos1 = blockpos1.above();
+                hitBlock = hitBlock.above();
             }
         }
 
@@ -497,18 +522,29 @@ public class TeleportTracker extends Tracker
             }
             else
             {
-                float f = progress * (float)(this.movementTeleportArcSteps - 1);
-                int i = (int)Math.floor((double)f);
-                double d0 = this.movementTeleportArc[i + 1].x - this.movementTeleportArc[i].x;
-                double d1 = this.movementTeleportArc[i + 1].y - this.movementTeleportArc[i].y;
-                double d2 = this.movementTeleportArc[i + 1].z - this.movementTeleportArc[i].z;
-                float f1 = f - (float)i;
-                return new Vec3(this.movementTeleportArc[i].x + d0 * (double)f1, this.movementTeleportArc[i].y + d1 * (double)f1, this.movementTeleportArc[i].z + d2 * (double)f1);
+                float stepFloat = progress * (float)(this.movementTeleportArcSteps - 1);
+                int step = (int)Math.floor(stepFloat);
+
+                double deltaX = this.movementTeleportArc[step + 1].x - this.movementTeleportArc[step].x;
+                double deltaY = this.movementTeleportArc[step + 1].y - this.movementTeleportArc[step].y;
+                double deltaZ = this.movementTeleportArc[step + 1].z - this.movementTeleportArc[step].z;
+
+                float stepProgress = stepFloat - step;
+
+                return new Vec3(
+                        this.movementTeleportArc[step].x + deltaX * (double)stepProgress,
+                        this.movementTeleportArc[step].y + deltaY * (double)stepProgress,
+                        this.movementTeleportArc[step].z + deltaZ * (double)stepProgress
+                );
             }
         }
         else
         {
-            return new Vec3(this.movementTeleportArc[0].x, this.movementTeleportArc[0].y, this.movementTeleportArc[0].z);
+            return new Vec3(
+                    this.movementTeleportArc[0].x,
+                    this.movementTeleportArc[0].y,
+                    this.movementTeleportArc[0].z
+            );
         }
     }
 }

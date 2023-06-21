@@ -4,13 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.joml.Vector2f;
@@ -49,6 +43,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.TorchBlock;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.CheckForNull;
+
 public abstract class MCVR
 {
     protected Minecraft mc;
@@ -66,6 +62,12 @@ public abstract class MCVR
     protected org.vivecraft.common.utils.math.Matrix4f[] controllerPose = new org.vivecraft.common.utils.math.Matrix4f[3];
     protected org.vivecraft.common.utils.math.Matrix4f[] controllerRotation = new org.vivecraft.common.utils.math.Matrix4f[3];
     protected boolean[] controllerTracking = new boolean[3];
+    protected int[] controllerSkeletalInputTrackingLevel = {0, 0};
+    protected ArrayList<Float>[] gestureFingerSplay = new ArrayList[]{new ArrayList<Float>(), new ArrayList<Float>()};
+    protected ArrayList<Float>[] gestureFingerCurl = new ArrayList[]{new ArrayList<Float>(), new ArrayList<Float>()};
+    protected org.vivecraft.common.utils.math.Matrix4f[] gesturePose = new org.vivecraft.common.utils.math.Matrix4f[2];
+    protected org.vivecraft.common.utils.math.Matrix4f[] gestureRotation = new org.vivecraft.common.utils.math.Matrix4f[2];
+    protected Vec3[] gestureVelocity = new Vec3[2];
     protected org.vivecraft.common.utils.math.Matrix4f[] handRotation = new org.vivecraft.common.utils.math.Matrix4f[3];
     public Vec3History[] controllerHistory = new Vec3History[] {new Vec3History(), new Vec3History()};
     public Vec3History[] controllerForwardHistory = new Vec3History[] {new Vec3History(), new Vec3History()};
@@ -118,6 +120,9 @@ public abstract class MCVR
         mod = vrMod;
         me = this;
 
+        this.gesturePose[0] = new org.vivecraft.common.utils.math.Matrix4f();
+        this.gesturePose[1] = new org.vivecraft.common.utils.math.Matrix4f();
+
         for (int i = 0; i < 3; ++i)
         {
             this.aimSource[i] = new Vec3(0.0D, 0.0D, 0.0D);
@@ -127,6 +132,7 @@ public abstract class MCVR
         }
     }
 
+    @CheckForNull
     public static MCVR get()
     {
         return me;
@@ -152,21 +158,21 @@ public abstract class MCVR
 
     public Vec3 getAimSource(int controller)
     {
-        Vec3 vec3 = new Vec3(this.aimSource[controller].x, this.aimSource[controller].y, this.aimSource[controller].z);
+        Vec3 out = new Vec3(this.aimSource[controller].x, this.aimSource[controller].y, this.aimSource[controller].z);
 
         if (!this.dh.vrSettings.seated && this.dh.vrSettings.allowStandingOriginOffset)
         {
         	if(this.dh.vr.isHMDTracking())
-        		vec3 = vec3.add((double)this.dh.vrSettings.originOffset.getX(), (double)this.dh.vrSettings.originOffset.getY(), (double)this.dh.vrSettings.originOffset.getZ());
+        		out = out.add(this.dh.vrSettings.originOffset.getX(), this.dh.vrSettings.originOffset.getY(), this.dh.vrSettings.originOffset.getZ());
         }
 
-        return vec3;
+        return out;
     }
 
     public Vec3 getAimVector(int controller)
     {
-        Vector3 vector3 = this.controllerRotation[controller].transform(this.forward);
-        return vector3.toVector3d();
+        Vector3 v = this.controllerRotation[controller].transform(this.forward);
+        return v.toVector3d();
     }
 
     public void triggerHapticPulse(ControllerType controller, float durationSeconds, float frequency, float amplitude)
@@ -219,67 +225,58 @@ public abstract class MCVR
 
     public Vec3 getHandVector(int controller)
     {
-        Vector3 vector3 = new Vector3(0.0F, 0.0F, -1.0F);
-        org.vivecraft.common.utils.math.Matrix4f matrix4f = this.handRotation[controller];
-        Vector3 vector31 = matrix4f.transform(vector3);
-        return vector31.toVector3d();
+        Vector3 forward = new Vector3(0.0F, 0.0F, -1.0F);
+        org.vivecraft.common.utils.math.Matrix4f aimRotation = this.handRotation[controller];
+        Vector3 controllerDirection = aimRotation.transform(forward);
+        return controllerDirection.toVector3d();
     }
 
     public Vec3 getCenterEyePosition()
     {
-        Vector3 vector3 = Utils.convertMatrix4ftoTranslationVector(this.hmdPose);
+        Vector3 pos = Utils.convertMatrix4ftoTranslationVector(this.hmdPose);
 
         if (this.dh.vrSettings.seated || this.dh.vrSettings.allowStandingOriginOffset)
         {
         	if(this.dh.vr.isHMDTracking())
-        		vector3 = vector3.add(this.dh.vrSettings.originOffset);
+        		pos = pos.add(this.dh.vrSettings.originOffset);
         }
 
-        return vector3.toVector3d();
+        return pos.toVector3d();
     }
 
     public Vec3 getEyePosition(RenderPass eye)
     {
-        org.vivecraft.common.utils.math.Matrix4f matrix4f = this.hmdPoseRightEye;
+        org.vivecraft.common.utils.math.Matrix4f hmdToEye = switch(eye){
+            case LEFT -> this.hmdPoseLeftEye;
+            case RIGHT -> this.hmdPoseRightEye;
+            default -> null;
+        };
 
-        if (eye == RenderPass.LEFT)
+        if (hmdToEye == null)
         {
-            matrix4f = this.hmdPoseLeftEye;
-        }
-        else if (eye == RenderPass.RIGHT)
-        {
-            matrix4f = this.hmdPoseRightEye;
-        }
-        else
-        {
-            matrix4f = null;
-        }
-
-        if (matrix4f == null)
-        {
-            org.vivecraft.common.utils.math.Matrix4f matrix4f2 = this.hmdPose;
-            Vector3 vector31 = Utils.convertMatrix4ftoTranslationVector(matrix4f2);
+            org.vivecraft.common.utils.math.Matrix4f pose = this.hmdPose;
+            Vector3 pos = Utils.convertMatrix4ftoTranslationVector(pose);
 
             if (this.dh.vrSettings.seated || this.dh.vrSettings.allowStandingOriginOffset)
             {
             	if(this.dh.vr.isHMDTracking())
-            		vector31 = vector31.add(this.dh.vrSettings.originOffset);
+            		pos = pos.add(this.dh.vrSettings.originOffset);
             }
 
-            return vector31.toVector3d();
+            return pos.toVector3d();
         }
         else
         {
-            org.vivecraft.common.utils.math.Matrix4f matrix4f1 = org.vivecraft.common.utils.math.Matrix4f.multiply(this.hmdPose, matrix4f);
-            Vector3 vector3 = Utils.convertMatrix4ftoTranslationVector(matrix4f1);
+            org.vivecraft.common.utils.math.Matrix4f pose = org.vivecraft.common.utils.math.Matrix4f.multiply(this.hmdPose, hmdToEye);
+            Vector3 pos = Utils.convertMatrix4ftoTranslationVector(pose);
 
             if (this.dh.vrSettings.seated || this.dh.vrSettings.allowStandingOriginOffset)
             {
             	if(this.dh.vr.isHMDTracking())
-            		vector3 = vector3.add(this.dh.vrSettings.originOffset);
+            		pos = pos.add(this.dh.vrSettings.originOffset);
             }
 
-            return vector3.toVector3d();
+            return pos.toVector3d();
         }
     }
 
@@ -290,47 +287,38 @@ public abstract class MCVR
 
     public Vec3 getHmdVector()
     {
-        Vector3 vector3 = this.hmdRotation.transform(this.forward);
-        return vector3.toVector3d();
+        Vector3 v = this.hmdRotation.transform(this.forward);
+        return v.toVector3d();
     }
 
     public org.vivecraft.common.utils.math.Matrix4f getEyeRotation(RenderPass eye)
     {
-        org.vivecraft.common.utils.math.Matrix4f matrix4f;
+        org.vivecraft.common.utils.math.Matrix4f hmdToEye = switch(eye){
+            case LEFT -> this.hmdPoseLeftEye;
+            case RIGHT -> this.hmdPoseRightEye;
+            default -> null;
+        };
 
-        if (eye == RenderPass.LEFT)
+        if (hmdToEye != null)
         {
-            matrix4f = this.hmdPoseLeftEye;
-        }
-        else if (eye == RenderPass.RIGHT)
-        {
-            matrix4f = this.hmdPoseRightEye;
-        }
-        else
-        {
-            matrix4f = null;
-        }
-
-        if (matrix4f != null)
-        {
-            org.vivecraft.common.utils.math.Matrix4f matrix4f1 = new org.vivecraft.common.utils.math.Matrix4f();
-            matrix4f1.M[0][0] = matrix4f.M[0][0];
-            matrix4f1.M[0][1] = matrix4f.M[0][1];
-            matrix4f1.M[0][2] = matrix4f.M[0][2];
-            matrix4f1.M[0][3] = 0.0F;
-            matrix4f1.M[1][0] = matrix4f.M[1][0];
-            matrix4f1.M[1][1] = matrix4f.M[1][1];
-            matrix4f1.M[1][2] = matrix4f.M[1][2];
-            matrix4f1.M[1][3] = 0.0F;
-            matrix4f1.M[2][0] = matrix4f.M[2][0];
-            matrix4f1.M[2][1] = matrix4f.M[2][1];
-            matrix4f1.M[2][2] = matrix4f.M[2][2];
-            matrix4f1.M[2][3] = 0.0F;
-            matrix4f1.M[3][0] = 0.0F;
-            matrix4f1.M[3][1] = 0.0F;
-            matrix4f1.M[3][2] = 0.0F;
-            matrix4f1.M[3][3] = 1.0F;
-            return org.vivecraft.common.utils.math.Matrix4f.multiply(this.hmdRotation, matrix4f1);
+            org.vivecraft.common.utils.math.Matrix4f eyeRot = new org.vivecraft.common.utils.math.Matrix4f();
+            eyeRot.M[0][0] = hmdToEye.M[0][0];
+            eyeRot.M[0][1] = hmdToEye.M[0][1];
+            eyeRot.M[0][2] = hmdToEye.M[0][2];
+            eyeRot.M[0][3] = 0.0F;
+            eyeRot.M[1][0] = hmdToEye.M[1][0];
+            eyeRot.M[1][1] = hmdToEye.M[1][1];
+            eyeRot.M[1][2] = hmdToEye.M[1][2];
+            eyeRot.M[1][3] = 0.0F;
+            eyeRot.M[2][0] = hmdToEye.M[2][0];
+            eyeRot.M[2][1] = hmdToEye.M[2][1];
+            eyeRot.M[2][2] = hmdToEye.M[2][2];
+            eyeRot.M[2][3] = 0.0F;
+            eyeRot.M[3][0] = 0.0F;
+            eyeRot.M[3][1] = 0.0F;
+            eyeRot.M[3][2] = 0.0F;
+            eyeRot.M[3][3] = 1.0F;
+            return org.vivecraft.common.utils.math.Matrix4f.multiply(this.hmdRotation, eyeRot);
         }
         else
         {
@@ -376,10 +364,22 @@ public abstract class MCVR
         return this.controllerTracking[controller];
     }
 
+    public int getControllerSkeletalTrackingLevel(int controller) {
+        return this.controllerSkeletalInputTrackingLevel[controller];
+    }
+
+    public ArrayList<Float>[] getGestureFingerSplay(){
+        return this.gestureFingerSplay;
+    }
+
+    public ArrayList<Float>[] getGestureFingerCurl(){
+        return this.gestureFingerCurl;
+    }
+
     public void resetPosition()
     {
-        Vec3 vec3 = this.getCenterEyePosition().scale(-1.0D).add((double)this.dh.vrSettings.originOffset.getX(), (double)this.dh.vrSettings.originOffset.getY(), (double)this.dh.vrSettings.originOffset.getZ());
-        this.dh.vrSettings.originOffset = new Vector3((float)vec3.x, (float)vec3.y + 1.62F, (float)vec3.z);
+        Vec3 pos = this.getCenterEyePosition().scale(-1.0D).add(this.dh.vrSettings.originOffset.getX(), this.dh.vrSettings.originOffset.getY(), this.dh.vrSettings.originOffset.getZ());
+        this.dh.vrSettings.originOffset = new Vector3((float)pos.x, (float)pos.y + 1.62F, (float)pos.z);
     }
 
     public void clearOffset()
@@ -405,17 +405,14 @@ public abstract class MCVR
         Vec3 main = this.getAimSource(0);
         Vec3 off = this.getAimSource(1);
         Vec3 barStartos = null, barEndos = null;
-
-        int i = 1;
-        if (this.dh.vrSettings.reverseHands)
-            i = -1;
+        int hand = this.dh.vrSettings.reverseHands ? 0 : 1;
 
         if (this.dh.vrSettings.vrHudLockMode == VRSettings.HUDLock.WRIST) {
-            barStartos = this.getAimRotation(1).transform(new Vector3((float)i * 0.02F, 0.05F, 0.26F)).toVector3d();
-            barEndos = this.getAimRotation(1).transform(new Vector3((float)i * 0.02F, 0.05F, 0.01F)).toVector3d();
+            barStartos = this.getAimRotation(1).transform(new Vector3((float)hand * 0.02F, 0.05F, 0.26F)).toVector3d();
+            barEndos = this.getAimRotation(1).transform(new Vector3((float)hand * 0.02F, 0.05F, 0.01F)).toVector3d();
         } else if (this.dh.vrSettings.vrHudLockMode == VRSettings.HUDLock.HAND) {
-            barStartos = this.getAimRotation(1).transform(new Vector3((float)i * -0.18F, 0.08F, -0.01F)).toVector3d();
-            barEndos = this.getAimRotation(1).transform(new Vector3((float)i * 0.19F, 0.04F, -0.08F)).toVector3d();
+            barStartos = this.getAimRotation(1).transform(new Vector3((float)hand * -0.18F, 0.08F, -0.01F)).toVector3d();
+            barEndos = this.getAimRotation(1).transform(new Vector3((float)hand * 0.19F, 0.04F, -0.08F)).toVector3d();
         } else return; //how did u get here
 
 
@@ -478,15 +475,15 @@ public abstract class MCVR
             this.hmdYawSamples.removeFirst();
         }
 
-        float f = this.dh.vrPlayer.vrdata_room_pre.hmd.getYaw();
+        float yaw = this.dh.vrPlayer.vrdata_room_pre.hmd.getYaw();
 
-        if (f < 0.0F)
+        if (yaw < 0.0F)
         {
-            f += 360.0F;
+            yaw += 360.0F;
         }
 
-        this.hmdYawTotal += Utils.angleDiff(f, this.hmdYawLast);
-        this.hmdYawLast = f;
+        this.hmdYawTotal += Utils.angleDiff(yaw, this.hmdYawLast);
+        this.hmdYawLast = yaw;
 
         if (Math.abs(Utils.angleNormalize(this.hmdYawTotal) - this.hmdYawLast) > 1.0F || this.hmdYawTotal > 100000.0F)
         {
@@ -495,24 +492,24 @@ public abstract class MCVR
         }
 
         this.hmdPosSamples.add(this.dh.vrPlayer.vrdata_room_pre.hmd.getPosition());
-        float f1 = 0.0F;
+        float yawAvg = 0.0F;
 
         if (this.hmdYawSamples.size() > 0)
         {
             for (float f2 : this.hmdYawSamples)
             {
-                f1 += f2;
+                yawAvg += f2;
             }
 
-            f1 /= (float)this.hmdYawSamples.size();
+            yawAvg /= (float)this.hmdYawSamples.size();
         }
 
-        if (Math.abs(this.hmdYawTotal - f1) > 20.0F)
+        if (Math.abs(this.hmdYawTotal - yawAvg) > 20.0F)
         {
             this.trigger = true;
         }
 
-        if (Math.abs(this.hmdYawTotal - f1) < 1.0F)
+        if (Math.abs(this.hmdYawTotal - yawAvg) < 1.0F)
         {
             this.trigger = false;
         }
@@ -530,26 +527,28 @@ public abstract class MCVR
 
         if (this.mc != null)
         {
-            this.hmdRotation.M[0][0] = this.hmdPose.M[0][0];
-            this.hmdRotation.M[0][1] = this.hmdPose.M[0][1];
-            this.hmdRotation.M[0][2] = this.hmdPose.M[0][2];
-            this.hmdRotation.M[0][3] = 0.0F;
-            this.hmdRotation.M[1][0] = this.hmdPose.M[1][0];
-            this.hmdRotation.M[1][1] = this.hmdPose.M[1][1];
-            this.hmdRotation.M[1][2] = this.hmdPose.M[1][2];
-            this.hmdRotation.M[1][3] = 0.0F;
-            this.hmdRotation.M[2][0] = this.hmdPose.M[2][0];
-            this.hmdRotation.M[2][1] = this.hmdPose.M[2][1];
-            this.hmdRotation.M[2][2] = this.hmdPose.M[2][2];
-            this.hmdRotation.M[2][3] = 0.0F;
-            this.hmdRotation.M[3][0] = 0.0F;
-            this.hmdRotation.M[3][1] = 0.0F;
-            this.hmdRotation.M[3][2] = 0.0F;
-            this.hmdRotation.M[3][3] = 1.0F;
-            Vec3 vec3 = this.getCenterEyePosition();
-            this.hmdHistory.add(vec3);
-            Vector3 vector3 = this.hmdRotation.transform(new Vector3(0.0F, -0.1F, 0.1F));
-            this.hmdPivotHistory.add(new Vec3((double)vector3.getX() + vec3.x, (double)vector3.getY() + vec3.y, (double)vector3.getZ() + vec3.z));
+            { // hmd
+                this.hmdRotation.M[0][0] = this.hmdPose.M[0][0];
+                this.hmdRotation.M[0][1] = this.hmdPose.M[0][1];
+                this.hmdRotation.M[0][2] = this.hmdPose.M[0][2];
+                this.hmdRotation.M[0][3] = 0.0F;
+                this.hmdRotation.M[1][0] = this.hmdPose.M[1][0];
+                this.hmdRotation.M[1][1] = this.hmdPose.M[1][1];
+                this.hmdRotation.M[1][2] = this.hmdPose.M[1][2];
+                this.hmdRotation.M[1][3] = 0.0F;
+                this.hmdRotation.M[2][0] = this.hmdPose.M[2][0];
+                this.hmdRotation.M[2][1] = this.hmdPose.M[2][1];
+                this.hmdRotation.M[2][2] = this.hmdPose.M[2][2];
+                this.hmdRotation.M[2][3] = 0.0F;
+                this.hmdRotation.M[3][0] = 0.0F;
+                this.hmdRotation.M[3][1] = 0.0F;
+                this.hmdRotation.M[3][2] = 0.0F;
+                this.hmdRotation.M[3][3] = 1.0F;
+                Vec3 eye = this.getCenterEyePosition();
+                this.hmdHistory.add(eye);
+                Vector3 v3 = this.hmdRotation.transform(new Vector3(0.0F, -0.1F, 0.1F));
+                this.hmdPivotHistory.add(new Vec3((double) v3.getX() + eye.x, (double) v3.getY() + eye.y, (double) v3.getZ() + eye.z));
+            }
 
             if (this.dh.vrSettings.seated)
             {
@@ -557,242 +556,234 @@ public abstract class MCVR
                 this.controllerPose[1] = this.hmdPose.inverted().inverted();
             }
 
-            org.vivecraft.common.utils.math.Matrix4f[] amatrix4f = new org.vivecraft.common.utils.math.Matrix4f[] {new org.vivecraft.common.utils.math.Matrix4f(), new org.vivecraft.common.utils.math.Matrix4f()};
-            org.vivecraft.common.utils.math.Matrix4f[] amatrix4f1 = new org.vivecraft.common.utils.math.Matrix4f[] {new org.vivecraft.common.utils.math.Matrix4f(), new org.vivecraft.common.utils.math.Matrix4f()};
+            org.vivecraft.common.utils.math.Matrix4f[] controllerPoseTip = new org.vivecraft.common.utils.math.Matrix4f[] {
+                new org.vivecraft.common.utils.math.Matrix4f(),
+                new org.vivecraft.common.utils.math.Matrix4f()
+            };
+            org.vivecraft.common.utils.math.Matrix4f[] controllerPoseHand = new org.vivecraft.common.utils.math.Matrix4f[] {
+                new org.vivecraft.common.utils.math.Matrix4f(),
+                new org.vivecraft.common.utils.math.Matrix4f()
+            };
 
-            if (this.dh.vrSettings.seated)
-            {
-                amatrix4f1[0] = this.controllerPose[0];
-            }
-            else
-            {
-                amatrix4f1[0] = org.vivecraft.common.utils.math.Matrix4f.multiply(this.controllerPose[0], this.getControllerComponentTransform(0, "handgrip"));
-            }
-
-            this.handRotation[0].M[0][0] = amatrix4f1[0].M[0][0];
-            this.handRotation[0].M[0][1] = amatrix4f1[0].M[0][1];
-            this.handRotation[0].M[0][2] = amatrix4f1[0].M[0][2];
-            this.handRotation[0].M[0][3] = 0.0F;
-            this.handRotation[0].M[1][0] = amatrix4f1[0].M[1][0];
-            this.handRotation[0].M[1][1] = amatrix4f1[0].M[1][1];
-            this.handRotation[0].M[1][2] = amatrix4f1[0].M[1][2];
-            this.handRotation[0].M[1][3] = 0.0F;
-            this.handRotation[0].M[2][0] = amatrix4f1[0].M[2][0];
-            this.handRotation[0].M[2][1] = amatrix4f1[0].M[2][1];
-            this.handRotation[0].M[2][2] = amatrix4f1[0].M[2][2];
-            this.handRotation[0].M[2][3] = 0.0F;
-            this.handRotation[0].M[3][0] = 0.0F;
-            this.handRotation[0].M[3][1] = 0.0F;
-            this.handRotation[0].M[3][2] = 0.0F;
-            this.handRotation[0].M[3][3] = 1.0F;
-
-            if (this.dh.vrSettings.seated)
-            {
-                amatrix4f[0] = this.controllerPose[0];
-            }
-            else
-            {
-                amatrix4f[0] = org.vivecraft.common.utils.math.Matrix4f.multiply(this.controllerPose[0], this.getControllerComponentTransform(0, "tip"));
-            }
-
-            Vector3 vector31 = Utils.convertMatrix4ftoTranslationVector(amatrix4f[0]);
-            this.aimSource[0] = vector31.toVector3d();
-            this.controllerHistory[0].add(this.getAimSource(0));
-            this.controllerRotation[0].M[0][0] = amatrix4f[0].M[0][0];
-            this.controllerRotation[0].M[0][1] = amatrix4f[0].M[0][1];
-            this.controllerRotation[0].M[0][2] = amatrix4f[0].M[0][2];
-            this.controllerRotation[0].M[0][3] = 0.0F;
-            this.controllerRotation[0].M[1][0] = amatrix4f[0].M[1][0];
-            this.controllerRotation[0].M[1][1] = amatrix4f[0].M[1][1];
-            this.controllerRotation[0].M[1][2] = amatrix4f[0].M[1][2];
-            this.controllerRotation[0].M[1][3] = 0.0F;
-            this.controllerRotation[0].M[2][0] = amatrix4f[0].M[2][0];
-            this.controllerRotation[0].M[2][1] = amatrix4f[0].M[2][1];
-            this.controllerRotation[0].M[2][2] = amatrix4f[0].M[2][2];
-            this.controllerRotation[0].M[2][3] = 0.0F;
-            this.controllerRotation[0].M[3][0] = 0.0F;
-            this.controllerRotation[0].M[3][1] = 0.0F;
-            this.controllerRotation[0].M[3][2] = 0.0F;
-            this.controllerRotation[0].M[3][3] = 1.0F;
-            Vec3 vec31 = this.getHmdVector();
-
-            if (this.dh.vrSettings.seated && this.mc.screen == null)
-            {
-                Matrix4f matrix4f = new Matrix4f();
-                float f = 110.0F;
-                float f1 = 180.0F;
-                double d0 = this.mc.mouseHandler.xpos() / (double)this.mc.getWindow().getScreenWidth() * (double)f - (double)(f / 2.0F);
-                int i = this.mc.getWindow().getScreenHeight();
-
-                if (i % 2 != 0)
-                {
-                    --i;
+            { // right controller
+                if (this.dh.vrSettings.seated) {
+                    controllerPoseHand[0] = this.controllerPose[0];
+                } else {
+                    controllerPoseHand[0] = org.vivecraft.common.utils.math.Matrix4f.multiply(this.controllerPose[0], this.getControllerComponentTransform(0, "handgrip"));
                 }
 
-                double d1 = -this.mc.mouseHandler.ypos() / (double)i * (double)f1 + (double)(f1 / 2.0F);
-                double d2 = -d1;
+                this.handRotation[0].M[0][0] = controllerPoseHand[0].M[0][0];
+                this.handRotation[0].M[0][1] = controllerPoseHand[0].M[0][1];
+                this.handRotation[0].M[0][2] = controllerPoseHand[0].M[0][2];
+                this.handRotation[0].M[0][3] = 0.0F;
+                this.handRotation[0].M[1][0] = controllerPoseHand[0].M[1][0];
+                this.handRotation[0].M[1][1] = controllerPoseHand[0].M[1][1];
+                this.handRotation[0].M[1][2] = controllerPoseHand[0].M[1][2];
+                this.handRotation[0].M[1][3] = 0.0F;
+                this.handRotation[0].M[2][0] = controllerPoseHand[0].M[2][0];
+                this.handRotation[0].M[2][1] = controllerPoseHand[0].M[2][1];
+                this.handRotation[0].M[2][2] = controllerPoseHand[0].M[2][2];
+                this.handRotation[0].M[2][3] = 0.0F;
+                this.handRotation[0].M[3][0] = 0.0F;
+                this.handRotation[0].M[3][1] = 0.0F;
+                this.handRotation[0].M[3][2] = 0.0F;
+                this.handRotation[0].M[3][3] = 1.0F;
 
-                if (this.mc.isWindowActive())
-                {
-                    float f2 = this.dh.vrSettings.keyholeX;
-                    float f3 = 20.0F * this.dh.vrSettings.xSensitivity;
-                    int j = (int)((double)(-f2 + f / 2.0F) * (double)this.mc.getWindow().getScreenWidth() / (double)f) + 1;
-                    int k = (int)((double)(f2 + f / 2.0F) * (double)this.mc.getWindow().getScreenWidth() / (double)f) - 1;
-                    float f4 = ((float)Math.abs(d0) - f2) / (f / 2.0F - f2);
-                    double d3 = this.mc.mouseHandler.xpos();
-
-                    if (d0 < (double)(-f2))
-                    {
-                        this.seatedRot += f3 * f4;
-                        this.seatedRot %= 360.0F;
-                        this.hmdForwardYaw = (float)Math.toDegrees(Math.atan2(vec31.x, vec31.z));
-                        d3 = (double)j;
-                        d0 = (double)(-f2);
-                    }
-                    else if (d0 > (double)f2)
-                    {
-                        this.seatedRot -= f3 * f4;
-                        this.seatedRot %= 360.0F;
-                        this.hmdForwardYaw = (float)Math.toDegrees(Math.atan2(vec31.x, vec31.z));
-                        d3 = (double)k;
-                        d0 = (double)f2;
-                    }
-
-                    double d4 = 0.5D * (double)this.dh.vrSettings.ySensitivity;
-                    d2 = (double)this.aimPitch + d1 * d4;
-                    d2 = Mth.clamp(d2, -89.9D, 89.9D);
-                    InputSimulator.setMousePos(d3, (double)(i / 2));
-                    GLFW.glfwSetCursorPos(this.mc.getWindow().getWindow(), d3, (double)(i / 2));
-                    matrix4f.rotate((float)Math.toRadians(-d2), new Vector3f(1.0F, 0.0F, 0.0F));
-                    matrix4f.rotate((float)Math.toRadians(-180.0D + d0 - (double)this.hmdForwardYaw), new Vector3f(0.0F, 1.0F, 0.0F));
+                if (this.dh.vrSettings.seated) {
+                    controllerPoseTip[0] = this.controllerPose[0];
+                } else {
+                    controllerPoseTip[0] = org.vivecraft.common.utils.math.Matrix4f.multiply(this.controllerPose[0], this.getControllerComponentTransform(0, "tip"));
                 }
 
-                this.controllerRotation[0].M[0][0] = matrix4f.m00;
-                this.controllerRotation[0].M[0][1] = matrix4f.m01;
-                this.controllerRotation[0].M[0][2] = matrix4f.m02;
-                this.controllerRotation[0].M[1][0] = matrix4f.m10;
-                this.controllerRotation[0].M[1][1] = matrix4f.m11;
-                this.controllerRotation[0].M[1][2] = matrix4f.m12;
-                this.controllerRotation[0].M[2][0] = matrix4f.m20;
-                this.controllerRotation[0].M[2][1] = matrix4f.m21;
-                this.controllerRotation[0].M[2][2] = matrix4f.m22;
+                Vector3 controllerPos = Utils.convertMatrix4ftoTranslationVector(controllerPoseTip[0]);
+                this.aimSource[0] = controllerPos.toVector3d();
+                this.controllerHistory[0].add(this.getAimSource(0));
+                this.controllerRotation[0].M[0][0] = controllerPoseTip[0].M[0][0];
+                this.controllerRotation[0].M[0][1] = controllerPoseTip[0].M[0][1];
+                this.controllerRotation[0].M[0][2] = controllerPoseTip[0].M[0][2];
+                this.controllerRotation[0].M[0][3] = 0.0F;
+                this.controllerRotation[0].M[1][0] = controllerPoseTip[0].M[1][0];
+                this.controllerRotation[0].M[1][1] = controllerPoseTip[0].M[1][1];
+                this.controllerRotation[0].M[1][2] = controllerPoseTip[0].M[1][2];
+                this.controllerRotation[0].M[1][3] = 0.0F;
+                this.controllerRotation[0].M[2][0] = controllerPoseTip[0].M[2][0];
+                this.controllerRotation[0].M[2][1] = controllerPoseTip[0].M[2][1];
+                this.controllerRotation[0].M[2][2] = controllerPoseTip[0].M[2][2];
+                this.controllerRotation[0].M[2][3] = 0.0F;
+                this.controllerRotation[0].M[3][0] = 0.0F;
+                this.controllerRotation[0].M[3][1] = 0.0F;
+                this.controllerRotation[0].M[3][2] = 0.0F;
+                this.controllerRotation[0].M[3][3] = 1.0F;
+                Vec3 hdir = this.getHmdVector();
 
-                this.handRotation[0].M[0][0] = matrix4f.m00;
-                this.handRotation[0].M[0][1] = matrix4f.m01;
-                this.handRotation[0].M[0][2] = matrix4f.m02;
-                this.handRotation[0].M[1][0] = matrix4f.m10;
-                this.handRotation[0].M[1][1] = matrix4f.m11;
-                this.handRotation[0].M[1][2] = matrix4f.m12;
-                this.handRotation[0].M[2][0] = matrix4f.m20;
-                this.handRotation[0].M[2][1] = matrix4f.m21;
-                this.handRotation[0].M[2][2] = matrix4f.m22;
+                if (this.dh.vrSettings.seated && this.mc.screen == null) {
+                    Matrix4f temp = new Matrix4f();
+                    float hRange = 110.0F;
+                    float vRange = 180.0F;
+                    double h = this.mc.mouseHandler.xpos() / (double) this.mc.getWindow().getScreenWidth() * (double) hRange - (double) (hRange / 2.0F);
+                    int hei = this.mc.getWindow().getScreenHeight();
+
+                    if (hei % 2 != 0) {
+                        --hei;
+                    }
+
+                    double v = -this.mc.mouseHandler.ypos() / (double) hei * (double) vRange + (double) (vRange / 2.0F);
+                    double nPitch = -v;
+
+                    if (this.mc.isWindowActive()) {
+                        float rotStart = this.dh.vrSettings.keyholeX;
+                        float rotSpeed = 20.0F * this.dh.vrSettings.xSensitivity;
+                        int leftedge = (int) ((double) (-rotStart + hRange / 2.0F) * (double) this.mc.getWindow().getScreenWidth() / (double) hRange) + 1;
+                        int rightedge = (int) ((double) (rotStart + hRange / 2.0F) * (double) this.mc.getWindow().getScreenWidth() / (double) hRange) - 1;
+                        float rotmul = ((float) Math.abs(h) - rotStart) / (hRange / 2.0F - rotStart);
+                        double xpos = this.mc.mouseHandler.xpos();
+
+                        if (h < (double) (-rotStart)) {
+                            this.seatedRot += rotSpeed * rotmul;
+                            this.seatedRot %= 360.0F;
+                            this.hmdForwardYaw = (float) Math.toDegrees(Math.atan2(hdir.x, hdir.z));
+                            xpos = leftedge;
+                            h = (-rotStart);
+                        } else if (h > (double) rotStart) {
+                            this.seatedRot -= rotSpeed * rotmul;
+                            this.seatedRot %= 360.0F;
+                            this.hmdForwardYaw = (float) Math.toDegrees(Math.atan2(hdir.x, hdir.z));
+                            xpos = rightedge;
+                            h = rotStart;
+                        }
+
+                        double ySpeed = 0.5D * (double) this.dh.vrSettings.ySensitivity;
+                        nPitch = (double) this.aimPitch + v * ySpeed;
+                        nPitch = Mth.clamp(nPitch, -89.9D, 89.9D);
+                        InputSimulator.setMousePos(xpos, (double) hei / 2);
+                        GLFW.glfwSetCursorPos(this.mc.getWindow().getWindow(), xpos, (double) (hei / 2));
+                        temp.rotate((float) Math.toRadians(-nPitch), new Vector3f(1.0F, 0.0F, 0.0F));
+                        temp.rotate((float) Math.toRadians(-180.0D + h - (double) this.hmdForwardYaw), new Vector3f(0.0F, 1.0F, 0.0F));
+                    }
+
+                    this.controllerRotation[0].M[0][0] = temp.m00;
+                    this.controllerRotation[0].M[0][1] = temp.m01;
+                    this.controllerRotation[0].M[0][2] = temp.m02;
+                    this.controllerRotation[0].M[1][0] = temp.m10;
+                    this.controllerRotation[0].M[1][1] = temp.m11;
+                    this.controllerRotation[0].M[1][2] = temp.m12;
+                    this.controllerRotation[0].M[2][0] = temp.m20;
+                    this.controllerRotation[0].M[2][1] = temp.m21;
+                    this.controllerRotation[0].M[2][2] = temp.m22;
+
+                    this.handRotation[0].M[0][0] = temp.m00;
+                    this.handRotation[0].M[0][1] = temp.m01;
+                    this.handRotation[0].M[0][2] = temp.m02;
+                    this.handRotation[0].M[1][0] = temp.m10;
+                    this.handRotation[0].M[1][1] = temp.m11;
+                    this.handRotation[0].M[1][2] = temp.m12;
+                    this.handRotation[0].M[2][0] = temp.m20;
+                    this.handRotation[0].M[2][1] = temp.m21;
+                    this.handRotation[0].M[2][2] = temp.m22;
+                }
+
+                Vec3 dir = this.getAimVector(0);
+                this.aimPitch = (float) Math.toDegrees(Math.asin(dir.y / dir.length()));
+                this.controllerForwardHistory[0].add(dir);
+                Vec3 updir = this.controllerRotation[0].transform(this.up).toVector3d();
+                this.controllerUpHistory[0].add(updir);
             }
 
-            Vec3 vec32 = this.getAimVector(0);
-            this.aimPitch = (float)Math.toDegrees(Math.asin(vec32.y / vec32.length()));
-            this.controllerForwardHistory[0].add(vec32);
-            Vec3 vec33 = this.controllerRotation[0].transform(this.up).toVector3d();
-            this.controllerUpHistory[0].add(vec33);
+            { // left controller
+                if (this.dh.vrSettings.seated) {
+                    controllerPoseHand[1] = this.controllerPose[1];
+                } else {
+                    controllerPoseHand[1] = org.vivecraft.common.utils.math.Matrix4f.multiply(this.controllerPose[1], this.getControllerComponentTransform(1, "handgrip"));
+                }
 
-            if (this.dh.vrSettings.seated)
-            {
-                amatrix4f1[1] = this.controllerPose[1];
-            }
-            else
-            {
-                amatrix4f1[1] = org.vivecraft.common.utils.math.Matrix4f.multiply(this.controllerPose[1], this.getControllerComponentTransform(1, "handgrip"));
-            }
+                this.handRotation[1].M[0][0] = controllerPoseHand[1].M[0][0];
+                this.handRotation[1].M[0][1] = controllerPoseHand[1].M[0][1];
+                this.handRotation[1].M[0][2] = controllerPoseHand[1].M[0][2];
+                this.handRotation[1].M[0][3] = 0.0F;
+                this.handRotation[1].M[1][0] = controllerPoseHand[1].M[1][0];
+                this.handRotation[1].M[1][1] = controllerPoseHand[1].M[1][1];
+                this.handRotation[1].M[1][2] = controllerPoseHand[1].M[1][2];
+                this.handRotation[1].M[1][3] = 0.0F;
+                this.handRotation[1].M[2][0] = controllerPoseHand[1].M[2][0];
+                this.handRotation[1].M[2][1] = controllerPoseHand[1].M[2][1];
+                this.handRotation[1].M[2][2] = controllerPoseHand[1].M[2][2];
+                this.handRotation[1].M[2][3] = 0.0F;
+                this.handRotation[1].M[3][0] = 0.0F;
+                this.handRotation[1].M[3][1] = 0.0F;
+                this.handRotation[1].M[3][2] = 0.0F;
+                this.handRotation[1].M[3][3] = 1.0F;
 
-            this.handRotation[1].M[0][0] = amatrix4f1[1].M[0][0];
-            this.handRotation[1].M[0][1] = amatrix4f1[1].M[0][1];
-            this.handRotation[1].M[0][2] = amatrix4f1[1].M[0][2];
-            this.handRotation[1].M[0][3] = 0.0F;
-            this.handRotation[1].M[1][0] = amatrix4f1[1].M[1][0];
-            this.handRotation[1].M[1][1] = amatrix4f1[1].M[1][1];
-            this.handRotation[1].M[1][2] = amatrix4f1[1].M[1][2];
-            this.handRotation[1].M[1][3] = 0.0F;
-            this.handRotation[1].M[2][0] = amatrix4f1[1].M[2][0];
-            this.handRotation[1].M[2][1] = amatrix4f1[1].M[2][1];
-            this.handRotation[1].M[2][2] = amatrix4f1[1].M[2][2];
-            this.handRotation[1].M[2][3] = 0.0F;
-            this.handRotation[1].M[3][0] = 0.0F;
-            this.handRotation[1].M[3][1] = 0.0F;
-            this.handRotation[1].M[3][2] = 0.0F;
-            this.handRotation[1].M[3][3] = 1.0F;
+                if (this.dh.vrSettings.seated) {
+                    controllerPoseTip[1] = this.controllerPose[1];
+                } else {
+                    controllerPoseTip[1] = org.vivecraft.common.utils.math.Matrix4f.multiply(this.controllerPose[1], this.getControllerComponentTransform(1, "tip"));
+                }
 
-            if (this.dh.vrSettings.seated)
-            {
-                amatrix4f[1] = this.controllerPose[1];
-            }
-            else
-            {
-                amatrix4f[1] = org.vivecraft.common.utils.math.Matrix4f.multiply(this.controllerPose[1], this.getControllerComponentTransform(1, "tip"));
-            }
+                Vector3 leftControllerPos = Utils.convertMatrix4ftoTranslationVector(controllerPoseTip[1]);
+                this.aimSource[1] = leftControllerPos.toVector3d();
+                this.controllerHistory[1].add(this.getAimSource(1));
+                this.controllerRotation[1].M[0][0] = controllerPoseTip[1].M[0][0];
+                this.controllerRotation[1].M[0][1] = controllerPoseTip[1].M[0][1];
+                this.controllerRotation[1].M[0][2] = controllerPoseTip[1].M[0][2];
+                this.controllerRotation[1].M[0][3] = 0.0F;
+                this.controllerRotation[1].M[1][0] = controllerPoseTip[1].M[1][0];
+                this.controllerRotation[1].M[1][1] = controllerPoseTip[1].M[1][1];
+                this.controllerRotation[1].M[1][2] = controllerPoseTip[1].M[1][2];
+                this.controllerRotation[1].M[1][3] = 0.0F;
+                this.controllerRotation[1].M[2][0] = controllerPoseTip[1].M[2][0];
+                this.controllerRotation[1].M[2][1] = controllerPoseTip[1].M[2][1];
+                this.controllerRotation[1].M[2][2] = controllerPoseTip[1].M[2][2];
+                this.controllerRotation[1].M[2][3] = 0.0F;
+                this.controllerRotation[1].M[3][0] = 0.0F;
+                this.controllerRotation[1].M[3][1] = 0.0F;
+                this.controllerRotation[1].M[3][2] = 0.0F;
+                this.controllerRotation[1].M[3][3] = 1.0F;
+                Vec3 dir = this.getAimVector(1);
+                this.controllerForwardHistory[1].add(dir);
+                Vec3 updir = this.controllerRotation[1].transform(this.up).toVector3d();
+                this.controllerUpHistory[1].add(updir);
 
-            vector31 = Utils.convertMatrix4ftoTranslationVector(amatrix4f[1]);
-            this.aimSource[1] = vector31.toVector3d();
-            this.controllerHistory[1].add(this.getAimSource(1));
-            this.controllerRotation[1].M[0][0] = amatrix4f[1].M[0][0];
-            this.controllerRotation[1].M[0][1] = amatrix4f[1].M[0][1];
-            this.controllerRotation[1].M[0][2] = amatrix4f[1].M[0][2];
-            this.controllerRotation[1].M[0][3] = 0.0F;
-            this.controllerRotation[1].M[1][0] = amatrix4f[1].M[1][0];
-            this.controllerRotation[1].M[1][1] = amatrix4f[1].M[1][1];
-            this.controllerRotation[1].M[1][2] = amatrix4f[1].M[1][2];
-            this.controllerRotation[1].M[1][3] = 0.0F;
-            this.controllerRotation[1].M[2][0] = amatrix4f[1].M[2][0];
-            this.controllerRotation[1].M[2][1] = amatrix4f[1].M[2][1];
-            this.controllerRotation[1].M[2][2] = amatrix4f[1].M[2][2];
-            this.controllerRotation[1].M[2][3] = 0.0F;
-            this.controllerRotation[1].M[3][0] = 0.0F;
-            this.controllerRotation[1].M[3][1] = 0.0F;
-            this.controllerRotation[1].M[3][2] = 0.0F;
-            this.controllerRotation[1].M[3][3] = 1.0F;
-            vec31 = this.getAimVector(1);
-            this.controllerForwardHistory[1].add(vec31);
-            vec32 = this.controllerRotation[1].transform(this.up).toVector3d();
-            this.controllerUpHistory[1].add(vec32);
-
-            if (this.dh.vrSettings.seated)
-            {
-                this.aimSource[1] = this.getCenterEyePosition();
-                this.aimSource[0] = this.getCenterEyePosition();
+                if (this.dh.vrSettings.seated) {
+                    this.aimSource[1] = this.getCenterEyePosition();
+                    this.aimSource[0] = this.getCenterEyePosition();
+                }
             }
 
-            boolean flag = false;
+            boolean debugThirdController = false;
+            { // third controller
+                if (debugThirdController)
+                {
+                    this.controllerPose[2] = this.controllerPose[0];
+                }
 
-            if (flag)
-            {
-                this.controllerPose[2] = this.controllerPose[0];
+                this.controllerRotation[2].M[0][0] = this.controllerPose[2].M[0][0];
+                this.controllerRotation[2].M[0][1] = this.controllerPose[2].M[0][1];
+                this.controllerRotation[2].M[0][2] = this.controllerPose[2].M[0][2];
+                this.controllerRotation[2].M[0][3] = 0.0F;
+                this.controllerRotation[2].M[1][0] = this.controllerPose[2].M[1][0];
+                this.controllerRotation[2].M[1][1] = this.controllerPose[2].M[1][1];
+                this.controllerRotation[2].M[1][2] = this.controllerPose[2].M[1][2];
+                this.controllerRotation[2].M[1][3] = 0.0F;
+                this.controllerRotation[2].M[2][0] = this.controllerPose[2].M[2][0];
+                this.controllerRotation[2].M[2][1] = this.controllerPose[2].M[2][1];
+                this.controllerRotation[2].M[2][2] = this.controllerPose[2].M[2][2];
+                this.controllerRotation[2].M[2][3] = 0.0F;
+                this.controllerRotation[2].M[3][0] = 0.0F;
+                this.controllerRotation[2].M[3][1] = 0.0F;
+                this.controllerRotation[2].M[3][2] = 0.0F;
+                this.controllerRotation[2].M[3][3] = 1.0F;
             }
 
-            this.controllerRotation[2].M[0][0] = this.controllerPose[2].M[0][0];
-            this.controllerRotation[2].M[0][1] = this.controllerPose[2].M[0][1];
-            this.controllerRotation[2].M[0][2] = this.controllerPose[2].M[0][2];
-            this.controllerRotation[2].M[0][3] = 0.0F;
-            this.controllerRotation[2].M[1][0] = this.controllerPose[2].M[1][0];
-            this.controllerRotation[2].M[1][1] = this.controllerPose[2].M[1][1];
-            this.controllerRotation[2].M[1][2] = this.controllerPose[2].M[1][2];
-            this.controllerRotation[2].M[1][3] = 0.0F;
-            this.controllerRotation[2].M[2][0] = this.controllerPose[2].M[2][0];
-            this.controllerRotation[2].M[2][1] = this.controllerPose[2].M[2][1];
-            this.controllerRotation[2].M[2][2] = this.controllerPose[2].M[2][2];
-            this.controllerRotation[2].M[2][3] = 0.0F;
-            this.controllerRotation[2].M[3][0] = 0.0F;
-            this.controllerRotation[2].M[3][1] = 0.0F;
-            this.controllerRotation[2].M[3][2] = 0.0F;
-            this.controllerRotation[2].M[3][3] = 1.0F;
-
-            if ((!this.hasThirdController() || this.dh.vrSettings.displayMirrorMode != VRSettings.MirrorMode.MIXED_REALITY && this.dh.vrSettings.displayMirrorMode != VRSettings.MirrorMode.THIRD_PERSON) && !flag)
+            if ((!this.hasThirdController() || this.dh.vrSettings.displayMirrorMode != VRSettings.MirrorMode.MIXED_REALITY && this.dh.vrSettings.displayMirrorMode != VRSettings.MirrorMode.THIRD_PERSON) && !debugThirdController)
             {
                 this.mrMovingCamActive = false;
-                this.aimSource[2] = new Vec3((double)this.dh.vrSettings.vrFixedCamposX, (double)this.dh.vrSettings.vrFixedCamposY, (double)this.dh.vrSettings.vrFixedCamposZ);
+                this.aimSource[2] = new Vec3(this.dh.vrSettings.vrFixedCamposX, this.dh.vrSettings.vrFixedCamposY, this.dh.vrSettings.vrFixedCamposZ);
             }
             else
             {
                 this.mrMovingCamActive = true;
-                Vector3 vector32 = Utils.convertMatrix4ftoTranslationVector(this.controllerPose[2]);
-                this.aimSource[2] = vector32.toVector3d();
+                Vector3 thirdControllerPos = Utils.convertMatrix4ftoTranslationVector(this.controllerPose[2]);
+                this.aimSource[2] = thirdControllerPos.toVector3d();
             }
         }
     }
@@ -801,15 +792,15 @@ public abstract class MCVR
     {
         if (!this.inputActions.isEmpty())
         {
-            boolean flag = this.mc.level != null && this.mc.player != null && this.mc.player.isSleeping();
-            boolean flag1 = this.mc.screen != null;
-            boolean flag2 = mod.keyToggleMovement.consumeClick();
+            boolean sleeping = this.mc.level != null && this.mc.player != null && this.mc.player.isSleeping();
+            boolean gui = this.mc.screen != null;
+            boolean toggleMovementPressed = mod.keyToggleMovement.consumeClick();
 
-            if (!this.mc.options.keyPickItem.isDown() && !flag2)
+            if (!this.mc.options.keyPickItem.isDown() && !toggleMovementPressed)
             {
                 this.moveModeSwitchCount = 0;
             }
-            else if (++this.moveModeSwitchCount == 80 || flag2)
+            else if (++this.moveModeSwitchCount == 80 || toggleMovementPressed)
             {
                 if (this.dh.vrSettings.seated)
                 {
@@ -833,31 +824,32 @@ public abstract class MCVR
                 }
             }
 
-            Vec3 vec3 = this.getAimVector(0);
-            Vec3 vec31 = this.getAimVector(1);
-            float f = (float)Math.toDegrees(Math.atan2(-vec3.x, vec3.z));
-            float f1 = (float)Math.toDegrees(Math.atan2(-vec31.x, vec31.z));
+            Vec3 main = this.getAimVector(0);
+            Vec3 off = this.getAimVector(1);
+            float myaw = (float)Math.toDegrees(Math.atan2(-main.x, main.z));
+            float oyaw = (float)Math.toDegrees(Math.atan2(-off.x, off.z));
 
-            if (!flag1)
+            if (!gui)
             {
                 if (mod.keyWalkabout.isDown())
                 {
-                    float f2 = f;
-                    ControllerType controllertype = this.findActiveBindingControllerType(mod.keyWalkabout);
+                    float yaw = myaw;
 
-                    if (controllertype != null && controllertype == ControllerType.LEFT)
+                    //oh this is ugly. TODO: cache which hand when binding button.
+                    ControllerType controller = this.findActiveBindingControllerType(mod.keyWalkabout);
+                    if (controller != null && controller == ControllerType.LEFT)
                     {
-                        f2 = f1;
+                        yaw = oyaw;
                     }
 
                     if (!this.isWalkingAbout)
                     {
                         this.isWalkingAbout = true;
-                        this.walkaboutYawStart = this.dh.vrSettings.worldRotation - f2;
+                        this.walkaboutYawStart = this.dh.vrSettings.worldRotation - yaw;
                     }
                     else
                     {
-                        this.dh.vrSettings.worldRotation = this.walkaboutYawStart + f2;
+                        this.dh.vrSettings.worldRotation = this.walkaboutYawStart + yaw;
                         this.dh.vrSettings.worldRotation %= 360.0F;
                     }
                 }
@@ -868,22 +860,24 @@ public abstract class MCVR
 
                 if (mod.keyRotateFree.isDown())
                 {
-                    float f3 = f;
-                    ControllerType controllertype5 = this.findActiveBindingControllerType(mod.keyRotateFree);
+                    float yaw = myaw;
 
-                    if (controllertype5 != null && controllertype5 == ControllerType.LEFT)
+                    //oh this is ugly. TODO: cache which hand when binding button.
+                    ControllerType controller = this.findActiveBindingControllerType(mod.keyRotateFree);
+                    if (controller != null && controller == ControllerType.LEFT)
                     {
-                        f3 = f1;
+                        yaw = oyaw;
                     }
 
                     if (!this.isFreeRotate)
                     {
                         this.isFreeRotate = true;
-                        this.walkaboutYawStart = this.dh.vrSettings.worldRotation + f3;
+                        this.walkaboutYawStart = this.dh.vrSettings.worldRotation + yaw;
                     }
                     else
                     {
-                        this.dh.vrSettings.worldRotation = this.walkaboutYawStart - f3;
+                        this.dh.vrSettings.worldRotation = this.walkaboutYawStart - yaw;
+                        // mc.vrPlayer.checkandUpdateRotateScale(true,0);
                     }
                 }
                 else
@@ -906,15 +900,16 @@ public abstract class MCVR
 
             if (mod.keyQuickTorch.consumeClick() && this.mc.player != null)
             {
-                for (int j = 0; j < 9; ++j)
+                for (int slot = 0; slot < 9; ++slot)
                 {
-                    ItemStack itemstack = this.mc.player.getInventory().getItem(j);
+                    ItemStack itemstack = this.mc.player.getInventory().getItem(slot);
 
                     if (itemstack.getItem() instanceof BlockItem && ((BlockItem)itemstack.getItem()).getBlock() instanceof TorchBlock && this.mc.screen == null)
                     {
                         this.quickTorchPreviousSlot = this.mc.player.getInventory().selected;
-                        this.mc.player.getInventory().selected = j;
+                        this.mc.player.getInventory().selected = slot;
                         this.mc.startUseItem();
+                        // switch back immediately
                         this.mc.player.getInventory().selected = this.quickTorchPreviousSlot;
                         this.quickTorchPreviousSlot = -1;
                         break;
@@ -922,16 +917,19 @@ public abstract class MCVR
                 }
             }
 
-            if (flag1 && !flag && this.mc.options.keyUp.isDown() && !(this.mc.screen instanceof WinScreen) && this.mc.player != null)
+            // if you start teleporting, close any UI
+            if (gui && !sleeping && this.mc.options.keyUp.isDown() && !(this.mc.screen instanceof WinScreen) && this.mc.player != null)
             {
                 this.mc.player.closeContainer();
             }
 
+            //GuiContainer.java only listens directly to the keyboard to close.
             if (this.mc.screen instanceof AbstractContainerScreen && this.mc.options.keyInventory.consumeClick() && this.mc.player != null)
             {
                 this.mc.player.closeContainer();
             }
 
+            // allow toggling chat window with chat keybind
             if (this.mc.screen instanceof ChatScreen && this.mc.options.keyChat.consumeClick())
             {
                 this.mc.setScreen((Screen)null);
@@ -939,50 +937,50 @@ public abstract class MCVR
 
             if (this.dh.vrSettings.worldRotationIncrement == 0.0F)
             {
-                float f4 = this.getInputAction(mod.keyRotateAxis).getAxis2DUseTracked().getX();
+                float ax = this.getInputAction(mod.keyRotateAxis).getAxis2DUseTracked().getX();
 
-                if (f4 == 0.0F)
+                if (ax == 0.0F)
                 {
-                    f4 = this.getInputAction(mod.keyFreeMoveRotate).getAxis2DUseTracked().getX();
+                    ax = this.getInputAction(mod.keyFreeMoveRotate).getAxis2DUseTracked().getX();
                 }
 
-                if (f4 != 0.0F)
+                if (ax != 0.0F)
                 {
-                    float f8 = 10.0F * f4;
-                    this.dh.vrSettings.worldRotation -= f8;
+                    float analogRotSpeed = 10.0F * ax;
+                    this.dh.vrSettings.worldRotation -= analogRotSpeed;
                     this.dh.vrSettings.worldRotation %= 360.0F;
                 }
             }
             else if (mod.keyRotateAxis.consumeClick() || mod.keyFreeMoveRotate.consumeClick())
             {
-                float f5 = this.getInputAction(mod.keyRotateAxis).getAxis2D(false).getX();
+                float ax = this.getInputAction(mod.keyRotateAxis).getAxis2D(false).getX();
 
-                if (f5 == 0.0F)
+                if (ax == 0.0F)
                 {
-                    f5 = this.getInputAction(mod.keyFreeMoveRotate).getAxis2D(false).getX();
+                    ax = this.getInputAction(mod.keyFreeMoveRotate).getAxis2D(false).getX();
                 }
 
-                if (Math.abs(f5) > 0.5F)
+                if (Math.abs(ax) > 0.5F)
                 {
-                    this.dh.vrSettings.worldRotation -= this.dh.vrSettings.worldRotationIncrement * Math.signum(f5);
+                    this.dh.vrSettings.worldRotation -= this.dh.vrSettings.worldRotationIncrement * Math.signum(ax);
                     this.dh.vrSettings.worldRotation %= 360.0F;
                 }
             }
 
             if (this.dh.vrSettings.worldRotationIncrement == 0.0F)
             {
-                float f6 = VivecraftMovementInput.getMovementAxisValue(mod.keyRotateLeft);
+                float ax = VivecraftMovementInput.getMovementAxisValue(mod.keyRotateLeft);
 
-                if (f6 > 0.0F)
+                if (ax > 0.0F)
                 {
-                    float f9 = 5.0F;
+                    float analogRotSpeed = 5.0F;
 
-                    if (f6 > 0.0F)
+                    if (ax > 0.0F)
                     {
-                        f9 = 10.0F * f6;
+                        analogRotSpeed = 10.0F * ax;
                     }
 
-                    this.dh.vrSettings.worldRotation += f9;
+                    this.dh.vrSettings.worldRotation += analogRotSpeed;
                     this.dh.vrSettings.worldRotation %= 360.0F;
                 }
             }
@@ -994,18 +992,18 @@ public abstract class MCVR
 
             if (this.dh.vrSettings.worldRotationIncrement == 0.0F)
             {
-                float f7 = VivecraftMovementInput.getMovementAxisValue(mod.keyRotateRight);
+                float ax = VivecraftMovementInput.getMovementAxisValue(mod.keyRotateRight);
 
-                if (f7 > 0.0F)
+                if (ax > 0.0F)
                 {
-                    float f10 = 5.0F;
+                    float analogRotSpeed = 5.0F;
 
-                    if (f7 > 0.0F)
+                    if (ax > 0.0F)
                     {
-                        f10 = 10.0F * f7;
+                        analogRotSpeed = 10.0F * ax;
                     }
 
-                    this.dh.vrSettings.worldRotation -= f10;
+                    this.dh.vrSettings.worldRotation -= analogRotSpeed;
                     this.dh.vrSettings.worldRotation %= 360.0F;
                 }
             }
@@ -1017,13 +1015,13 @@ public abstract class MCVR
 
             this.seatedRot = this.dh.vrSettings.worldRotation;
 
-            if (mod.keyRadialMenu.consumeClick() && !flag1)
+            if (mod.keyRadialMenu.consumeClick() && !gui)
             {
-                ControllerType controllertype1 = this.findActiveBindingControllerType(mod.keyRadialMenu);
+                ControllerType controller = this.findActiveBindingControllerType(mod.keyRadialMenu);
 
-                if (controllertype1 != null)
+                if (controller != null)
                 {
-                    RadialHandler.setOverlayShowing(!RadialHandler.isShowing(), controllertype1);
+                    RadialHandler.setOverlayShowing(!RadialHandler.isShowing(), controller);
                 }
             }
 
@@ -1048,11 +1046,11 @@ public abstract class MCVR
 
             if (mod.keyMoveThirdPersonCam.consumeClick() && !ClientDataHolderVR.kiosk && !this.dh.vrSettings.seated && (this.dh.vrSettings.displayMirrorMode == VRSettings.MirrorMode.MIXED_REALITY || this.dh.vrSettings.displayMirrorMode == VRSettings.MirrorMode.THIRD_PERSON))
             {
-                ControllerType controllertype2 = this.findActiveBindingControllerType(mod.keyMoveThirdPersonCam);
+                ControllerType controller = this.findActiveBindingControllerType(mod.keyMoveThirdPersonCam);
 
-                if (controllertype2 != null)
+                if (controller != null)
                 {
-                    VRHotkeys.startMovingThirdPersonCam(controllertype2.ordinal(), VRHotkeys.Triggerer.BINDING);
+                    VRHotkeys.startMovingThirdPersonCam(controller.ordinal(), VRHotkeys.Triggerer.BINDING);
                 }
             }
 
@@ -1080,7 +1078,7 @@ public abstract class MCVR
 
             if (mod.keyMenuButton.consumeClick())
             {
-                if (!flag1)
+                if (!gui)
                 {
                     if (!ClientDataHolderVR.kiosk)
                     {
@@ -1169,16 +1167,16 @@ public abstract class MCVR
 
                 if (this.dh.cameraTracker.isVisible())
                 {
-                    ControllerType controllertype3 = this.findActiveBindingControllerType(mod.keyToggleHandheldCam);
+                    ControllerType hand = this.findActiveBindingControllerType(mod.keyToggleHandheldCam);
 
-                    if (controllertype3 == null)
+                    if (hand == null)
                     {
-                        controllertype3 = ControllerType.RIGHT;
+                        hand = ControllerType.RIGHT;
                     }
 
-                    VRData.VRDevicePose vrdata$vrdevicepose = this.dh.vrPlayer.vrdata_world_pre.getController(controllertype3.ordinal());
-                    this.dh.cameraTracker.setPosition(vrdata$vrdevicepose.getPosition());
-                    this.dh.cameraTracker.setRotation(new Quaternion(vrdata$vrdevicepose.getMatrix().transposed()));
+                    VRData.VRDevicePose handPose = this.dh.vrPlayer.vrdata_world_pre.getController(hand.ordinal());
+                    this.dh.cameraTracker.setPosition(handPose.getPosition());
+                    this.dh.cameraTracker.setRotation(new Quaternion(handPose.getMatrix().transposed()));
                 }
             }
 
@@ -1189,17 +1187,17 @@ public abstract class MCVR
                     this.dh.cameraTracker.toggleVisibility();
                 }
 
-                ControllerType controllertype4 = this.findActiveBindingControllerType(mod.keyQuickHandheldCam);
+                ControllerType hand = this.findActiveBindingControllerType(mod.keyQuickHandheldCam);
 
-                if (controllertype4 == null)
+                if (hand == null)
                 {
-                    controllertype4 = ControllerType.RIGHT;
+                    hand = ControllerType.RIGHT;
                 }
 
-                VRData.VRDevicePose vrdata$vrdevicepose1 = this.dh.vrPlayer.vrdata_world_pre.getController(controllertype4.ordinal());
-                this.dh.cameraTracker.setPosition(vrdata$vrdevicepose1.getPosition());
-                this.dh.cameraTracker.setRotation(new Quaternion(vrdata$vrdevicepose1.getMatrix().transposed()));
-                this.dh.cameraTracker.startMoving(controllertype4.ordinal(), true);
+                VRData.VRDevicePose handPose = this.dh.vrPlayer.vrdata_world_pre.getController(hand.ordinal());
+                this.dh.cameraTracker.setPosition(handPose.getPosition());
+                this.dh.cameraTracker.setRotation(new Quaternion(handPose.getMatrix().transposed()));
+                this.dh.cameraTracker.startMoving(hand.ordinal(), true);
             }
 
             if (!mod.keyQuickHandheldCam.isDown() && this.dh.cameraTracker.isMoving() && this.dh.cameraTracker.isQuickMode() && this.mc.player != null)
@@ -1208,6 +1206,7 @@ public abstract class MCVR
                 this.dh.grabScreenShot = true;
             }
 
+            //SkeletonHandler.processBindings();
             GuiHandler.processBindingsGui();
             RadialHandler.processBindings();
             KeyboardHandler.processBindings();
@@ -1217,18 +1216,18 @@ public abstract class MCVR
 
     public void populateInputActions()
     {
-        Map<String, ActionParams> map = this.getSpecialActionParams();
+        Map<String, ActionParams> actionParams = this.getSpecialActionParams();
 
         for (KeyMapping keymapping : this.mc.options.keyMappings)
         {
-            ActionParams actionparams = map.getOrDefault(keymapping.getName(), new ActionParams("optional", "boolean", (VRInputActionSet)null));
-            VRInputAction vrinputaction = new VRInputAction(keymapping, actionparams.requirement, actionparams.type, actionparams.actionSetOverride);
-            this.inputActions.put(vrinputaction.name, vrinputaction);
+            ActionParams params = actionParams.getOrDefault(keymapping.getName(), new ActionParams("optional", "boolean", (VRInputActionSet)null));
+            VRInputAction action = new VRInputAction(keymapping, params.requirement, params.type, params.actionSetOverride);
+            this.inputActions.put(action.name, action);
         }
 
-        for (VRInputAction vrinputaction1 : this.inputActions.values())
+        for (VRInputAction action : this.inputActions.values())
         {
-            this.inputActionsByKeyBinding.put(vrinputaction1.keyBinding.getName(), vrinputaction1);
+            this.inputActionsByKeyBinding.put(action.keyBinding.getName(), action);
         }
 
         this.getInputAction(mod.keyVRInteract).setPriority(5).setEnabled(false);
@@ -1275,30 +1274,30 @@ public abstract class MCVR
         this.addActionParams(map, GuiHandler.keyShift, "suggested", "boolean", (VRInputActionSet)null);
         this.addActionParams(map, GuiHandler.keyKeyboardClick, "suggested", "boolean", (VRInputActionSet)null);
         this.addActionParams(map, GuiHandler.keyKeyboardShift, "suggested", "boolean", (VRInputActionSet)null);
-        File file1 = new File("customactionsets.txt");
+        File file = new File("customactionsets.txt");
 
-        if (file1.exists())
+        if (file.exists())
         {
             System.out.println("Loading custom action set definitions...");
-            String s;
+            String line;
 
-            try (BufferedReader bufferedreader = new BufferedReader(new FileReader(file1)))
+            try (BufferedReader br = new BufferedReader(new FileReader(file)))
             {
-                while ((s = bufferedreader.readLine()) != null)
+                while ((line = br.readLine()) != null)
                 {
-                    String[] astring = s.split(":", 2);
+                    String[] tokens = line.split(":", 2);
 
-                    if (astring.length < 2)
+                    if (tokens.length < 2)
                     {
-                        System.out.println("Invalid tokens: " + s);
+                        System.out.println("Invalid tokens: " + line);
                     }
                     else
                     {
-                        KeyMapping keymapping = this.findKeyBinding(astring[0]);
+                        KeyMapping keymapping = this.findKeyBinding(tokens[0]);
 
                         if (keymapping == null)
                         {
-                            System.out.println("Unknown key binding: " + astring[0]);
+                            System.out.println("Unknown key binding: " + tokens[0]);
                         }
                         else if (mod.getKeyBindings().contains(keymapping))
                         {
@@ -1306,38 +1305,28 @@ public abstract class MCVR
                         }
                         else
                         {
-                            VRInputActionSet vrinputactionset = null;
-                            String s1 = astring[1].toLowerCase();
+                            VRInputActionSet actionSet = switch (tokens[1].toLowerCase()) {
+                                case "ingame" -> VRInputActionSet.INGAME;
+                                case "gui" -> VRInputActionSet.GUI;
+                                case "global" -> VRInputActionSet.GLOBAL;
+                                default -> null;
+                            };
 
-                            switch (s1)
+                            if (actionSet == null)
                             {
-                                case "ingame":
-                                    vrinputactionset = VRInputActionSet.INGAME;
-                                    break;
-
-                                case "gui":
-                                    vrinputactionset = VRInputActionSet.GUI;
-                                    break;
-
-                                case "global":
-                                    vrinputactionset = VRInputActionSet.GLOBAL;
-                            }
-
-                            if (vrinputactionset == null)
-                            {
-                                System.out.println("Unknown action set: " + astring[1]);
+                                System.out.println("Unknown action set: " + tokens[1]);
                             }
                             else
                             {
-                                this.addActionParams(map, keymapping, "optional", "boolean", vrinputactionset);
+                                this.addActionParams(map, keymapping, "optional", "boolean", actionSet);
                             }
                         }
                     }
                 }
             }
-            catch (IOException ioexception)
+            catch (IOException e)
             {
-                ioexception.printStackTrace();
+                e.printStackTrace();
             }
         }
 
@@ -1350,26 +1339,26 @@ public abstract class MCVR
         {
             if (this.mc.screen == null)
             {
-                InputSimulator.scrollMouse(0.0D, (double)(dir * 4));
+                InputSimulator.scrollMouse(0.0D, dir * 4);
             }
             else
             {
-                this.mc.player.getInventory().swapPaint((double)dir);
+                this.mc.player.getInventory().swapPaint(dir);
             }
         }
     }
 
-    private void addActionParams(Map<String, ActionParams> map, KeyMapping keyBinding, String requirement, String type, VRInputActionSet actionSetOverride)
+    private void addActionParams(Map<String, ActionParams> map, KeyMapping keymapping, String requirement, String type, VRInputActionSet actionSetOverride)
     {
         ActionParams actionparams = new ActionParams(requirement, type, actionSetOverride);
-        map.put(keyBinding.getName(), actionparams);
+        map.put(keymapping.getName(), actionparams);
     }
 
-    protected abstract void triggerBindingHapticPulse(KeyMapping var1, int var2);
+    protected abstract void triggerBindingHapticPulse(KeyMapping binding, int duration);
 
-    protected abstract ControllerType findActiveBindingControllerType(KeyMapping var1);
+    protected abstract ControllerType findActiveBindingControllerType(KeyMapping binding);
 
-    public abstract void poll(long var1);
+    public abstract void poll(long frameIndex);
 
     public abstract Vector2f getPlayAreaSize();
 
@@ -1377,11 +1366,11 @@ public abstract class MCVR
 
     public abstract boolean postinit();
 
-    public abstract org.vivecraft.common.utils.math.Matrix4f getControllerComponentTransform(int var1, String var2);
+    public abstract org.vivecraft.common.utils.math.Matrix4f getControllerComponentTransform(int controllerIndex, String componentName);
 
     public abstract boolean hasThirdController();
 
-    public abstract List<Long> getOrigins(VRInputAction var1);
+    public abstract List<Long> getOrigins(VRInputAction action);
 
     public abstract String getOriginName(long l);
 

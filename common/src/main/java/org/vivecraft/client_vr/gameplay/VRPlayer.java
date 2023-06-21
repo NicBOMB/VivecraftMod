@@ -40,6 +40,8 @@ import org.vivecraft.client_vr.gameplay.screenhandlers.RadialHandler;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_vr.gameplay.trackers.VehicleTracker;
 
+import javax.annotation.Nonnull;
+import javax.annotation.CheckForNull;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -51,6 +53,7 @@ public class VRPlayer
     public VRData vrdata_world_pre;
     public VRData vrdata_room_post;
     public VRData vrdata_world_post;
+    @CheckForNull
     public VRData vrdata_world_render;
     ArrayList<Tracker> trackers = new ArrayList<>();
     public float worldScale = ClientDataHolderVR.getInstance().vrSettings.overrides.getSetting(VRSettings.VrOptions.WORLD_SCALE).getFloat();
@@ -79,6 +82,7 @@ public class VRPlayer
         this.vrdata_world_pre = new VRData(new Vec3(0.0D, 0.0D, 0.0D), this.dh.vrSettings.walkMultiplier, 1.0F, 0.0F);
     }
 
+    @Nonnull
     public VRData getVRDataWorld()
     {
         return this.vrdata_world_render != null ? this.vrdata_world_render : this.vrdata_world_pre;
