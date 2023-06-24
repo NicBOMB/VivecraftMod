@@ -27,7 +27,9 @@ import org.vivecraft.client_vr.settings.VRHotkeys;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.client_vr.utils.external.jinfinadeck;
 import org.vivecraft.client_vr.utils.external.jkatvr;
+import org.vivecraft.common.utils.lwjgl.Vector4f;
 import org.vivecraft.common.utils.math.Matrix4f;
+import org.vivecraft.common.utils.math.Quaternion;
 import org.vivecraft.common.utils.math.Vector3;
 
 import java.io.File;
@@ -988,34 +990,36 @@ public class MCOpenVR extends MCVR {
     }
 
     private void updateControllerGesture(int controller, long gestureHandle) {
-
         IntBuffer controllerStatics = MemoryUtil.memCallocInt(2);
         VRInput_GetBoneCount(gestureHandle, controllerStatics);
-//        System.out.println("Bone Count: " + controllerStatics.get(0));
         int BoneCount = controllerStatics.get(0);
+        // System.out.println("Bone Count: " + BoneCount);
         controllerStatics.position(1);
         VRInput_GetSkeletalTrackingLevel(gestureHandle, controllerStatics);
-//        System.out.println("Skeletal Tracking Level: " + controllerStatics.get(1));
         int TrackingLevel = controllerStatics.get(1);
+        // System.out.println("Skeletal Tracking Level: " + TrackingLevel);
         this.controllerSkeletalInputTrackingLevel[controller] = TrackingLevel;
         try (
-                InputSkeletalActionData BoneActDat = InputSkeletalActionData.calloc();
-//                VRBoneTransform.Buffer BoneTransDat = VRBoneTransform.calloc(BoneCount);
-                VRSkeletalSummaryData DevBoneSum = VRSkeletalSummaryData.calloc();
+            // InputSkeletalActionData BoneActDat = InputSkeletalActionData.calloc();
+            VRBoneTransform.Buffer BoneTransDat = VRBoneTransform.calloc(BoneCount);
+            VRSkeletalSummaryData DevBoneSum = VRSkeletalSummaryData.calloc();
         ) {
-
-            VRInput.VRInput_GetSkeletalActionData(gestureHandle, BoneActDat);
-//            System.out.println("Skeletal Action Data: " + BoneActDat.bActive() + " " + BoneActDat.activeOrigin());
-//            VRInput.VRInput_GetSkeletalBoneData(gestureHandle, EVRSkeletalTransformSpace_VRSkeletalTransformSpace_Model, EVRSkeletalMotionRange_VRSkeletalMotionRange_WithController, BoneTransDat);
-//            System.out.println("Skeletal Bone Data: " + BoneTransDat);
-//            { // start a new block to reduce the scope of i
-//                int i = 0;
-//                for (VRBoneTransform BoneTrans : BoneTransDat) {
-//                    System.out.println("Skeletal Bone Index: " + i++);
-//                    System.out.println("Skeletal Bone Position: " + BoneTrans.position$());
-//                    System.out.println("Skeletal Bone Orientation: " + BoneTrans.orientation());
-//                }
-//            }
+            // VRInput.VRInput_GetSkeletalActionData(gestureHandle, BoneActDat);
+            // System.out.println("Skeletal Action Data: " + BoneActDat.bActive() + " " + BoneActDat.activeOrigin());
+            VRInput.VRInput_GetSkeletalBoneData(gestureHandle, EVRSkeletalTransformSpace_VRSkeletalTransformSpace_Model, EVRSkeletalMotionRange_VRSkeletalMotionRange_WithController, BoneTransDat);
+            // System.out.println("Skeletal Bone Data: " + BoneTransDat);
+            gestureFingerTransforms[controller].clear();
+            gestureFingerTransforms[controller].ensureCapacity(BoneCount);
+            gestureFingerOrientations[controller].clear();
+            gestureFingerOrientations[controller].ensureCapacity(BoneCount);
+            for (VRBoneTransform BoneTrans : BoneTransDat) {
+                HmdVector4 pos = BoneTrans.position$();
+                // System.out.println("Skeletal Bone Position: " + pos);
+                gestureFingerTransforms[controller].add(new Vector4f(pos.v(0), pos.v(1), pos.v(2), pos.v(3)));
+                HmdQuaternionf dir = BoneTrans.orientation();
+                // System.out.println("Skeletal Bone Orientation: " + BoneTrans.orientation());
+                gestureFingerOrientations[controller].add(new Quaternion(dir.w(), dir.x(), dir.y(), dir.z()));
+            }
             VRInput_GetSkeletalSummaryData(gestureHandle, EVRSummaryType_VRSummaryType_FromDevice, DevBoneSum);
             gestureFingerSplay[controller].clear();
             gestureFingerSplay[controller].ensureCapacity(EVRFingerSplay_VRFingerSplay_Count);

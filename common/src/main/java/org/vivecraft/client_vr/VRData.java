@@ -56,8 +56,8 @@ public class VRData
         this.eye1 = new VRDevicePose(this, dataholder.vr.getEyeRotation(RenderPass.RIGHT), dataholder.vr.getEyePosition(RenderPass.RIGHT).subtract(hmd_raw).add(scaledPos), dataholder.vr.getHmdVector());
         this.c0 = new VRDevicePose(this, dataholder.vr.getAimRotation(0), dataholder.vr.getAimSource(0).subtract(hmd_raw).add(scaledPos), dataholder.vr.getAimVector(0));
         this.c1 = new VRDevicePose(this, dataholder.vr.getAimRotation(1), dataholder.vr.getAimSource(1).subtract(hmd_raw).add(scaledPos), dataholder.vr.getAimVector(1));
-//        this.g0 = new VRDevicePose(this, dataholder.vr.getGestureRotation(0), dataholder.vr.getGesturePosition(0), dataholder.vr.getGestureVector(0));
-//        this.g1 = new VRDevicePose(this, dataholder.vr.getGestureRotation(1), dataholder.vr.getGesturePosition(1), dataholder.vr.getGestureVector(1));
+        this.g0 = new VRDevicePose(this, new Matrix4f(), dataholder.vr.getGesturePosition(0), dataholder.vr.getGestureVector(0));
+        this.g1 = new VRDevicePose(this, new Matrix4f(), dataholder.vr.getGesturePosition(1), dataholder.vr.getGestureVector(1));
         this.h0 = new VRDevicePose(this, dataholder.vr.getHandRotation(0), dataholder.vr.getAimSource(0).subtract(hmd_raw).add(scaledPos), dataholder.vr.getHandVector(0));
         this.h1 = new VRDevicePose(this, dataholder.vr.getHandRotation(1), dataholder.vr.getAimSource(1).subtract(hmd_raw).add(scaledPos), dataholder.vr.getHandVector(1));
 

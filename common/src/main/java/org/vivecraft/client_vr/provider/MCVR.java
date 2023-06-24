@@ -27,6 +27,7 @@ import org.vivecraft.common.utils.lwjgl.Matrix4f;
 import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.client.utils.Utils;
 import org.vivecraft.common.utils.lwjgl.Vector3f;
+import org.vivecraft.common.utils.lwjgl.Vector4f;
 import org.vivecraft.common.utils.math.Quaternion;
 import org.vivecraft.common.utils.math.Vector3;
 
@@ -65,6 +66,8 @@ public abstract class MCVR
     protected int[] controllerSkeletalInputTrackingLevel = {0, 0};
     protected ArrayList<Float>[] gestureFingerSplay = new ArrayList[]{new ArrayList<Float>(), new ArrayList<Float>()};
     protected ArrayList<Float>[] gestureFingerCurl = new ArrayList[]{new ArrayList<Float>(), new ArrayList<Float>()};
+    protected ArrayList<Vector4f>[] gestureFingerTransforms = new ArrayList[]{new ArrayList<Vector4f>(), new ArrayList<Vector4f>()};
+    protected ArrayList<Quaternion>[] gestureFingerOrientations = new ArrayList[]{new ArrayList<Quaternion>(), new ArrayList<Quaternion>()};
     protected org.vivecraft.common.utils.math.Matrix4f[] gesturePose = new org.vivecraft.common.utils.math.Matrix4f[2];
     protected org.vivecraft.common.utils.math.Matrix4f[] gestureRotation = new org.vivecraft.common.utils.math.Matrix4f[2];
     protected Vec3[] gestureVelocity = new Vec3[2];
@@ -173,6 +176,25 @@ public abstract class MCVR
     {
         Vector3 v = this.controllerRotation[controller].transform(this.forward);
         return v.toVector3d();
+    }
+
+    public Vec3 getGesturePosition(int controller)
+    {
+        Vector3 vector3_position = Utils.convertMatrix4ftoTranslationVector(this.gesturePose[controller]);
+        return new Vec3(vector3_position.x, vector3_position.y, vector3_position.z);
+    }
+
+    public Vec3 getGestureVector(int controller)
+    {
+        return this.gesturePose[controller].transform(this.forward).toVector3d();
+    }
+
+    public ArrayList<Vector4f> getGestureFingerTransforms(int controller){
+        return gestureFingerTransforms[controller];
+    }
+
+    public ArrayList<Quaternion> getGestureFingerOrientations(int controller){
+        return gestureFingerOrientations[controller];
     }
 
     public void triggerHapticPulse(ControllerType controller, float durationSeconds, float frequency, float amplitude)

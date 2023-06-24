@@ -75,7 +75,6 @@ public class VRSettings
     }
 
     public enum FingerCount implements OptionEnum<FingerCount> {
-        OFF,
         EXTENSION,
         CURL
     }
@@ -246,7 +245,7 @@ public class VRSettings
     @SettingField(VrOptions.OFF_LITTLE_DISPLAY)
     public int off_little_display = 10;
     @SettingField(VrOptions.FINGER_COUNT)
-    public FingerCount fingerCount = FingerCount.EXTENSION;
+    public boolean fingerCount = true;
     @SettingField
     public String keyboardKeys =  "`1234567890-=qwertyuiop[]\\asdfghjkl;\':\"zxcvbnm,./?<>";
     @SettingField
@@ -1527,7 +1526,7 @@ public class VRSettings
                 }
             }
         },
-        FINGER_COUNT(false, false),
+        FINGER_COUNT(false, true, "vivecraft.options.fingercount.extension", "vivecraft.options.fingercount.curl"),
         SKELETAL_INPUT(false, true){
             @Override
             public String getTooltipString(String key){
