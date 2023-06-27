@@ -11,11 +11,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.phys.Vec2;
+import org.vivecraft.client.gui.framework.VROptionLayout.Position;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.ScreenUtils;
 import org.vivecraft.client_vr.settings.VRSettings;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class GuiVROptionsBase extends Screen
@@ -83,14 +83,13 @@ public abstract class GuiVROptionsBase extends Screen
         }
     }
 
-    protected void init(VROptionLayout setting, boolean clear)
-    {
-        if (clear)
-        {
-            this.clearWidgets();
-            this.nextButtonIndex = 0;
-        }
+    protected void clearWidgets(){
+        super.clearWidgets();
+        this.nextButtonIndex = 0;
+    }
 
+    protected void init(VROptionLayout setting)
+    {
         if (this.nextButtonIndex < this.children().size())
         {
             this.nextButtonIndex = this.children().size();
@@ -154,159 +153,92 @@ public abstract class GuiVROptionsBase extends Screen
         }
     }
 
-    protected void init(VROptionLayout setting){ this.init(setting, false); }
-
-    protected void init(Class<? extends GuiVROptionsBase> setting, VROptionLayout.Position pos, String title, boolean clear)
+    protected void init(Class<? extends GuiVROptionsBase> setting, String title)
     {
-        if (clear)
-        {
-            this.clearWidgets();
-            this.nextButtonIndex = 0;
-        }
+        this.init(setting, title, null);
+    }
 
+    protected void init(Class<? extends GuiVROptionsBase> setting, String title, Position pos)
+    {
         if (this.nextButtonIndex < this.children().size())
         {
             this.nextButtonIndex = this.children().size();
         }
 
         if (pos != null &&
-            (pos != VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 0) ||
-            (pos == VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 1) ||
-            (pos == VROptionLayout.Position.POS_CENTER && nextButtonIndex % 2 == 1)
+            (pos != Position.POS_LEFT && nextButtonIndex % 2 == 0) ||
+            (pos == Position.POS_LEFT && nextButtonIndex % 2 == 1) ||
+            (pos == Position.POS_CENTER && nextButtonIndex % 2 == 1)
         ) ++nextButtonIndex;
 
-        this.init(
-                new VROptionLayout(
-                        setting,
-                        pos != null ? pos : nextButtonIndex % 2 == 0 ? VROptionLayout.Position.POS_LEFT : VROptionLayout.Position.POS_RIGHT,
-                        (float) (nextButtonIndex / 2),
-                        true,
-                        title
-                ), clear
-        );
+        this.init(new VROptionLayout(
+            setting,
+            pos != null ? pos : nextButtonIndex % 2 == 0 ? Position.POS_LEFT : Position.POS_RIGHT,
+            (float) (nextButtonIndex / 2),
+            true,
+            title
+        ));
 
         ++nextButtonIndex;
     }
 
-    protected void init(Class<? extends GuiVROptionsBase> setting, VROptionLayout.Position pos, String title){ this.init(setting, pos, title, false); }
-
-    protected void init(VROptionEntry setting, boolean clear)
+    protected void init(VROptionEntry setting)
     {
-        if (clear)
-        {
-            this.clearWidgets();
-            this.nextButtonIndex = 0;
-        }
-
         if (this.nextButtonIndex < this.children().size())
         {
             this.nextButtonIndex = this.children().size();
         }
 
         if (setting.pos != null && (
-            (setting.pos != VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 0) ||
-            (setting.pos == VROptionLayout.Position.POS_LEFT && nextButtonIndex % 2 == 1) ||
-            setting.pos == VROptionLayout.Position.POS_CENTER && nextButtonIndex % 2 == 1)
+            (setting.pos != Position.POS_LEFT && nextButtonIndex % 2 == 0) ||
+            (setting.pos == Position.POS_LEFT && nextButtonIndex % 2 == 1) ||
+            setting.pos == Position.POS_CENTER && nextButtonIndex % 2 == 1)
         ) ++nextButtonIndex;
 
-        VROptionLayout.Position pos = setting.pos != null ? setting.pos : nextButtonIndex % 2 == 0 ? VROptionLayout.Position.POS_LEFT : VROptionLayout.Position.POS_RIGHT;
+        Position pos = setting.pos != null ? setting.pos : nextButtonIndex % 2 == 0 ? Position.POS_LEFT : Position.POS_RIGHT;
 
         if (setting.option != null)
         {
             if (setting.option != VRSettings.VrOptions.DUMMY)
             {
-                this.init(new VROptionLayout(setting.option, setting.customHandler, pos, (float)Math.floor((double)((float)nextButtonIndex / 2.0F)), true, setting.title), clear);
+                this.init(new VROptionLayout(setting.option, setting.customHandler, pos, (float)Math.floor((double)((float)nextButtonIndex / 2.0F)), true, setting.title));
             }
         }
         else if (setting.customHandler != null)
         {
-            this.init(new VROptionLayout(setting.customHandler, pos, (float)Math.floor((double)((float)nextButtonIndex / 2.0F)), true, setting.title), clear);
+            this.init(new VROptionLayout(setting.customHandler, pos, (float)Math.floor((double)((float)nextButtonIndex / 2.0F)), true, setting.title));
         }
 
         ++nextButtonIndex;
     }
 
-    protected void init(VROptionEntry setting){ this.init(setting, false); }
-
-    protected void init(VRSettings.VrOptions setting, boolean clear)
+    protected void init(VRSettings.VrOptions setting)
     {
-        if (clear)
-        {
-            this.clearWidgets();
-            this.nextButtonIndex = 0;
-        }
-
-        if (this.nextButtonIndex < this.children().size())
-        {
-            this.nextButtonIndex = this.children().size();
-        }
-
-        this.init(new VROptionEntry(setting), false);
+        this.init(new VROptionEntry(setting));
     }
 
-    protected void init(VRSettings.VrOptions setting){ this.init(setting, false); }
-
-    protected void init(VROptionLayout[] settings, boolean clear)
+    protected void init(VROptionLayout[] settings)
     {
-        if (clear)
-        {
-        	this.clearWidgets();
-            this.nextButtonIndex = 0;
-        }
-
-        if (this.nextButtonIndex < this.children().size())
-        {
-            this.nextButtonIndex = this.children().size();
-        }
-
         for (final VROptionLayout setting : settings)
         {
-            this.init(setting, false);
+            this.init(setting);
         }
     }
 
-    protected void init(VROptionLayout[] settings) { this.init(settings, false); }
-
-    protected void init(VROptionEntry[] settings, boolean clear)
+    protected void init(VROptionEntry[] settings)
     {
-        if (clear)
-        {
-        	this.clearWidgets();
-            this.nextButtonIndex = 0;
-        }
-
-        if (this.nextButtonIndex < this.children().size())
-        {
-            this.nextButtonIndex = this.children().size();
-        }
-
         for (final VROptionEntry setting : settings) {
-            this.init(setting, false);
+            this.init(setting);
         }
     }
 
-    protected void init(VROptionEntry[] settings){ this.init(settings, false); }
-
-    protected void init(VRSettings.VrOptions[] settings, boolean clear)
+    protected void init(VRSettings.VrOptions[] settings)
     {
-        if (clear)
-        {
-            this.clearWidgets();
-            this.nextButtonIndex = 0;
-        }
-
-        if (this.nextButtonIndex < this.children().size())
-        {
-            this.nextButtonIndex = this.children().size();
-        }
-
         for (VRSettings.VrOptions setting : settings)
         {
-            this.init(setting, false);
+            this.init(setting);
         }
     }
-
-    protected void init(VRSettings.VrOptions[] settings){ this.init(settings, false); }
 
     public void render(PoseStack pMatrixStack, int pMouseX, int pMouseY, float pPartialTicks)
     {

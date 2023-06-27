@@ -2,14 +2,14 @@ package org.vivecraft.client.gui.settings;
 
 import org.vivecraft.client.gui.framework.VROptionEntry;
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
-import org.vivecraft.client_vr.settings.VRSettings;
+import org.vivecraft.client_vr.settings.VRSettings.VrOptions;
 
 import net.minecraft.client.gui.screens.Screen;
 
 public class GuiMenuWorldSettings extends GuiVROptionsBase
 {
     private VROptionEntry[] miscSettings = new VROptionEntry[] {
-            new VROptionEntry(VRSettings.VrOptions.MENU_WORLD_SELECTION),
+            new VROptionEntry(VrOptions.MENU_WORLD_SELECTION),
 //            new VROptionEntry("vivecraft.gui.menuworld.refresh", (button, mousePos) -> {
 //                if (this.dataholder.menuWorldRenderer.getWorld() != null)
 //                {
@@ -26,7 +26,7 @@ public class GuiMenuWorldSettings extends GuiVROptionsBase
 //
 //                return true;
 //            }),
-//            new VROptionEntry(VRSettings.VrOptions.DUMMY), new VROptionEntry("vivecraft.gui.menuworld.loadnew", (button, mousePos) -> {
+//            new VROptionEntry(VrOptions.DUMMY), new VROptionEntry("vivecraft.gui.menuworld.loadnew", (button, mousePos) -> {
 //                try {
 //                    if (this.dataholder.menuWorldRenderer.isReady())
 //                    {
@@ -52,7 +52,8 @@ public class GuiMenuWorldSettings extends GuiVROptionsBase
     public void init()
     {
         this.vrTitle = "vivecraft.options.screen.menuworld";
-        super.init(this.miscSettings, true);
+        super.clearWidgets();
+        super.init(this.miscSettings);
         super.addDefaultButtons();
     }
 }

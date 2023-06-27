@@ -397,6 +397,22 @@ public class VRSettings
     //HUD/GUI
     @SettingField(VrOptions.TOUCH_HOTBAR)
     public boolean vrTouchHotbar = true;
+    @SettingField(VrOptions.TOUCH_HOTBAR_COLOR_R)
+    public float vrTouchHotbarR = 0;
+    @SettingField(VrOptions.TOUCH_HOTBAR_COLOR_G)
+    public float vrTouchHotbarG = 1;
+    @SettingField(VrOptions.TOUCH_HOTBAR_COLOR_B)
+    public float vrTouchHotbarB = 0;
+    @SettingField(VrOptions.TOUCH_HOTBAR_COLOR_A)
+    public float vrTouchHotbarA = 1;
+    @SettingField(VrOptions.TOUCH_OFFBAR_COLOR_R)
+    public float vrTouchOffBarR = 0;
+    @SettingField(VrOptions.TOUCH_OFFBAR_COLOR_G)
+    public float vrTouchOffBarG = 0;
+    @SettingField(VrOptions.TOUCH_OFFBAR_COLOR_B)
+    public float vrTouchOffBarB = 1;
+    @SettingField(VrOptions.TOUCH_OFFBAR_COLOR_A)
+    public float vrTouchOffBarA = 1;
     @SettingField(value = VrOptions.HUD_SCALE, config = "headHudScale")
     public float hudScale = 1.0f;
     @SettingField(VrOptions.HUD_DISTANCE)
@@ -1391,6 +1407,14 @@ public class VRSettings
             }
         },
         TOUCH_HOTBAR(false, true), // Touch Hotbar Enabled
+        TOUCH_HOTBAR_COLOR_R(true, false, 0f, 1f, 0.01f, -1, "color.minecraft.red"),
+        TOUCH_HOTBAR_COLOR_G(true, false, 0f, 1f, 0.01f, -1, "color.minecraft.green"),
+        TOUCH_HOTBAR_COLOR_B(true, false, 0f, 1f, 0.01f, -1, "color.minecraft.blue"),
+        TOUCH_HOTBAR_COLOR_A(true, false, 0f, 1f, 0.01f, -1, "effect.minecraft.strength"),
+        TOUCH_OFFBAR_COLOR_R(true, false, 0f, 1f, 0.01f, -1, "color.minecraft.red"),
+        TOUCH_OFFBAR_COLOR_G(true, false, 0f, 1f, 0.01f, -1, "color.minecraft.green"),
+        TOUCH_OFFBAR_COLOR_B(true, false, 0f, 1f, 0.01f, -1, "color.minecraft.blue"),
+        TOUCH_OFFBAR_COLOR_A(true, false, 0f, 1f, 0.01f, -1, "effect.minecraft.strength"),
         PLAY_MODE_SEATED(false, true, "vivecraft.options.seated", "vivecraft.options.standing"), // Play Mode
         RENDER_SCALEFACTOR(true, false, 0.1f, 9f, 0.1f, 0) { // Resolution
             @Override

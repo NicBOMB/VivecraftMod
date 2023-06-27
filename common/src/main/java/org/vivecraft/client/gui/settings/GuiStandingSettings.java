@@ -3,8 +3,8 @@ package org.vivecraft.client.gui.settings;
 import net.minecraft.client.gui.screens.Screen;
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
 import org.vivecraft.client.gui.framework.VROptionEntry;
-import org.vivecraft.client.gui.framework.VROptionLayout;
-import org.vivecraft.client_vr.settings.VRSettings;
+import org.vivecraft.client.gui.framework.VROptionLayout.Position;
+import org.vivecraft.client_vr.settings.VRSettings.VrOptions;
 
 public class GuiStandingSettings extends GuiVROptionsBase
 {
@@ -16,14 +16,15 @@ public class GuiStandingSettings extends GuiVROptionsBase
     public void init()
     {
         this.vrTitle = "vivecraft.options.screen.standing";
-        super.init(VRSettings.VrOptions.WALK_UP_BLOCKS, true);
-        super.init(VRSettings.VrOptions.VEHICLE_ROTATION);
-        super.init(VRSettings.VrOptions.WALK_MULTIPLIER);
-        super.init(VRSettings.VrOptions.WORLD_ROTATION_INCREMENT);
-        super.init(VRSettings.VrOptions.BCB_ON);
-        super.init(VRSettings.VrOptions.ALLOW_STANDING_ORIGIN_OFFSET);
-        super.init(new VROptionEntry(VRSettings.VrOptions.FORCE_STANDING_FREE_MOVE, VROptionLayout.Position.POS_CENTER));
-        super.init(new VROptionEntry(VRSettings.VrOptions.DUMMY, VROptionLayout.Position.POS_CENTER));
+        super.clearWidgets();
+        super.init(VrOptions.WALK_UP_BLOCKS);
+        super.init(VrOptions.VEHICLE_ROTATION);
+        super.init(VrOptions.WALK_MULTIPLIER);
+        super.init(VrOptions.WORLD_ROTATION_INCREMENT);
+        super.init(VrOptions.BCB_ON);
+        super.init(VrOptions.ALLOW_STANDING_ORIGIN_OFFSET);
+        super.init(new VROptionEntry(VrOptions.FORCE_STANDING_FREE_MOVE, Position.POS_CENTER));
+        super.init(new VROptionEntry(VrOptions.DUMMY, Position.POS_CENTER));
         super.init(new VROptionEntry("vivecraft.options.screen.teleport.button", (button, mousePos) -> {
             this.minecraft.setScreen(new GuiTeleportSettings(this));
             return true;

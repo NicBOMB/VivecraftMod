@@ -2,7 +2,7 @@ package org.vivecraft.client.gui.settings;
 
 import net.minecraft.client.gui.screens.Screen;
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
-import org.vivecraft.client_vr.settings.VRSettings;
+import org.vivecraft.client_vr.settings.VRSettings.VrOptions;
 
 public class GuiRoomscaleSettings extends GuiVROptionsBase
 {
@@ -14,15 +14,16 @@ public class GuiRoomscaleSettings extends GuiVROptionsBase
     public void init()
     {
         this.vrTitle = "vivecraft.options.screen.roomscale";
-        super.init(VRSettings.VrOptions.WEAPON_COLLISION, true);
-        super.init(VRSettings.VrOptions.REALISTIC_JUMP);
-        super.init(VRSettings.VrOptions.REALISTIC_SNEAK);
-        super.init(VRSettings.VrOptions.REALISTIC_CLIMB);
-        super.init(VRSettings.VrOptions.REALISTIC_ROW);
-        super.init(VRSettings.VrOptions.REALISTIC_SWIM);
-        super.init(VRSettings.VrOptions.BOW_MODE);
-        super.init(VRSettings.VrOptions.BACKPACK_SWITCH);
-        super.init(VRSettings.VrOptions.ALLOW_CRAWLING);
+        super.clearWidgets();
+        super.init(VrOptions.WEAPON_COLLISION);
+        super.init(VrOptions.REALISTIC_JUMP);
+        super.init(VrOptions.REALISTIC_SNEAK);
+        super.init(VrOptions.REALISTIC_CLIMB);
+        super.init(VrOptions.REALISTIC_ROW);
+        super.init(VrOptions.REALISTIC_SWIM);
+        super.init(VrOptions.BOW_MODE);
+        super.init(VrOptions.BACKPACK_SWITCH);
+        super.init(VrOptions.ALLOW_CRAWLING);
         super.addDefaultButtons();
     }
 }

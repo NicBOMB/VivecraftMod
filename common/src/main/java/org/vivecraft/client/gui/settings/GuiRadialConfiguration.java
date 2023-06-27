@@ -3,7 +3,8 @@ package org.vivecraft.client.gui.settings;
 import org.apache.commons.lang3.ArrayUtils;
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
 import org.vivecraft.client.gui.framework.VROptionLayout;
-import org.vivecraft.client_vr.settings.VRSettings;
+import org.vivecraft.client.gui.framework.VROptionLayout.Position;
+import org.vivecraft.client_vr.settings.VRSettings.VrOptions;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -16,7 +17,7 @@ import net.minecraft.network.chat.Component;
 public class GuiRadialConfiguration extends GuiVROptionsBase
 {
     static VROptionLayout[] options = new VROptionLayout[] {
-            new VROptionLayout(VRSettings.VrOptions.RADIAL_MODE_HOLD, VROptionLayout.Position.POS_LEFT, 0.0F, true, "")
+            new VROptionLayout(VrOptions.RADIAL_MODE_HOLD, Position.POS_LEFT, 0.0F, true, "")
     };
     private String[] arr;
     private boolean isShift = false;
@@ -107,7 +108,7 @@ public class GuiRadialConfiguration extends GuiVROptionsBase
                     .build());
             }
 
-            super.init(options, false);
+            super.init(options);
             int i = 8;
             int j = 120;
             int k = 360 / i;
