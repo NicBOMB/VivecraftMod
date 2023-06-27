@@ -74,11 +74,6 @@ public class VRSettings
         ON
     }
 
-    public enum FingerCount implements OptionEnum<FingerCount> {
-        EXTENSION,
-        CURL
-    }
-
     public enum RenderPointerElement implements OptionEnum<RenderPointerElement> {
         ALWAYS,
         WITH_HUD,
@@ -890,7 +885,8 @@ public class VRSettings
 
     public String getButtonDisplayString( VrOptions par1EnumOptions )
     {
-        String var2 = I18n.get("vivecraft.options." + par1EnumOptions.name());
+        String var2 = par1EnumOptions.getLangKey();
+        var2 = var2 != null ? I18n.get(var2) : I18n.get("vivecraft.options." + par1EnumOptions.name());
 
         String var3 = var2 + ": ";
         String var4 = var3;
@@ -1526,7 +1522,7 @@ public class VRSettings
                 }
             }
         },
-        FINGER_COUNT(false, true, "vivecraft.options.fingercount.extension", "vivecraft.options.fingercount.curl"),
+        FINGER_COUNT(false, true, "vivecraft.options.FINGER_COUNT.extension", "vivecraft.options.FINGER_COUNT.curl"),
         SKELETAL_INPUT(false, true){
             @Override
             public String getTooltipString(String key){
@@ -1561,17 +1557,67 @@ public class VRSettings
             }
         }, // Skeletal Input Enabled
         FINGER_VIEW(false, true), // Finger View Enabled
-        MAIN_THUMB_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        MAIN_INDEX_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        MAIN_MIDDLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        MAIN_RING_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        MAIN_LITTLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        OFF_THUMB_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        OFF_INDEX_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        OFF_MIDDLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        OFF_RING_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        OFF_LITTLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1),
-        MAIN_THUMB_DISPLAY(true, false, 1, 11, 1, 0) {
+        MAIN_THUMB_THRESHOLD(true, false, 0f, 1f, 0.01f, -1, "vivecraft.key.mainThumb"),
+        MAIN_INDEX_THRESHOLD(true, false, 0f, 1f, 0.01f, -1, "vivecraft.key.mainIndex"),
+        MAIN_MIDDLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1, "vivecraft.key.mainMiddle"),
+        MAIN_RING_THRESHOLD(true, false, 0f, 1f, 0.01f, -1, "vivecraft.key.mainRing"),
+        MAIN_LITTLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1, "vivecraft.key.mainLittle"),
+        OFF_THUMB_THRESHOLD(true, false, 0f, 1f, 0.01f, -1, "vivecraft.key.offThumb"),
+        OFF_INDEX_THRESHOLD(true, false, 0f, 1f, 0.01f, -1, "vivecraft.key.offIndex"),
+        OFF_MIDDLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1, "vivecraft.key.offMiddle"),
+        OFF_RING_THRESHOLD(true, false, 0f, 1f, 0.01f, -1, "vivecraft.key.offRing"),
+        OFF_LITTLE_THRESHOLD(true, false, 0f, 1f, 0.01f, -1, "vivecraft.key.offLittle"),
+        MAIN_THUMB_DISPLAY(true, false, 1, 11, 1, 0, "vivecraft.key.mainThumb") {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("options.mainHand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        MAIN_INDEX_DISPLAY(true, false, 1, 11, 1, 0, "vivecraft.key.mainIndex") {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("options.mainHand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        MAIN_MIDDLE_DISPLAY(true, false, 1, 11, 1, 0, "vivecraft.key.mainMiddle") {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("options.mainHand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        MAIN_RING_DISPLAY(true, false, 1, 11, 1, 0, "vivecraft.key.mainRing") {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("options.mainHand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        MAIN_LITTLE_DISPLAY(true, false, 1, 11, 1, 0, "vivecraft.key.mainLittle") {
+            @Override
+            String getDisplayString(String prefix, Object value) {
+                return (
+                    (int) value == 10 ? prefix + LangHelper.get("options.mainHand") :
+                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
+                    prefix + LangHelper.get("key.hotbar." + (int) value)
+                );
+            }
+        },
+        OFF_THUMB_DISPLAY(true, false, 1, 11, 1, 0, "vivecraft.key.offThumb") {
             @Override
             String getDisplayString(String prefix, Object value) {
                 return (
@@ -1581,7 +1627,7 @@ public class VRSettings
                 );
             }
         },
-        MAIN_INDEX_DISPLAY(true, false, 1, 11, 1, 0) {
+        OFF_INDEX_DISPLAY(true, false, 1, 11, 1, 0, "vivecraft.key.offIndex") {
             @Override
             String getDisplayString(String prefix, Object value) {
                 return (
@@ -1591,7 +1637,7 @@ public class VRSettings
                 );
             }
         },
-        MAIN_MIDDLE_DISPLAY(true, false, 1, 11, 1, 0) {
+        OFF_MIDDLE_DISPLAY(true, false, 1, 11, 1, 0, "vivecraft.key.offMiddle") {
             @Override
             String getDisplayString(String prefix, Object value) {
                 return (
@@ -1601,7 +1647,7 @@ public class VRSettings
                 );
             }
         },
-        MAIN_RING_DISPLAY(true, false, 1, 11, 1, 0) {
+        OFF_RING_DISPLAY(true, false, 1, 11, 1, 0, "vivecraft.key.offRing") {
             @Override
             String getDisplayString(String prefix, Object value) {
                 return (
@@ -1611,57 +1657,7 @@ public class VRSettings
                 );
             }
         },
-        MAIN_LITTLE_DISPLAY(true, false, 1, 11, 1, 0) {
-            @Override
-            String getDisplayString(String prefix, Object value) {
-                return (
-                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
-                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
-                    prefix + LangHelper.get("key.hotbar." + (int) value)
-                );
-            }
-        },
-        OFF_THUMB_DISPLAY(true, false, 1, 11, 1, 0) {
-            @Override
-            String getDisplayString(String prefix, Object value) {
-                return (
-                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
-                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
-                    prefix + LangHelper.get("key.hotbar." + (int) value)
-                );
-            }
-        },
-        OFF_INDEX_DISPLAY(true, false, 1, 11, 1, 0) {
-            @Override
-            String getDisplayString(String prefix, Object value) {
-                return (
-                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
-                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
-                    prefix + LangHelper.get("key.hotbar." + (int) value)
-                );
-            }
-        },
-        OFF_MIDDLE_DISPLAY(true, false, 1, 11, 1, 0) {
-            @Override
-            String getDisplayString(String prefix, Object value) {
-                return (
-                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
-                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
-                    prefix + LangHelper.get("key.hotbar." + (int) value)
-                );
-            }
-        },
-        OFF_RING_DISPLAY(true, false, 1, 11, 1, 0) {
-            @Override
-            String getDisplayString(String prefix, Object value) {
-                return (
-                    (int) value == 10 ? prefix + LangHelper.get("vivecraft.options.offhand") :
-                    (int) value > 10 ? prefix + LangHelper.get("options.off") :
-                    prefix + LangHelper.get("key.hotbar." + (int) value)
-                );
-            }
-        },
-        OFF_LITTLE_DISPLAY(true, false, 1, 11, 1, 0) {
+        OFF_LITTLE_DISPLAY(true, false, 1, 11, 1, 0, "vivecraft.key.offLittle") {
             @Override
             String getDisplayString(String prefix, Object value) {
                 return (
@@ -1734,6 +1730,7 @@ public class VRSettings
         private final float valueMin;
         private final float valueMax;
         private final int decimalPlaces;
+        private final String langKey;
         private final Pair<String, String> booleanLangKeys;
 
         public static VrOptions getEnumOptions(int par0)
@@ -1774,10 +1771,14 @@ public class VRSettings
          * @param decimalPlaces number of decimal places for float value, negative to display as percentage
          */
         VrOptions(boolean isfloat, boolean isbool, float min, float max, float step, int decimalPlaces) {
-            this(isfloat, isbool, min, max, step, decimalPlaces, LangHelper.ON_KEY, LangHelper.OFF_KEY);
+            this(isfloat, isbool, min, max, step, decimalPlaces, LangHelper.ON_KEY, LangHelper.OFF_KEY, null);
         }
 
-        VrOptions(boolean isfloat, boolean isboolean, float min, float max, float step, int decimalPlaces, String trueLangKey, String falseLangKey)
+        VrOptions(boolean isfloat, boolean isboolean, float min, float max, float step, int decimalPlaces, String trueLangKey, String falseLangKey){
+            this(isfloat, isboolean, min, max, step, decimalPlaces, trueLangKey, falseLangKey, null);
+        }
+
+        VrOptions(boolean isfloat, boolean isboolean, float min, float max, float step, int decimalPlaces, String trueLangKey, String falseLangKey, String prefixLangKey)
         {
             this.enumFloat = isfloat;
             this.enumBoolean = isboolean;
@@ -1785,7 +1786,13 @@ public class VRSettings
             this.valueMax = max;
             this.valueStep = step;
             this.decimalPlaces = decimalPlaces;
+            this.langKey = prefixLangKey;
             this.booleanLangKeys = Pair.of(trueLangKey, falseLangKey);
+        }
+
+        VrOptions(boolean isfloat, boolean isboolean, float min, float max, float step, int decimalPlaces, String langKey)
+        {
+            this(isfloat, isboolean, min, max, step, decimalPlaces, LangHelper.ON_KEY, LangHelper.OFF_KEY, langKey);
         }
 
         Object convertOption(String value) {
@@ -1849,6 +1856,10 @@ public class VRSettings
 
         public String getTooltipString(String key){
             return null;
+        }
+
+        public String getLangKey() {
+            return langKey;
         }
 
         public Pair<String, String> getBooleanLangKeys() {

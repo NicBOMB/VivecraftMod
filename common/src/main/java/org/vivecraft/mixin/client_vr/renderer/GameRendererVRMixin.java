@@ -1089,8 +1089,6 @@ public abstract class GameRendererVRMixin
         posestack.popPose();
     }
 
-    }
-
     private void renderVRHand_Offhand(float partialTicks, boolean renderTeleport, PoseStack posestack) {
         // boolean shadersMod = Config.isShaders();TODO
         boolean shadersMod = false;
