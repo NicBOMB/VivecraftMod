@@ -1,8 +1,12 @@
 package org.vivecraft.common.utils.math;
 
-import net.minecraft.world.phys.Vec3;
-import org.vivecraft.common.utils.lwjgl.Matrix3f;
 import org.vivecraft.client.utils.Utils;
+import org.vivecraft.common.utils.lwjgl.Matrix3f;
+
+import net.minecraft.world.phys.Vec3;
+
+import static java.lang.Math.pow;
+import static org.joml.Math.*;
 
 @Deprecated
 public class Quaternion
@@ -35,9 +39,9 @@ public class Quaternion
 
     public Quaternion(Vector3 vector, float rotation)
     {
-        rotation = (float)Math.toRadians((double)rotation);
-        float f = (float)Math.sin((double)(rotation / 2.0F));
-        this.w = (float)Math.cos((double)(rotation / 2.0F));
+        rotation = toRadians(rotation);
+        float f = sin(rotation / 2.0F);
+        this.w = cos(rotation / 2.0F);
         this.x = vector.x * f;
         this.y = vector.y * f;
         this.z = vector.z * f;
@@ -118,7 +122,7 @@ public class Quaternion
 
         if ((double)f1 >= 0.0D)
         {
-            float f = (float)Math.sqrt((double)f1 + 1.0D);
+            float f = (float)sqrt((double)f1 + 1.0D);
             this.w = f * 0.5F;
             f = 0.5F / f;
             this.x = (m21 - m12) * f;
@@ -127,11 +131,11 @@ public class Quaternion
         }
         else
         {
-            float f2 = Math.max(Math.max(m00, m11), m22);
+            float f2 = max(max(m00, m11), m22);
 
             if (f2 == m00)
             {
-                float f3 = (float)Math.sqrt((double)(m00 - (m11 + m22)) + 1.0D);
+                float f3 = (float)sqrt((double)(m00 - (m11 + m22)) + 1.0D);
                 this.x = f3 * 0.5F;
                 f3 = 0.5F / f3;
                 this.y = (m01 + m10) * f3;
@@ -140,7 +144,7 @@ public class Quaternion
             }
             else if (f2 == m11)
             {
-                float f4 = (float)Math.sqrt((double)(m11 - (m22 + m00)) + 1.0D);
+                float f4 = (float)sqrt((double)(m11 - (m22 + m00)) + 1.0D);
                 this.y = f4 * 0.5F;
                 f4 = 0.5F / f4;
                 this.z = (m12 + m21) * f4;
@@ -149,7 +153,7 @@ public class Quaternion
             }
             else
             {
-                float f5 = (float)Math.sqrt((double)(m22 - (m00 + m11)) + 1.0D);
+                float f5 = (float)sqrt((double)(m22 - (m00 + m11)) + 1.0D);
                 this.z = f5 * 0.5F;
                 f5 = 0.5F / f5;
                 this.x = (m20 + m02) * f5;
@@ -214,7 +218,7 @@ public class Quaternion
 
     public void normalize()
     {
-        float f = (float)Math.sqrt((double)(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z));
+        float f = (float)sqrt((double)(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z));
 
         if (f > 0.0F)
         {
@@ -234,7 +238,7 @@ public class Quaternion
 
     public Quaternion normalized()
     {
-        float f4 = (float)Math.sqrt((double)(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z));
+        float f4 = (float)sqrt((double)(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z));
         float f;
         float f1;
         float f2;
@@ -261,9 +265,9 @@ public class Quaternion
     public Angle toEuler()
     {
         Angle angle = new Angle();
-        angle.setYaw((float)Math.toDegrees(Math.atan2((double)(2.0F * (this.x * this.z + this.w * this.y)), (double)(this.w * this.w - this.x * this.x - this.y * this.y + this.z * this.z))));
-        angle.setPitch((float)Math.toDegrees(Math.asin((double)(-2.0F * (this.y * this.z - this.w * this.x)))));
-        angle.setRoll((float)Math.toDegrees(Math.atan2((double)(2.0F * (this.x * this.y + this.w * this.z)), (double)(this.w * this.w - this.x * this.x + this.y * this.y - this.z * this.z))));
+        angle.setYaw((float)toDegrees(atan2((double)(2.0F * (this.x * this.z + this.w * this.y)), (double)(this.w * this.w - this.x * this.x - this.y * this.y + this.z * this.z))));
+        angle.setPitch((float)toDegrees(asin((double)(-2.0F * (this.y * this.z - this.w * this.x)))));
+        angle.setRoll((float)toDegrees(atan2((double)(2.0F * (this.x * this.y + this.w * this.z)), (double)(this.w * this.w - this.x * this.x + this.y * this.y - this.z * this.z))));
         return angle;
     }
 
@@ -276,7 +280,7 @@ public class Quaternion
         else
         {
             org.vivecraft.common.utils.lwjgl.Matrix4f matrix4f = this.getMatrix();
-            matrix4f.rotate((float)Math.toRadians((double)degrees), Utils.convertVector(axis.getVector()));
+            matrix4f.rotate((float)toRadians((double)degrees), Utils.convertVector(axis.getVector()));
             return new Quaternion(matrix4f);
         }
     }
@@ -319,13 +323,6 @@ public class Quaternion
     public Quaternion inverse()
     {
         return new Quaternion(this.w, -this.x, -this.y, -this.z);
-    }
-
-    public static Quaternion createFromToVector(Vector3 from, Vector3 to)
-    {
-        Vector3 vector3 = from.cross(to);
-        float f = (float)(Math.sqrt(Math.pow((double)from.length(), 2.0D) * Math.pow((double)to.length(), 2.0D)) + (double)from.dot(to));
-        return (new Quaternion(f, vector3.x, vector3.y, vector3.z)).normalized();
     }
 
     public int hashCode()

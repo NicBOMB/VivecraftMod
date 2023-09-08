@@ -2,6 +2,8 @@ package org.vivecraft.common.utils.lwjgl;
 
 import java.nio.FloatBuffer;
 
+import static org.joml.Math.*;
+
 @Deprecated
 public class Matrix4f extends Matrix
 {
@@ -414,8 +416,8 @@ public class Matrix4f extends Matrix
             dest = new Matrix4f();
         }
 
-        float f = (float)Math.cos((double)angle);
-        float f1 = (float)Math.sin((double)angle);
+        float f = (float)cos((double)angle);
+        float f1 = (float)sin((double)angle);
         float f2 = 1.0F - f;
         float f3 = axis.x * axis.y;
         float f4 = axis.y * axis.z;

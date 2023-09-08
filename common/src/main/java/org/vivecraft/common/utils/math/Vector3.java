@@ -1,9 +1,12 @@
 package org.vivecraft.common.utils.math;
 
-import net.minecraft.world.phys.Vec3;
 import org.vivecraft.common.utils.lwjgl.Matrix3f;
 import org.vivecraft.common.utils.lwjgl.Matrix4f;
 import org.vivecraft.common.utils.lwjgl.Vector3f;
+
+import net.minecraft.world.phys.Vec3;
+
+import static org.joml.Math.*;
 
 @Deprecated
 public class Vector3
@@ -153,14 +156,14 @@ public class Vector3
     {
         float f = other.x - this.x;
         float f1 = other.z - this.z;
-        float f2 = (float)Math.toDegrees(Math.atan2((double)(other.y - this.y), Math.sqrt((double)(f * f + f1 * f1))));
-        float f3 = (float)Math.toDegrees(Math.atan2((double)(-f), (double)(-f1)));
+        float f2 = (float)toDegrees(atan2((double)(other.y - this.y), sqrt((double)(f * f + f1 * f1))));
+        float f3 = (float)toDegrees(atan2((double)(-f), (double)(-f1)));
         return new Angle(f2, f3);
     }
 
     public float length()
     {
-        return (float)Math.sqrt((double)(this.x * this.x + this.y * this.y + this.z * this.z));
+        return (float)sqrt((double)(this.x * this.x + this.y * this.y + this.z * this.z));
     }
 
     public float lengthSquared()
@@ -173,7 +176,7 @@ public class Vector3
         float f = other.x - this.x;
         float f1 = other.y - this.y;
         float f2 = other.z - this.z;
-        return (float)Math.sqrt((double)(f * f + f1 * f1 + f2 * f2));
+        return (float)sqrt((double)(f * f + f1 * f1 + f2 * f2));
     }
 
     public float distanceSquared(Vector3 other)
@@ -252,10 +255,10 @@ public class Vector3
     public static Vector3 slerp(Vector3 start, Vector3 end, float fraction)
     {
         float f = start.dot(end);
-        float f1 = (float)Math.acos((double)f) * fraction;
+        float f1 = acos(f) * fraction;
         Vector3 vector3 = end.subtract(start.multiply(f));
         vector3.normalize();
-        return start.multiply((float)Math.cos((double)f1)).add(vector3.multiply((float)Math.sin((double)f1)));
+        return start.multiply(cos(f1)).add(vector3.multiply(sin(f1)));
     }
 
     public static Matrix3f lookMatrix(Vector3 forward, Vector3 up)

@@ -5,6 +5,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import static org.joml.Math.*;
+
 @Deprecated
 public class Matrix4f
 {
@@ -189,9 +191,9 @@ public class Matrix4f
 
     public static Matrix4f rotationY(float angle)
     {
-        double d0 = Math.sin((double)angle);
-        double d1 = Math.cos((double)angle);
-        return new Matrix4f((float)d1, 0.0F, (float)d0, 0.0F, 1.0F, 0.0F, -((float)d0), 0.0F, (float)d1);
+        float f0 = sin(angle);
+        float f1 = cos(angle);
+        return new Matrix4f(f1, 0.0F, f0, 0.0F, 1.0F, 0.0F, -f0, 0.0F, f1);
     }
 
     public Vector3 transform(Vector3 v)

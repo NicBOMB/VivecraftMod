@@ -1,19 +1,19 @@
 package org.vivecraft.mixin.world.item;
 
+import org.vivecraft.common.utils.math.Vector3;
+import org.vivecraft.server.ServerVRPlayers;
+import org.vivecraft.server.ServerVivePlayer;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-
-
-import net.minecraft.world.item.CrossbowItem;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.vivecraft.server.ServerVRPlayers;
-import org.vivecraft.server.ServerVivePlayer;
-import org.vivecraft.common.utils.math.Vector3;
 
-@Mixin(CrossbowItem.class)
+
+@Mixin(net.minecraft.world.item.CrossbowItem.class)
 public class CrossbowItemMixin {
 
 	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getViewVector(F)Lnet/minecraft/world/phys/Vec3;"),

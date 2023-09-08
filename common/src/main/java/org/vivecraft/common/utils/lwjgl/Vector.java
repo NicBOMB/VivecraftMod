@@ -2,6 +2,8 @@ package org.vivecraft.common.utils.lwjgl;
 
 import java.nio.FloatBuffer;
 
+import static org.joml.Math.*;
+
 @Deprecated
 public abstract class Vector
 {
@@ -11,7 +13,7 @@ public abstract class Vector
 
     public final float length()
     {
-        return (float)Math.sqrt(this.lengthSquared());
+        return (float)sqrt(this.lengthSquared());
     }
 
     public abstract float lengthSquared();

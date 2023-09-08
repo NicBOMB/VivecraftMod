@@ -1,8 +1,9 @@
 package org.vivecraft.common.network;
 
+import org.vivecraft.common.utils.math.Quaternion;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
-import org.vivecraft.common.utils.math.Quaternion;
 
 public record Pose(Vec3 position, Quaternion orientation) {
 

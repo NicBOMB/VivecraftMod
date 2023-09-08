@@ -1,9 +1,10 @@
 package org.vivecraft.client_vr.provider.openvr_lwjgl;
 
-import org.lwjgl.openvr.HmdMatrix34;
 import org.vivecraft.client.utils.Utils;
 import org.vivecraft.common.utils.math.Matrix4f;
 import org.vivecraft.common.utils.math.Quaternion;
+
+import org.lwjgl.openvr.HmdMatrix34;
 
 public class OpenVRUtil
 {

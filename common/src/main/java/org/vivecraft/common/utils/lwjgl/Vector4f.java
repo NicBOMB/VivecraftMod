@@ -2,6 +2,8 @@ package org.vivecraft.common.utils.lwjgl;
 
 import java.nio.FloatBuffer;
 
+import static org.joml.Math.*;
+
 @Deprecated
 public class Vector4f extends Vector
 {
@@ -137,7 +139,7 @@ public class Vector4f extends Vector
             f = 1.0F;
         }
 
-        return (float)Math.acos((double)f);
+        return acos(f);
     }
 
     public Vector load(FloatBuffer buf)

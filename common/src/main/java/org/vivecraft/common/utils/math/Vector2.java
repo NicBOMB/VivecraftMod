@@ -2,6 +2,8 @@ package org.vivecraft.common.utils.math;
 
 import org.vivecraft.common.utils.lwjgl.Vector2f;
 
+import static org.joml.Math.*;
+
 @Deprecated
 public class Vector2
 {
@@ -94,12 +96,12 @@ public class Vector2
 
     public float angle(Vector2 other)
     {
-        return (float)Math.toDegrees(Math.atan2((double)(other.y - this.y), (double)(other.x - this.x)));
+        return (float)toDegrees(atan2(other.y - this.y, other.x - this.x));
     }
 
     public float length()
     {
-        return (float)Math.sqrt((double)(this.x * this.x + this.y * this.y));
+        return (float)sqrt((double)(this.x * this.x + this.y * this.y));
     }
 
     public float lengthSquared()
@@ -134,8 +136,8 @@ public class Vector2
 
     public static Vector2 direction(float angle)
     {
-        double d0 = Math.toRadians((double)angle);
-        return new Vector2((float)Math.cos(d0), (float)Math.sin(d0));
+        double d0 = toRadians((double)angle);
+        return new Vector2((float)cos(d0), (float)sin(d0));
     }
 
     public int hashCode()

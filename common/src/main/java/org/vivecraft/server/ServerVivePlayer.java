@@ -1,17 +1,21 @@
 package org.vivecraft.server;
 
+import org.vivecraft.common.network.CommonNetworkHelper;
+import org.vivecraft.common.network.Pose;
+import org.vivecraft.common.network.VRPlayerState;
+import org.vivecraft.common.utils.math.Vector3;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import org.vivecraft.common.network.CommonNetworkHelper;
-import org.vivecraft.common.network.VrPlayerState;
-import org.vivecraft.common.utils.math.Vector3;
 
 import javax.annotation.Nullable;
 
+import static org.joml.Math.*;
+
 public class ServerVivePlayer {
     @Nullable
-    public VrPlayerState vrPlayerState;
+    public VRPlayerState vrPlayerState;
     public float draw;
     public float worldScale = 1.0F;
     public float heightScale = 1.0F;
@@ -33,18 +37,15 @@ public class ServerVivePlayer {
     }
 
     public Vec3 getControllerVectorCustom(int controller, Vector3 direction) {
-        if (this.isSeated()) {
-            controller = 0;
-        }
+        Pose controllerPose = (controller == 0 || this.isSeated() ?
+            this.vrPlayerState.controller0() :
+            this.vrPlayerState.controller1()
+        );
 
-        var controllerPose = controller == 0 ? this.vrPlayerState.controller0() : this.vrPlayerState.controller1();
-
-        if (controllerPose != null) {
-            Vector3 vector3 = controllerPose.orientation().multiply(direction);
-            return new Vec3(vector3.getX(), vector3.getY(), vector3.getZ());
-        } else {
-            return this.player.getLookAngle();
-        }
+        return (controllerPose != null ?
+            controllerPose.orientation().multiply(direction).toVector3d() :
+            this.player.getLookAngle()
+        );
     }
 
     public Vec3 getControllerDir(int controller) {
@@ -72,7 +73,7 @@ public class ServerVivePlayer {
             // TODO: What the fuck is this nonsense?
             if (this.isSeated() && !realPosition) {
                 Vec3 vec3 = this.getHMDDir();
-                vec3 = vec3.yRot((float) Math.toRadians(c == 0 ? -35.0D : 35.0D));
+                vec3 = vec3.yRot(toRadians(c == 0 ? -35.0F : 35.0F));
                 vec3 = new Vec3(vec3.x, 0.0D, vec3.z);
                 vec3 = vec3.normalize();
                 return this.getHMDPos(player).add(vec3.x * 0.3D * (double) this.worldScale, -0.4D * (double) this.worldScale, vec3.z * 0.3D * (double) this.worldScale);
@@ -99,9 +100,6 @@ public class ServerVivePlayer {
     }
 
     public boolean isSeated() {
-        if (this.vrPlayerState == null) {
-            return false;
-        }
-        return this.vrPlayerState.seated();
+        return this.vrPlayerState != null && this.vrPlayerState.seated();
     }
 }

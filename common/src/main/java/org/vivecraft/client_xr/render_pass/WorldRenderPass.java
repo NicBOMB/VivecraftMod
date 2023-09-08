@@ -1,16 +1,19 @@
 package org.vivecraft.client_xr.render_pass;
 
+import org.vivecraft.client_vr.VRTextureTarget;
+
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import net.minecraft.client.Minecraft;
+
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.resources.ResourceLocation;
-import org.vivecraft.client_vr.VRTextureTarget;
 
 import java.io.IOException;
 
-public class WorldRenderPass implements AutoCloseable {
+import static org.vivecraft.client_vr.VRState.mc;
 
-    private static final Minecraft mc = Minecraft.getInstance();
+import static net.minecraft.client.Minecraft.useShaderTransparency;
+
+public class WorldRenderPass implements AutoCloseable {
 
     public static WorldRenderPass stereoXR;
     public static WorldRenderPass center;
@@ -26,11 +29,10 @@ public class WorldRenderPass implements AutoCloseable {
 
     public WorldRenderPass(VRTextureTarget target) throws IOException {
         this.target = target;
-        if (Minecraft.useShaderTransparency()) {
-            this.transparencyChain = createPostChain(new ResourceLocation("shaders/post/vrtransparency.json"), this.target);
-        } else {
-            this.transparencyChain = null;
-        }
+        this.transparencyChain = (useShaderTransparency() ?
+            createPostChain(new ResourceLocation("shaders/post/vrtransparency.json"), this.target) :
+            null
+        );
         this.outlineChain = createPostChain(new ResourceLocation("shaders/post/entity_outline.json"), this.target);
     }
 

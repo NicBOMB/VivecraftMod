@@ -1,15 +1,19 @@
 package org.vivecraft.client_vr.gameplay.trackers;
 
-import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.gameplay.VRPlayer;
-import org.vivecraft.client_vr.settings.VRSettings;
-import org.vivecraft.client.utils.Utils;
 import org.vivecraft.common.utils.math.Quaternion;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
+import org.joml.Vector3d;
+
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.phys.Vec3;
+
+import static org.vivecraft.client_vr.VRState.dh;
+import static org.vivecraft.client_vr.VRState.mc;
+import static org.vivecraft.common.utils.Utils.convertToVec3;
+import static org.vivecraft.common.utils.Utils.logger;
+
+import static org.joml.Math.*;
 
 public class HorseTracker extends Tracker
 {
@@ -25,35 +29,23 @@ public class HorseTracker extends Tracker
     Horse horse = null;
     ModelInfo info = new ModelInfo();
 
-    public HorseTracker(Minecraft mc, ClientDataHolderVR dh)
+    public void reset()
     {
-        super(mc, dh);
-    }
-
-    public boolean isActive(LocalPlayer p)
-    {
-        return false;
-    }
-
-    public void reset(LocalPlayer player)
-    {
-        super.reset(player);
-
         if (this.horse != null)
         {
             this.horse.setNoAi(false);
         }
     }
 
-    public void doProcess(LocalPlayer player)
+    public void doProcess()
     {
-        this.horse = (Horse)player.getVehicle();
+        this.horse = (Horse)mc.player.getVehicle();
         this.horse.setNoAi(true);
         float f = (this.horse.getYRot() + 360.0F) % 360.0F;
         float f1 = (this.horse.yBodyRot + 360.0F) % 360.0F;
-        Vec3 vec3 = this.dh.vr.controllerHistory[1].netMovement(0.1D).scale(10.0D);
-        Vec3 vec31 = this.dh.vr.controllerHistory[0].netMovement(0.1D).scale(10.0D);
-        double d0 = Math.min(-vec3.y, -vec31.y);
+        Vec3 vec3 = convertToVec3(dh.vr.controllerHistory[1].netMovement(0.1D, new Vector3d())).scale(10.0D);
+        Vec3 vec31 = convertToVec3(dh.vr.controllerHistory[0].netMovement(0.1D, new Vector3d())).scale(10.0D);
+        double d0 = min(-vec3.y, -vec31.y);
 
         if (d0 > this.boostTrigger)
         {
@@ -64,9 +56,9 @@ public class HorseTracker extends Tracker
         Vec3 vec32 = quaternion.multiply(new Vec3(0.0D, 0.0D, -1.0D));
         Vec3 vec33 = quaternion.multiply(new Vec3(1.0D, 0.0D, 0.0D));
         Vec3 vec34 = quaternion.multiply(new Vec3(-1.0D, 0.0D, 0.0D));
-        Quaternion quaternion1 = new Quaternion(0.0F, VRSettings.inst.worldRotation, 0.0F);
-        Vec3 vec35 = VRPlayer.get().roomOrigin.add(quaternion1.multiply(this.dh.vr.controllerHistory[1].latest()));
-        Vec3 vec36 = VRPlayer.get().roomOrigin.add(quaternion1.multiply(this.dh.vr.controllerHistory[0].latest()));
+        Quaternion quaternion1 = new Quaternion(0.0F, dh.vrSettings.worldRotation, 0.0F);
+        Vec3 vec35 = VRPlayer.get().roomOrigin.add(quaternion1.multiply(convertToVec3(dh.vr.controllerHistory[1].latest(new Vector3d()))));
+        Vec3 vec36 = VRPlayer.get().roomOrigin.add(quaternion1.multiply(convertToVec3(dh.vr.controllerHistory[0].latest(new Vector3d()))));
         double d1 = vec35.subtract(this.info.leftReinPos).dot(vec32) + vec35.subtract(this.info.leftReinPos).dot(vec33);
         double d2 = vec36.subtract(this.info.rightReinPos).dot(vec32) + vec36.subtract(this.info.rightReinPos).dot(vec34);
 
@@ -75,7 +67,7 @@ public class HorseTracker extends Tracker
             this.speedLevel = 0;
         }
 
-        if (d1 > this.pullTrigger + 0.3D && d2 > this.pullTrigger + 0.3D && Math.abs(d2 - d1) < 0.1D)
+        if (d1 > this.pullTrigger + 0.3D && d2 > this.pullTrigger + 0.3D && abs(d2 - d1) < 0.1D)
         {
             if (this.speedLevel <= 0 && System.currentTimeMillis() > this.lastBoostMillis + (long)this.coolDownMillis)
             {
@@ -104,7 +96,10 @@ public class HorseTracker extends Tracker
             this.horse.setYRot((float)((double)f + (d4 - d3) * this.turnspeed));
         }
 
-        this.horse.yBodyRot = (float)Utils.lerpMod((double)f1, (double)f, this.bodyturnspeed, 360.0D);
+        this.horse.yBodyRot = (float)(abs(f - f1) < 360.0D / 2.0D ?
+            f1 + (f - f1) * this.bodyturnspeed :
+            f1 + (f - f1 - signum(f - f1) * 360.0D) * this.bodyturnspeed
+        );
         this.horse.yHeadRot = f;
         Vec3 vec37 = quaternion.multiply(new Vec3(0.0D, 0.0D, (double)this.speedLevel * this.baseSpeed));
         this.horse.setDeltaMovement(vec37.x, this.horse.getDeltaMovement().y, vec37.z);
@@ -140,7 +135,7 @@ public class HorseTracker extends Tracker
         }
         else
         {
-            System.out.println("Breaking");
+            logger.info("Breaking");
             --this.speedLevel;
             this.lastBoostMillis = System.currentTimeMillis();
             return true;

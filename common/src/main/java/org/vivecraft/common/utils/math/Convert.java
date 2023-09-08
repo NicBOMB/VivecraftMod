@@ -3,6 +3,8 @@ package org.vivecraft.common.utils.math;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 
+import static org.joml.Math.*;
+
 public class Convert
 {
     public static Matrix matrix(float[] floatArray)
@@ -58,7 +60,7 @@ public class Convert
 
         public Matrix(float[] floatArray)
         {
-            this.dimension = (int)Math.sqrt((double)floatArray.length);
+            this.dimension = (int)sqrt((double)floatArray.length);
 
             if (this.dimension * this.dimension != floatArray.length)
             {
