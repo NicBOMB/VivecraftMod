@@ -1,9 +1,8 @@
 package org.vivecraft.client_vr.gameplay.trackers;
 
-import org.vivecraft.client_vr.gameplay.VRPlayer;
-import org.vivecraft.common.utils.math.Quaternion;
-
+import org.joml.Quaternionf;
 import org.joml.Vector3d;
+import org.joml.Vector3f;
 
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.phys.Vec3;
@@ -25,7 +24,7 @@ public class HorseTracker extends Tracker
     long lastBoostMillis = -1L;
     double turnspeed = 6.0D;
     double bodyturnspeed = 0.2D;
-    double baseSpeed = 0.2D;
+    float baseSpeed = 0.2F;
     Horse horse = null;
     ModelInfo info = new ModelInfo();
 
@@ -52,13 +51,17 @@ public class HorseTracker extends Tracker
             this.boost();
         }
 
-        Quaternion quaternion = new Quaternion(0.0F, -this.horse.yBodyRot, 0.0F);
-        Vec3 vec32 = quaternion.multiply(new Vec3(0.0D, 0.0D, -1.0D));
-        Vec3 vec33 = quaternion.multiply(new Vec3(1.0D, 0.0D, 0.0D));
-        Vec3 vec34 = quaternion.multiply(new Vec3(-1.0D, 0.0D, 0.0D));
-        Quaternion quaternion1 = new Quaternion(0.0F, dh.vrSettings.worldRotation, 0.0F);
-        Vec3 vec35 = VRPlayer.get().roomOrigin.add(quaternion1.multiply(convertToVec3(dh.vr.controllerHistory[1].latest(new Vector3d()))));
-        Vec3 vec36 = VRPlayer.get().roomOrigin.add(quaternion1.multiply(convertToVec3(dh.vr.controllerHistory[0].latest(new Vector3d()))));
+        Quaternionf quaternion = new Quaternionf().setAngleAxis(-this.horse.yBodyRot, 0.0F, 1.0F, 0.0F)
+            .mul(new Quaternionf().setAngleAxis(0.0F, 1.0F, 0.0F, 0.0F), new Quaternionf())
+            .mul(new Quaternionf().setAngleAxis(0.0F, 0.0F, 0.0F, 1.0F), new Quaternionf());
+        Vec3 vec32 = convertToVec3(quaternion.transformUnit(new Vector3f(0.0F, 0.0F, -1.0F), new Vector3f()));
+        Vec3 vec33 = convertToVec3(quaternion.transformUnit(new Vector3f(1.0F, 0.0F, 0.0F), new Vector3f()));
+        Vec3 vec34 = convertToVec3(quaternion.transformUnit(new Vector3f(-1.0F, 0.0F, 0.0F), new Vector3f()));
+        Quaternionf quaternion1 = new Quaternionf().setAngleAxis(dh.vrSettings.worldRotation, 0.0F, 1.0F, 0.0F)
+            .mul(new Quaternionf().setAngleAxis(0.0F, 1.0F, 0.0F, 0.0F), new Quaternionf())
+            .mul(new Quaternionf().setAngleAxis(0.0F, 0.0F, 0.0F, 1.0F), new Quaternionf());
+        Vec3 vec35 = dh.vrPlayer.roomOrigin.add(convertToVec3(quaternion1.transformUnit(dh.vr.controllerHistory[1].latest(new Vector3f()), new Vector3f())));
+        Vec3 vec36 = dh.vrPlayer.roomOrigin.add(convertToVec3(quaternion1.transformUnit(dh.vr.controllerHistory[0].latest(new Vector3f()), new Vector3f())));
         double d1 = vec35.subtract(this.info.leftReinPos).dot(vec32) + vec35.subtract(this.info.leftReinPos).dot(vec33);
         double d2 = vec36.subtract(this.info.rightReinPos).dot(vec32) + vec36.subtract(this.info.rightReinPos).dot(vec34);
 
@@ -101,7 +104,7 @@ public class HorseTracker extends Tracker
             f1 + (f - f1 - signum(f - f1) * 360.0D) * this.bodyturnspeed
         );
         this.horse.yHeadRot = f;
-        Vec3 vec37 = quaternion.multiply(new Vec3(0.0D, 0.0D, (double)this.speedLevel * this.baseSpeed));
+        Vector3f vec37 = quaternion.transformUnit(new Vector3f(0.0F, 0.0F, this.speedLevel * this.baseSpeed), new Vector3f());
         this.horse.setDeltaMovement(vec37.x, this.horse.getDeltaMovement().y, vec37.z);
     }
 

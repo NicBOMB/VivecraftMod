@@ -1,8 +1,9 @@
 package org.vivecraft.mixin.world.item;
 
-import org.vivecraft.common.utils.math.Vector3;
 import org.vivecraft.server.ServerVRPlayers;
 import org.vivecraft.server.ServerVivePlayer;
+
+import org.joml.Vector3f;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,7 +25,7 @@ public class CrossbowItemMixin {
 			ServerVivePlayer serverviveplayer = ServerVRPlayers.getVivePlayer(player);
 			if (serverviveplayer != null && serverviveplayer.isVR()) {
 				vec3 = serverviveplayer.getControllerDir(serverviveplayer.activeHand);
-				serverviveplayer.getControllerVectorCustom(serverviveplayer.activeHand, new Vector3(0.0F, 1.0F, 0.0F));
+				serverviveplayer.getControllerVectorCustom(serverviveplayer.activeHand, new Vector3f(0.0F, 1.0F, 0.0F));
 			}
 		}
 		return vec3;

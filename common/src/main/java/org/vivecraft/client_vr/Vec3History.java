@@ -2,6 +2,7 @@ package org.vivecraft.client_vr;
 
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
+import org.joml.Vector3f;
 
 import net.minecraft.Util;
 import net.minecraft.world.phys.Vec3;
@@ -35,6 +36,11 @@ public class Vec3History
     }
 
     public Vector3d latest(Vector3d dest)
+    {
+        return dest.set((this._data.getFirst()).data);
+    }
+
+    public Vector3f latest(Vector3f dest)
     {
         return dest.set((this._data.getFirst()).data);
     }

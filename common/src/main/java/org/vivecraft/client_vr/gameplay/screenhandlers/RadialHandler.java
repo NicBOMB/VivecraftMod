@@ -1,12 +1,12 @@
 package org.vivecraft.client_vr.gameplay.screenhandlers;
 
 import org.vivecraft.client.VivecraftVRMod;
-import org.vivecraft.client.utils.Utils;
 import org.vivecraft.client_vr.VRData.VRDevicePose;
 import org.vivecraft.client_vr.gui.GuiRadial;
 import org.vivecraft.client_vr.provider.ControllerType;
-import org.vivecraft.common.utils.math.Matrix4f;
-import org.vivecraft.common.utils.math.Vector3;
+
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 
@@ -154,20 +154,18 @@ public class RadialHandler
                 f = 1.2F;
             }
 
-            new Matrix4f();
             Vec3 vec3 = vrdata$vrdevicepose.getPosition();
             Vec3 vec31 = new Vec3(0.0D, 0.0D, -f);
             Vec3 vec32 = vrdata$vrdevicepose.getCustomVector(vec31);
             Pos_room = new Vec3(vec32.x / 2.0D + vec3.x, vec32.y / 2.0D + vec3.y, vec32.z / 2.0D + vec3.z);
-            Vector3 vector3 = new Vector3();
-            vector3.setX((float)(Pos_room.x - vec3.x));
-            vector3.setY((float)(Pos_room.y - vec3.y));
-            vector3.setZ((float)(Pos_room.z - vec3.z));
-            float f1 = asin(vector3.getY() / vector3.length());
-            float f2 = (float)PI + atan2(vector3.getX(), vector3.getZ());
-            Rotation_room = Matrix4f.rotationY(f2);
-            Matrix4f matrix4f = Utils.rotationXMatrix(f1);
-            Rotation_room = Matrix4f.multiply(Rotation_room, matrix4f);
+            Vector3f vector3 = new Vector3f(
+                (float)(Pos_room.x - vec3.x),
+                (float)(Pos_room.y - vec3.y),
+                (float)(Pos_room.z - vec3.z)
+            );
+            float f1 = asin(vector3.y / vector3.length());
+            float f2 = (float)PI + atan2(vector3.x, vector3.z);
+            Rotation_room.rotationY(f2).rotateX(f1);
         }
     }
 

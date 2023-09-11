@@ -6,7 +6,7 @@ import org.vivecraft.client_vr.gameplay.trackers.CameraTracker;
 import org.vivecraft.client_vr.settings.VRHotkeys;
 import org.vivecraft.client_vr.settings.VRSettings.MirrorMode;
 
-import org.joml.Quaternionf;
+import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -32,6 +32,8 @@ import java.util.function.Function;
 import static org.vivecraft.client.utils.Utils.getCombinedLightWithMin;
 import static org.vivecraft.client_vr.VRState.dh;
 import static org.vivecraft.client_vr.VRState.mc;
+
+import static org.joml.Math.*;
 
 public class VRWidgetHelper
 {
@@ -109,19 +111,23 @@ public class VRWidgetHelper
         Vec3 vec31 = dh.vrPlayer.vrdata_world_render.getEye(dh.currentPass).getPosition();
         Vec3 vec32 = vec3.subtract(vec31);
 
-        poseStack.translate(vec32.x, vec32.y, vec32.z);
-        poseStack.mulPoseMatrix(dh.vrPlayer.vrdata_world_render.getEye(renderPass).getMatrix().toMCMatrix());
-        scale = scale * dh.vrPlayer.vrdata_world_render.worldScale;
+        poseStack.last().pose()
+            .translate((float) vec32.x, (float) vec32.y, (float) vec32.z)
+            .mul(dh.vrPlayer.vrdata_world_render.getEye(renderPass).getMatrix());
+        scale *= dh.vrPlayer.vrdata_world_render.worldScale;
         poseStack.scale(scale, scale, scale);
 
         if (debug)
         {
-            poseStack.mulPose(new Quaternionf().fromAxisAngleDeg(0.0F, 1.0F, 0.0F, 180.0F));
+            float ang = toRadians(180.0F);
+            poseStack.last().pose().rotate(ang, 0.0F, 1.0F, 0.0F);
+            poseStack.last().normal().rotate(ang, 0.0F, 1.0F, 0.0F);
             ((GameRendererExtension) mc.gameRenderer).renderDebugAxes(0, 0, 0, 0.08F);
-            poseStack.mulPose(new Quaternionf().fromAxisAngleDeg(0.0F, 1.0F, 0.0F, 180.0F));
+            poseStack.last().pose().rotate(ang, 0.0F, 1.0F, 0.0F);
+            poseStack.last().normal().rotate(ang, 0.0F, 1.0F, 0.0F);
         }
 
-        poseStack.translate(offsetX, offsetY, offsetZ);
+        poseStack.last().pose().translate(offsetX, offsetY, offsetZ);
         RenderSystem.applyModelViewMatrix();
 
         BlockPos blockpos = BlockPos.containing(dh.vrPlayer.vrdata_world_render.getEye(renderPass).getPosition());

@@ -19,7 +19,7 @@ import net.minecraft.util.Tuple;
 
 import java.nio.IntBuffer;
 
-import static org.vivecraft.common.utils.Utils.convertRM44ToMM44;
+import static org.vivecraft.common.utils.Utils.convertRM44ToCM44;
 import static org.vivecraft.common.utils.Utils.logger;
 
 import static org.lwjgl.openvr.OpenVR.VRCompositor;
@@ -78,12 +78,12 @@ public class OpenVRStereoRenderer extends VRRenderer {
     public Matrix4f getProjectionMatrix(int eyeType, double nearClip, double farClip) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             if (eyeType == 0) {
-                return convertRM44ToMM44(
+                return convertRM44ToCM44(
                     VRSystem_GetProjectionMatrix(0, (float) nearClip, (float) farClip, HmdMatrix44.calloc(stack)).m(),
                     new Matrix4f()
                 );
             } else {
-                return convertRM44ToMM44(
+                return convertRM44ToCM44(
                     VRSystem_GetProjectionMatrix(1, (float) nearClip, (float) farClip, HmdMatrix44.calloc(stack)).m(),
                     new Matrix4f()
                 );

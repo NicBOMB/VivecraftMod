@@ -2,14 +2,12 @@ package org.vivecraft.common.network;
 
 import org.vivecraft.client_vr.gameplay.VRPlayer;
 import org.vivecraft.client_vr.render.RenderPass;
-import org.vivecraft.common.utils.lwjgl.Matrix4f;
-import org.vivecraft.common.utils.math.Quaternion;
+
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
-
-import java.nio.Buffer;
-import java.nio.FloatBuffer;
 
 import static org.vivecraft.client_vr.VRState.dh;
 import static org.vivecraft.client_vr.VRState.mc;
@@ -28,22 +26,14 @@ public record VRPlayerState(boolean seated, Pose hmd, boolean reverseHands, Pose
     }
 
     private static Pose hmdPose(VRPlayer vrPlayer) {
-        FloatBuffer floatbuffer = vrPlayer.vrdata_world_post.hmd.getMatrix().toFloatBuffer();
-        ((Buffer) floatbuffer).rewind();
-        Matrix4f matrix4f = new Matrix4f();
-        matrix4f.load(floatbuffer);
         Vec3 vec3 = vrPlayer.vrdata_world_post.getEye(RenderPass.CENTER).getPosition().subtract(mc.player.position());
-        Quaternion quaternion = new Quaternion(matrix4f);
+        Quaternionf quaternion = new Quaternionf().setFromNormalized(vrPlayer.vrdata_world_post.hmd.getMatrix());
         return new Pose(vec3, quaternion);
     }
 
     private static Pose controllerPose(VRPlayer vrPlayer, int i) {
         Vec3 position = vrPlayer.vrdata_world_post.getController(i).getPosition().subtract(mc.player.position());
-        FloatBuffer floatbuffer1 = vrPlayer.vrdata_world_post.getController(i).getMatrix().toFloatBuffer();
-        ((Buffer) floatbuffer1).rewind();
-        Matrix4f matrix4f1 = new Matrix4f();
-        matrix4f1.load(floatbuffer1);
-        Quaternion orientation = new Quaternion(matrix4f1);
+        Quaternionf orientation = new Quaternionf().setFromNormalized(vrPlayer.vrdata_world_post.getController(i).getMatrix());
         return new Pose(position, orientation);
     }
 

@@ -106,6 +106,19 @@ import static org.joml.Math.*;
     }
 
     /**
+     * Convert a {@link net.minecraft.world.phys.Vec3} to a {@link Vector3f}.
+     * @apiNote Use this function whenever reasonably possible.
+     * <br>
+     * @see Utils#convertToVec3(Vector3fc)
+     * @param vector the vector to copy.
+     * @return a new Vector3f containing the same x, y, and z components of vector.
+     */
+    public static Vector3f convertToVector3f(net.minecraft.world.phys.Vec3 vector)
+    {
+        return new Vector3f((float)vector.x, (float)vector.y, (float)vector.z);
+    }
+
+    /**
      * Convert a JOML {@link Vector3d} to a {@link net.minecraft.world.phys.Vec3}.
      * @apiNote Avoid this function whenever reasonably possible.
      * <br>
@@ -142,9 +155,26 @@ import static org.joml.Math.*;
      * This function is required for org.lwjgl.openvr compatibility,
      * as JOML will only read-in values using column-major layout, whereas
      * {@link org.lwjgl.openvr} <a href="https://github.com/ValveSoftware/openvr/wiki/Matrix-Usage-Example">uses row-major layout.</a>
-     * @see Utils#convertRM44ToMM44(DoubleBuffer, Matrix4d)
+     * @see Utils#convertRM44ToCM44(DoubleBuffer, Matrix4d)
      */
-    public static Matrix4d convertRM34ToMM44(FloatBuffer hmdMatrix34, Matrix4d dest)
+    public static Matrix4f convertRM34ToCM44(FloatBuffer hmdMatrix34, Matrix4f dest)
+    {
+        return dest.set(
+            hmdMatrix34.get(0), hmdMatrix34.get(4), hmdMatrix34.get(8), 0.0F,
+            hmdMatrix34.get(1), hmdMatrix34.get(5), hmdMatrix34.get(9), 0.0F,
+            hmdMatrix34.get(2), hmdMatrix34.get(6), hmdMatrix34.get(10), 0.0F,
+            hmdMatrix34.get(3), hmdMatrix34.get(7), hmdMatrix34.get(11), 1.0F
+        );
+    }
+
+    /**
+     * Convert a row-major 3x4 matrix, like {@link org.lwjgl.openvr.HmdMatrix34}, to a column-major 4x4 matrix.
+     * This function is required for org.lwjgl.openvr compatibility,
+     * as JOML will only read-in values using column-major layout, whereas
+     * {@link org.lwjgl.openvr} <a href="https://github.com/ValveSoftware/openvr/wiki/Matrix-Usage-Example">uses row-major layout.</a>
+     * @see Utils#convertRM34ToCM44(FloatBuffer, Matrix4d)
+     */
+    public static Matrix4d convertRM34ToCM44(FloatBuffer hmdMatrix34, Matrix4d dest)
     {
         return dest.set(
             hmdMatrix34.get(0), hmdMatrix34.get(4), hmdMatrix34.get(8), 0.0F,
@@ -156,9 +186,9 @@ import static org.joml.Math.*;
 
     /**
      * Convert a row-major 3x4 matrix to a column-major 4x4 matrix.
-     * @see Utils#convertRM44ToMM44(DoubleBuffer, Matrix4d)
+     * @see Utils#convertRM44ToCM44(FloatBuffer, Matrix4f)
      */
-    public static Matrix4d convertRM34ToMM44(DoubleBuffer doubleBuffer, Matrix4d dest)
+    public static Matrix4d convertRM34ToCM44(DoubleBuffer doubleBuffer, Matrix4d dest)
     {
         return dest.set(
             doubleBuffer.get(0), doubleBuffer.get(4), doubleBuffer.get(8), 0.0F,
@@ -173,9 +203,9 @@ import static org.joml.Math.*;
      * This function is required for org.lwjgl.openvr compatibility,
      * as JOML will only read-in values using column-major layout, whereas
      * {@link org.lwjgl.openvr} <a href="https://github.com/ValveSoftware/openvr/wiki/Matrix-Usage-Example">uses row-major layout.</a>
-     * @see Utils#convertRM34ToMM44(FloatBuffer, Matrix4d)
+     * @see Utils#convertRM34ToCM44(FloatBuffer, Matrix4d)
      */
-    public static Matrix4f convertRM44ToMM44(FloatBuffer hmdMatrix44, Matrix4f dest)
+    public static Matrix4f convertRM44ToCM44(FloatBuffer hmdMatrix44, Matrix4f dest)
     {
         return dest.set(
             hmdMatrix44.get(0), hmdMatrix44.get(4), hmdMatrix44.get(8), hmdMatrix44.get(12),
@@ -187,9 +217,9 @@ import static org.joml.Math.*;
 
     /**
      * Convert a row-major 4x4 matrix to a column-major 4x4 matrix.
-     * @see Utils#convertRM34ToMM44(DoubleBuffer, Matrix4d)
+     * @see Utils#convertRM34ToCM44(DoubleBuffer, Matrix4d)
      */
-    public static Matrix4d convertRM44ToMM44(DoubleBuffer doubleBuffer, Matrix4d dest)
+    public static Matrix4d convertRM44ToCM44(DoubleBuffer doubleBuffer, Matrix4d dest)
     {
         return dest.set(
             doubleBuffer.get(0), doubleBuffer.get(4), doubleBuffer.get(8), doubleBuffer.get(12),

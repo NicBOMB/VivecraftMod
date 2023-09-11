@@ -43,7 +43,7 @@ public class ShadersVRMixin {
     private static PoseStack offsetShadow(PoseStack shadowModelViewMat){
         if (!RenderPassType.isVanilla()) {
             Vec3 offset = dh.vrPlayer.getVRDataWorld().getEye(dh.currentPass).getPosition().subtract(dh.vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition());
-            shadowModelViewMat.translate((float) offset.x, (float) offset.y, (float) offset.z);
+            shadowModelViewMat.last().pose().translate((float) offset.x, (float) offset.y, (float) offset.z);
         }
         return shadowModelViewMat;
     }

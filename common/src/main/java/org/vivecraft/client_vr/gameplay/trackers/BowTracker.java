@@ -4,25 +4,25 @@ import org.vivecraft.client.Xplat;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.client_vr.VRData;
 import org.vivecraft.client_vr.extensions.PlayerExtension;
-import org.vivecraft.client_vr.settings.VRSettings;
+import org.vivecraft.client_vr.settings.VRSettings.BowMode;
 import org.vivecraft.common.network.CommonNetworkHelper;
-import org.vivecraft.common.utils.math.Vector3;
 import org.vivecraft.mod_compat_vr.pehkui.PehkuiHelper;
 
 import net.minecraft.Util;
 import net.minecraft.network.protocol.game.ServerboundCustomPayloadPacket;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 
 import static org.vivecraft.client_vr.VRState.dh;
 import static org.vivecraft.client_vr.VRState.mc;
+import static org.vivecraft.common.utils.Utils.convertToVector3f;
 
 import static org.joml.Math.*;
 
@@ -69,11 +69,11 @@ public class BowTracker extends Tracker
         {
             return false;
         }
-        else if (dh.vrSettings.bowMode == VRSettings.BowMode.OFF)
+        else if (dh.vrSettings.bowMode == BowMode.OFF)
         {
             return false;
         }
-        else if (dh.vrSettings.bowMode == VRSettings.BowMode.VANILLA)
+        else if (dh.vrSettings.bowMode == BowMode.VANILLA)
         {
             return itemStack.getItem() == Items.BOW;
         }
@@ -83,17 +83,27 @@ public class BowTracker extends Tracker
         }
     }
 
-    public static boolean isHoldingBow(LivingEntity e, InteractionHand hand)
+    public static boolean isHoldingBow(InteractionHand hand)
     {
-        return dh.vrSettings.seated ? false : isBow(e.getItemInHand(hand));
+        return !dh.vrSettings.seated && isBow(mc.player.getItemInHand(hand));
     }
 
-    public static boolean isHoldingBowEither(LivingEntity e)
+    public static boolean isHoldingBowEither()
     {
-        return isHoldingBow(e, InteractionHand.MAIN_HAND) || isHoldingBow(e, InteractionHand.OFF_HAND);
+        return isHoldingBow(InteractionHand.MAIN_HAND) || isHoldingBow(InteractionHand.OFF_HAND);
     }
 
-    public boolean isActive()
+    @Override public boolean isActive()
+    {
+        return this.isActive(null);
+    }
+
+    /**
+     * Test a specific hand isActive.
+     * @param hand the hand to test or either hand (null)
+     * @return bow tracker isActive for the specified hand or either hand
+     */
+    public boolean isActive(@Nullable InteractionHand hand)
     {
         if (mc.player == null)
         {
@@ -111,9 +121,13 @@ public class BowTracker extends Tracker
         {
             return false;
         }
+        else if (hand != null)
+        {
+            return isHoldingBow(hand);
+        }
         else
         {
-            return isHoldingBow(mc.player, InteractionHand.MAIN_HAND) || isHoldingBow(mc.player, InteractionHand.OFF_HAND);
+            return isHoldingBowEither();
         }
     }
 
@@ -122,17 +136,17 @@ public class BowTracker extends Tracker
         return Util.getMillis() - this.startDrawTime >= this.maxDrawMillis;
     }
 
-    public void reset()
+    @Override public void reset()
     {
         this.isDrawing = false;
     }
 
-    public EntryPoint getEntryPoint()
+    @Override public EntryPoint getEntryPoint()
     {
         return EntryPoint.SPECIAL_ITEMS;
     }
 
-    public void doProcess()
+    @Override public void doProcess()
     {
         VRData vrdata = dh.vrPlayer.getVRDataWorld();
 
@@ -162,13 +176,11 @@ public class BowTracker extends Tracker
             double d0 = vec3.distanceTo(vec33);
             this.aim = vec3.subtract(vec31).normalize();
             Vec3 vec34 = vrdata.getController(0).getCustomVector(new Vec3(0.0D, 0.0D, -1.0D));
-            Vector3 vector3 = new Vector3((float)vec34.x, (float)vec34.y, (float)vec34.z);
             Vec3 vec35 = vrdata.getHand(1).getCustomVector(new Vec3(0.0D, -1.0D, 0.0D));
-            Vector3 vector31 = new Vector3((float)vec35.x, (float)vec35.y, (float)vec35.z);
-            this.controllersDot = (180D / PI) * acos((double)vector31.dot(vector3));
+            this.controllersDot = (180D / PI) * acos((double) convertToVector3f(vec35).dot(convertToVector3f(vec34)));
             this.pressed = mc.options.keyAttack.isDown();
             float f = 0.15F * vrdata.worldScale;
-            boolean flag = isHoldingBow(mc.player, InteractionHand.MAIN_HAND);
+            boolean flag = isHoldingBow(InteractionHand.MAIN_HAND);
             InteractionHand interactionhand = flag ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
             ItemStack itemstack = ItemStack.EMPTY;
             ItemStack itemstack1 = ItemStack.EMPTY;
@@ -263,7 +275,7 @@ public class BowTracker extends Tracker
 
                 int l = (int)((float)itemstack1.getUseDuration() - this.getDrawPercent() * (float)this.maxDrawMillis);
                 ((PlayerExtension) mc.player).setItemInUseClient(itemstack1, interactionhand);
-                double d1 = (double)this.getDrawPercent();
+                double d1 = this.getDrawPercent();
 
                 if (d1 >= 1.0D)
                 {

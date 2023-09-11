@@ -1,12 +1,11 @@
 package org.vivecraft.client_vr.gameplay.screenhandlers;
 
-import org.vivecraft.client.utils.Utils;
 import org.vivecraft.client_vr.gui.GuiKeyboard;
 import org.vivecraft.client_vr.gui.PhysicalKeyboard;
 import org.vivecraft.client_vr.provider.ControllerType;
-import org.vivecraft.common.utils.lwjgl.Matrix4f;
-import org.vivecraft.common.utils.lwjgl.Vector3f;
-import org.vivecraft.common.utils.math.Vector3;
+
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 
@@ -15,6 +14,7 @@ import net.minecraft.world.phys.Vec3;
 
 import static org.vivecraft.client_vr.VRState.dh;
 import static org.vivecraft.client_vr.VRState.mc;
+import static org.vivecraft.common.utils.Utils.convertToVec3;
 
 import static org.joml.Math.*;
 
@@ -24,7 +24,7 @@ public class KeyboardHandler
     public static GuiKeyboard UI = new GuiKeyboard();
     public static PhysicalKeyboard physicalKeyboard = new PhysicalKeyboard();
     public static Vec3 Pos_room = new Vec3(0.0D, 0.0D, 0.0D);
-    public static org.vivecraft.common.utils.math.Matrix4f Rotation_room = new org.vivecraft.common.utils.math.Matrix4f();
+    public static Matrix4f Rotation_room = new Matrix4f();
     private static boolean lpl;
     private static boolean lps;
     private static boolean PointedL;
@@ -160,12 +160,9 @@ public class KeyboardHandler
 
     public static void orientOverlay(boolean guiRelative)
     {
-        keyboardForGui = false;
-
         if (Showing)
         {
             keyboardForGui = guiRelative;
-            Matrix4f matrix4f = new Matrix4f();
 
             if (dh.vrSettings.physicalKeyboard)
             {
@@ -174,24 +171,19 @@ public class KeyboardHandler
                 vec31 = vec31.yRot(toRadians(-dh.vrPlayer.vrdata_room_pre.hmd.getYaw()));
                 Pos_room = new Vec3(vec3.x + vec31.x, vec3.y + vec31.y, vec3.z + vec31.z);
                 float f = (float)PI + toRadians(-dh.vrPlayer.vrdata_room_pre.hmd.getYaw());
-                Rotation_room = org.vivecraft.common.utils.math.Matrix4f.rotationY(f);
-                Rotation_room = org.vivecraft.common.utils.math.Matrix4f.multiply(Rotation_room, Utils.rotationXMatrix(2.5132742F));
+                Rotation_room.rotationY(f).rotateX(2.5132742F);
             }
             else if (guiRelative && GuiHandler.guiRotation_room != null)
             {
-                Matrix4f matrix4f1 = Utils.convertOVRMatrix(GuiHandler.guiRotation_room);
-                Vec3 vec35 = new Vec3(matrix4f1.m10, matrix4f1.m11, matrix4f1.m12);
-                Vec3 vec37 = (new Vec3(matrix4f1.m20, matrix4f1.m21, matrix4f1.m22)).scale(0.25D * GuiHandler.guiScale);
-                vec35 = vec35.scale(0.8F);
-                matrix4f.translate(new Vector3f((float)(GuiHandler.guiPos_room.x - vec35.x), (float)(GuiHandler.guiPos_room.y - vec35.y), (float)(GuiHandler.guiPos_room.z - vec35.z)));
-                matrix4f.translate(new Vector3f((float)vec37.x, (float)vec37.y, (float)vec37.z));
-                Matrix4f.mul(matrix4f, matrix4f1, matrix4f);
-                matrix4f.rotate(toRadians(30.0F), new Vector3f(-1.0F, 0.0F, 0.0F));
-                Rotation_room = Utils.convertToOVRMatrix(matrix4f);
-                Pos_room = new Vec3(Rotation_room.M[0][3], Rotation_room.M[1][3], Rotation_room.M[2][3]);
-                Rotation_room.M[0][3] = 0.0F;
-                Rotation_room.M[1][3] = 0.0F;
-                Rotation_room.M[2][3] = 0.0F;
+                Vector3f vec35 = GuiHandler.guiRotation_room.getColumn(1, new Vector3f()).mul(0.8F);
+                Vector3f vec37 = GuiHandler.guiRotation_room.getColumn(2, new Vector3f()).mul(0.25F * GuiHandler.guiScale);
+                Matrix4f matrix4f = new Matrix4f()
+                    .translate((float)(GuiHandler.guiPos_room.x - vec35.x), (float)(GuiHandler.guiPos_room.y - vec35.y), (float)(GuiHandler.guiPos_room.z - vec35.z))
+                    .translate(vec37)
+                    .mul(GuiHandler.guiRotation_room)
+                    .rotate(toRadians(30.0F), new Vector3f(-1.0F, 0.0F, 0.0F));
+                Pos_room = convertToVec3(matrix4f.getTranslation(new Vector3f()));
+                Rotation_room.set(matrix4f.setTranslation(new Vector3f(0.0F, 0.0F, 0.0F)));
             }
             else
             {
@@ -200,14 +192,19 @@ public class KeyboardHandler
                 Vec3 vec36 = dh.vrPlayer.vrdata_room_pre.hmd.getCustomVector(vec34);
                 Pos_room = new Vec3(vec36.x / 2.0D + vec33.x, vec36.y / 2.0D + vec33.y, vec36.z / 2.0D + vec33.z);
                 Vec3 vec32 = dh.vrPlayer.vrdata_room_pre.hmd.getPosition();
-                Vector3 vector3 = new Vector3();
-                vector3.setX((float)(Pos_room.x - vec32.x));
-                vector3.setY((float)(Pos_room.y - vec32.y));
-                vector3.setZ((float)(Pos_room.z - vec32.z));
-                float f1 = asin(vector3.getY() / vector3.length());
-                float f2 = (float)PI + atan2(vector3.getX(), vector3.getZ());
-                Rotation_room = org.vivecraft.common.utils.math.Matrix4f.rotationY(f2);
+                Vector3f vector3 = new Vector3f(
+                    (float)(Pos_room.x - vec32.x),
+                    (float)(Pos_room.y - vec32.y),
+                    (float)(Pos_room.z - vec32.z)
+                );
+                float f1 = asin(vector3.y / vector3.length());
+                float f2 = (float)PI + atan2(vector3.x, vector3.z);
+                Rotation_room.rotationY(f2);
             }
+        }
+        else
+        {
+            keyboardForGui = false;
         }
     }
 

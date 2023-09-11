@@ -3,15 +3,14 @@ package org.vivecraft.mixin.client_vr.renderer;
 import org.vivecraft.client_vr.extensions.EntityRenderDispatcherVRExtension;
 import org.vivecraft.client_vr.extensions.GameRendererExtension;
 import org.vivecraft.client_vr.extensions.ItemInHandRendererExtension;
-import org.vivecraft.client_vr.gameplay.trackers.BowTracker;
 import org.vivecraft.client_vr.gameplay.trackers.TelescopeTracker;
 import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.client_vr.render.VRArmRenderer;
 import org.vivecraft.client_vr.render.VRFirstPersonArmSwing;
 import org.vivecraft.client_vr.render.VivecraftItemRendering;
+import org.vivecraft.client_vr.render.VivecraftItemRendering.VivecraftItemTransformType;
 
 import org.apache.commons.lang3.tuple.Triple;
-import org.joml.Quaternionf;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -123,41 +122,28 @@ public abstract class ItemInHandRendererVRMixin implements ItemInHandRendererExt
 		HumanoidArm humanoidarm = mainHand ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite();
 		pEquippedProgress = this.getEquipProgress(pHand, pPartialTicks);
 		pMatrixStack.pushPose();
-		boolean renderArm = true;
-		
-		if (dh.currentPass == RenderPass.THIRD && !dh.vrSettings.mixedRealityRenderHands)
-		{
-			renderArm = false;
-		}
 
-		if (dh.currentPass == RenderPass.CAMERA)
-		{
-			renderArm = false;
-		}
-
-		if (BowTracker.isBow(pStack) && dh.bowTracker.isActive())
-		{
-			renderArm = false;
-		}
-
-		if (TelescopeTracker.isTelescope(pStack) && (pHand == InteractionHand.OFF_HAND && dh.currentPass == RenderPass.SCOPEL || pHand == InteractionHand.MAIN_HAND && dh.currentPass == RenderPass.SCOPER))
-		{
-			renderArm = false;
-		}
-
-		if (renderArm && !pPlayer.isInvisible())
+		if (!(dh.bowTracker.isActive(pHand)) && !pPlayer.isInvisible() && switch (dh.currentPass)
+			{
+				case THIRD -> { yield dh.vrSettings.mixedRealityRenderHands; }
+				case CAMERA -> { yield false; }
+				case SCOPEL -> { yield !(TelescopeTracker.isTelescope(pStack) && !mainHand); }
+				case SCOPER -> { yield !(TelescopeTracker.isTelescope(pStack) && mainHand); }
+				default -> { yield true; }
+			}
+		)
 		{
 			this.renderPlayerArm(pMatrixStack, pBuffer, pCombinedLight, pEquippedProgress, pSwingProgress, humanoidarm);
 		}
 
 		if (!pStack.isEmpty())
-		{   			
-			pMatrixStack.pushPose();        
+		{
+			pMatrixStack.pushPose();
 
 			if (pPlayer.swingingArm == pHand)
 				this.transformFirstPersonVR(pMatrixStack, humanoidarm, pSwingProgress);
 
-			VivecraftItemRendering.VivecraftItemTransformType rendertype = VivecraftItemRendering.getTransformType(pStack, pPlayer, this.itemRenderer);
+			VivecraftItemTransformType rendertype = VivecraftItemRendering.getTransformType(pStack, pPlayer, this.itemRenderer);
 
 			boolean useLeftHandModelinLeftHand = false;
 
@@ -174,28 +160,32 @@ public abstract class ItemInHandRendererVRMixin implements ItemInHandRendererExt
 
 			dh.isfphand = true;
 
-			if (rendertype == VivecraftItemRendering.VivecraftItemTransformType.Map)
+			if (rendertype == VivecraftItemTransformType.Map)
 			{
 				RenderSystem.disableCull();
 				this.renderMap(pMatrixStack, pBuffer, pCombinedLight, pStack);
 			}
-			else if (rendertype == VivecraftItemRendering.VivecraftItemTransformType.Telescope)
+			else if (rendertype == VivecraftItemTransformType.Telescope)
 			{
 				if (dh.currentPass != RenderPass.SCOPEL && dh.currentPass != RenderPass.SCOPER)
 				{
 					pMatrixStack.pushPose();
 					pMatrixStack.scale(0.625F, 0.625F, 0.625F);
-					pMatrixStack.translate(mainHand ? -0.53D : -0.47D, -0.5D, -0.6D);
-					//pMatrixStack.mulPose(new Quaternionf().rotationX(toRadians(180.0F)));
-					this.minecraft.getBlockRenderer().getModelRenderer().renderModel(pMatrixStack.last(), pBuffer.getBuffer(Sheets.solidBlockSheet()), (BlockState)null, this.minecraft.getModelManager().getModel(TelescopeTracker.scopeModel), 0.5F, 0.5F, 1.0F, pCombinedLight, OverlayTexture.NO_OVERLAY);
+					pMatrixStack.last().pose().translate(mainHand ? -0.53F : -0.47F, -0.5F, -0.6F);
+					//pMatrixStack.last().pose().rotateX(toRadians(180.0F));
+					//pMatrixStack.last().normal().rotateX(toRadians(180.0F));
+					this.minecraft.getBlockRenderer().getModelRenderer().renderModel(pMatrixStack.last(), pBuffer.getBuffer(Sheets.solidBlockSheet()), null, this.minecraft.getModelManager().getModel(TelescopeTracker.scopeModel), 0.5F, 0.5F, 1.0F, pCombinedLight, OverlayTexture.NO_OVERLAY);
 					pMatrixStack.popPose();
 				}
 
+				float ang1 = toRadians(90.0F);
+				float ang2 = toRadians(180.0F);
+
 				pMatrixStack.pushPose();
-				pMatrixStack.translate(mainHand ? -0.01875D : 0.01875D, 0.215D, -0.0626D);
-				pMatrixStack.mulPose(new Quaternionf().rotationX(toRadians(90.0F)));
-				pMatrixStack.mulPose(new Quaternionf().rotationY(toRadians(180.0F)));
-				pMatrixStack.mulPose(new Quaternionf().rotationZ(toRadians(180.0F)));
+				pMatrixStack.last().pose()
+					.translate(mainHand ? -0.01875F : 0.01875F, 0.215F, -0.0626F)
+					.rotateXYZ(ang1, ang2, ang2);
+				pMatrixStack.last().normal().rotateXYZ(ang1, ang2, ang2);
 				((GameRendererExtension)this.minecraft.gameRenderer).DrawScopeFB(pMatrixStack, pHand == InteractionHand.MAIN_HAND ? 0 : 1);
 				pMatrixStack.popPose();
 			}
@@ -243,7 +233,7 @@ public abstract class ItemInHandRendererVRMixin implements ItemInHandRendererExt
 		}
 
 		poseStack.scale(0.4f, 0.4F, 0.4F);
-		boolean slim = abstractclientplayer.getModelName().equals("slim");
+		boolean slim = "slim".equals(abstractclientplayer.getModelName());
 
             /*
              x offset: (arm x origin + arm x offset + arm x dimension * 0.5) / 16
@@ -255,10 +245,17 @@ public abstract class ItemInHandRendererVRMixin implements ItemInHandRendererExt
              x offset: (5 - 1 + 4*0.5) / 16 = 0.375
              z offset: (-2 + 2 + 12) / 16 = 0.75
             */
+		float ang1 = toRadians(-90);
+		float ang2 = toRadians(180);
 
-		poseStack.translate((slim ? -0.34375F : -0.375F) * h, 0.0F, slim ? 0.78125F : 0.75F);
-		poseStack.mulPose(new Quaternionf().rotationX(toRadians(-90)));
-		poseStack.mulPose(new Quaternionf().rotationY(toRadians(180)));
+		poseStack.last().pose()
+			.translate((slim ? -0.34375F : -0.375F) * h, 0.0F, slim ? 0.78125F : 0.75F)
+			.rotateX(ang1)
+			.rotateY(ang2);
+		poseStack.last().normal()
+			.rotateX(ang1)
+			.rotateY(ang2);
+
 		if (flag) {
 			vrarmrenderer.renderRightHand(poseStack, multiBufferSource, i, abstractclientplayer);
 		}
@@ -275,36 +272,44 @@ public abstract class ItemInHandRendererVRMixin implements ItemInHandRendererExt
 
 	private void transformFirstPersonVR(PoseStack matrixStackIn, HumanoidArm hand, float swingProgress) {
 		if (swingProgress != 0.0F) {
-			switch (this.swingType) {
-				case Attack:
+			switch (this.swingType)
+			{
+				case Attack ->
+				{
 					float f2 = sin((swingProgress * 3.0F) * (float)PI);
 					if (swingProgress > 0.5F)
 					{
-						f2 = sin(swingProgress * (float)PI + (float)PI);
+						f2 = sin((swingProgress * (float)PI + (float)PI));
 					}
-
-					matrixStackIn.translate(0.0D, 0.0D, 0.2D);
-					matrixStackIn.mulPose(new Quaternionf().rotationX(toRadians(f2 * 30.0F)));
-					matrixStackIn.translate(0.0D, 0.0D, -0.2D);
-					break;
-
-				case Interact:
+					f2 *= 30.0F;
+					f2 = toRadians(f2);
+					matrixStackIn.last().pose()
+						.translate(0.0F, 0.0F, 0.2F)
+						.rotateX(f2)
+						.translate(0.0F, 0.0F, -0.2F);
+					matrixStackIn.last().normal().rotateX(f2);
+				}
+				case Interact ->
+				{
 					float f1 = sin((swingProgress * 3.0F) * (float)PI);
-
-					if (swingProgress > 0.5F) {
+					if (swingProgress > 0.5F)
+					{
 						f1 = sin(swingProgress * (float)PI + (float)PI);
 					}
-
-					matrixStackIn.mulPose(new Quaternionf().rotationZ(toRadians(f1 * 45.0F * (hand == HumanoidArm.RIGHT ? -1 : 1))));
-					break;
-
-				case Use:
+					f1 *= hand == HumanoidArm.RIGHT ? -45.0F : 45.0F;
+					f1 = toRadians(f1);
+					matrixStackIn.last().pose().rotateZ(f1);
+					matrixStackIn.last().normal().rotateZ(f1);
+				}
+				case Use ->
+				{
 					float f = sin((swingProgress * 2.0F) * (float)PI);
-
-					if (swingProgress > 0.25F) {
+					if (swingProgress > 0.25F)
+					{
 						f = sin((swingProgress / 2.0F) * (float)PI + (float)PI);
 					}
-					matrixStackIn.translate(0.0D, 0.0D, -(1.0F + f) * 0.1F);
+					matrixStackIn.last().pose().translate(0.0F, 0.0F, -(1.0F + f) * 0.1F);
+				}
 			}
 		}
 	}

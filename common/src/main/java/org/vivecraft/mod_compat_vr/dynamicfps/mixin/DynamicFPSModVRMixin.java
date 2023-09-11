@@ -1,12 +1,12 @@
 package org.vivecraft.mod_compat_vr.dynamicfps.mixin;
 
+import static org.vivecraft.client_vr.VRState.vrRunning;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import static org.vivecraft.client_vr.VRState.vrRunning;
 
 @Pseudo
 @Mixin(targets = "dynamicfps.DynamicFPSMod")

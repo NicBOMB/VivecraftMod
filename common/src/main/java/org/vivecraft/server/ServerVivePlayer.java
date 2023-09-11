@@ -3,13 +3,16 @@ package org.vivecraft.server;
 import org.vivecraft.common.network.CommonNetworkHelper;
 import org.vivecraft.common.network.Pose;
 import org.vivecraft.common.network.VRPlayerState;
-import org.vivecraft.common.utils.math.Vector3;
+
+import org.joml.Vector3f;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+
+import static org.vivecraft.common.utils.Utils.convertToVec3;
 
 import static org.joml.Math.*;
 
@@ -24,7 +27,7 @@ public class ServerVivePlayer {
     private boolean isVR = false;
     public Vec3 offset = new Vec3(0.0D, 0.0D, 0.0D);
     public ServerPlayer player;
-    final Vector3 forward = new Vector3(0.0F, 0.0F, -1.0F);
+    final Vector3f forward = new Vector3f(0.0F, 0.0F, -1.0F);
 
     public int networkVersion = CommonNetworkHelper.MAX_SUPPORTED_NETWORK_VERSION;
 
@@ -36,14 +39,14 @@ public class ServerVivePlayer {
         return this.draw;
     }
 
-    public Vec3 getControllerVectorCustom(int controller, Vector3 direction) {
+    public Vec3 getControllerVectorCustom(int controller, Vector3f direction) {
         Pose controllerPose = (controller == 0 || this.isSeated() ?
             this.vrPlayerState.controller0() :
             this.vrPlayerState.controller1()
         );
 
         return (controllerPose != null ?
-            controllerPose.orientation().multiply(direction).toVector3d() :
+            convertToVec3(controllerPose.orientation().transformUnit(direction, new Vector3f())) :
             this.player.getLookAngle()
         );
     }
@@ -54,8 +57,8 @@ public class ServerVivePlayer {
 
     public Vec3 getHMDDir() {
         if (this.vrPlayerState != null) {
-            Vector3 vector3 = this.vrPlayerState.hmd().orientation().multiply(this.forward);
-            return new Vec3(vector3.getX(), vector3.getY(), vector3.getZ());
+            Vector3f vector3 = this.vrPlayerState.hmd().orientation().transformUnit(this.forward, new Vector3f());
+            return new Vec3(vector3.x, vector3.y, vector3.z);
         }
         return this.player.getLookAngle();
     }

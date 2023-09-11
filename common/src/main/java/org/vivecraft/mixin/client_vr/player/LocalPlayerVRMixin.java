@@ -173,7 +173,7 @@ public abstract class LocalPlayerVRMixin extends AbstractClientPlayer implements
         this.moveMulIn = this.stuckSpeedMultiplier;
 
         if (pPos.length() != 0.0D && !this.isPassenger()) {
-            boolean flag = VRPlayer.get().getFreeMove();
+            boolean flag = dh.vrPlayer.getFreeMove();
             boolean flag1 = flag || dh.vrSettings.simulateFalling && !this.onClimbable()
                     && !this.isShiftKeyDown();
 
@@ -182,7 +182,7 @@ public abstract class LocalPlayerVRMixin extends AbstractClientPlayer implements
                 flag1 = true;
             }
 
-            Vec3 vec3 = VRPlayer.get().roomOrigin;
+            Vec3 vec3 = dh.vrPlayer.roomOrigin;
 
             if ((dh.climbTracker.isGrabbingLadder() || flag
                     || dh.swimTracker.isActive())
@@ -202,11 +202,11 @@ public abstract class LocalPlayerVRMixin extends AbstractClientPlayer implements
                 }
 
                 double d4 = this.getY() + this.getRoomYOffsetFromPose();
-                VRPlayer.get().setRoomOrigin(this.getX() + d0, d4, this.getZ() + d1, false);
+                dh.vrPlayer.setRoomOrigin(this.getX() + d0, d4, this.getZ() + d1, false);
             } else if (flag1) {
                 super.move(pType, new Vec3(0.0D, pPos.y, 0.0D));
-                VRPlayer.get().setRoomOrigin(VRPlayer.get().roomOrigin.x, this.getY() + this.getRoomYOffsetFromPose(),
-                        VRPlayer.get().roomOrigin.z, false);
+                dh.vrPlayer.setRoomOrigin(dh.vrPlayer.roomOrigin.x, this.getY() + this.getRoomYOffsetFromPose(),
+                    dh.vrPlayer.roomOrigin.z, false);
             } else {
                 this.setOnGround(true);
             }
@@ -292,8 +292,7 @@ public abstract class LocalPlayerVRMixin extends AbstractClientPlayer implements
             dh.vrPlayer.setRoomOrigin(x, y, z, x + y + z == 0.0D);
         } else {
             Vec3 vec31 = dh.vrPlayer.roomOrigin;
-            VRPlayer.get().setRoomOrigin(vec31.x + (d3 - d0), vec31.y + (d4 - d1), vec31.z + (d5 - d2),
-                    x + y + z == 0.0D);
+            dh.vrPlayer.setRoomOrigin(vec31.x + (d3 - d0), vec31.y + (d4 - d1), vec31.z + (d5 - d2), x + y + z == 0.0D);
         }
     }
 

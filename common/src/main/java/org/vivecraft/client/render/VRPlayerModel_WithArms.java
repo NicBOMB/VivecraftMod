@@ -7,7 +7,6 @@ import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
 import org.vivecraft.mod_compat_vr.pehkui.PehkuiHelper;
 
 import com.google.common.collect.ImmutableList;
-import org.joml.Quaternionf;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -249,12 +248,15 @@ public class VRPlayerModel_WithArms<T extends LivingEntity> extends VRPlayerMode
 
         if (this.laying)
         {
-            pMatrixStack.mulPose(new Quaternionf().rotationX(toRadians(-90.0F)));
+            float ang = toRadians(-90.0F);
+            pMatrixStack.last().pose().rotateX(ang);
+            pMatrixStack.last().normal().rotateX(ang);
         }
 
         modelpart.translateAndRotate(pMatrixStack);
-        pMatrixStack.mulPose(new Quaternionf().rotationX(sin((float) PI * this.attackTime)));
-        pMatrixStack.translate(0.0D, -0.5D, 0.0D);
+        float ang = sin((float) PI * this.attackTime);
+        pMatrixStack.last().normal().rotateX(ang);
+        pMatrixStack.last().pose().rotateX(ang).translate(0.0F, -0.5F, 0.0F);
     }
 
 //	public void renderToBuffer(PoseStack pMatrixStack, VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
@@ -282,7 +284,9 @@ public class VRPlayerModel_WithArms<T extends LivingEntity> extends VRPlayerMode
 //
 //			if (this.laying)
 //			{
-//				pMatrixStack.mulPose(new Quaternionf().rotationX(toRadians(-90.0F)));
+//				float ang = toRadians(-90.0F);
+//				pMatrixStack.last().pose().rotateX(ang);
+// 				pMatrixStack.last().normal().rotateX(ang);
 //			}
 //
 //			this.rightHand.render(pMatrixStack, pBuffer, pPackedLight, pPackedOverlay, pRed, pGreen, pBlue, pAlpha);

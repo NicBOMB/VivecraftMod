@@ -170,17 +170,21 @@ public class MenuWorldRenderer {
 
 		turnOnLightLayer();
 
+		float worldRotRads = toRadians(worldRotation);
+
 		poseStack.pushPose();
-
-		//rotate World
-		poseStack.mulPose(new Quaternionf().rotationY(toRadians(worldRotation)));
-
-		// small offset to center on source block, and add the partial block offset, this shouldn't be too noticable on the fog
-		poseStack.translate(-0.5,-blockAccess.getGround()+(int)blockAccess.getGround(),-0.5);
+		poseStack.last().normal()
+			//rotate World
+			.rotateY(worldRotRads);
+		poseStack.last().pose()
+			//rotate World
+			.rotateY(worldRotRads)
+			// small offset to center on source block, and add the partial block offset, this shouldn't be too noticable on the fog
+			.translate(-0.5F, -blockAccess.getGround()+(int)blockAccess.getGround(), -0.5F);
 
 		// not sure why this needs to be rotated twice, but it works
-		Vec3 offset = new Vec3(0.5,-blockAccess.getGround()+(int)blockAccess.getGround(),0.5).yRot(worldRotation*0.0174533f);
-		Vec3 eyePosition = getEyePos().add(offset).yRot(-worldRotation*0.0174533f);
+		Vec3 offset = new Vec3(0.5, -blockAccess.getGround()+(int)blockAccess.getGround(), 0.5).yRot(worldRotRads);
+		Vec3 eyePosition = getEyePos().add(offset).yRot(-worldRotRads);
 
 		fogRenderer.levelFogColor();
 
@@ -524,9 +528,17 @@ public class MenuWorldRenderer {
 				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 				poseStack.pushPose();
 
-				poseStack.mulPose(new Quaternionf().rotationX(toRadians(90.0F)));
-				poseStack.mulPose(new Quaternionf().rotationZ(sin(this.getSunAngle()) < 0.0F ? toRadians(180.0F) : 0.0F));
-				poseStack.mulPose(new Quaternionf().rotationZ(toRadians(90.0F)));
+				float ang0 = toRadians(90.0F);
+				float ang1 = sin(this.getSunAngle()) < 0.0F ? toRadians(180.0F) : 0.0F;
+
+				poseStack.last().pose()
+					.rotateX(ang0)
+					.rotateZ(ang1)
+					.rotateZ(ang0);
+				poseStack.last().normal()
+					.rotateX(ang0)
+					.rotateZ(ang1)
+					.rotateZ(ang0);
 
 				Matrix4f modelView = poseStack.last().pose();
 				bufferBuilder.begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
@@ -557,15 +569,18 @@ public class MenuWorldRenderer {
 
 			float f10 = 1.0F - getRainLevel();
 			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, f10);
-			poseStack.mulPose(new Quaternionf().rotationY(toRadians(-90.0F)));
-			Matrix4f modelView = poseStack.last().pose();
+			float ang1 = toRadians(-90.0F);
+			poseStack.last().normal().rotateY(ang1);
+			Matrix4f modelView = poseStack.last().pose().rotateY(ang1);
 
 			//if (OptifineHelper.isOptifineLoaded()) {
 				// needs a full Level
 				//CustomSky.renderSky(this.world, poseStack, Minecraft.getInstance().getFrameTime());
 			//}
 
-			poseStack.mulPose(new Quaternionf().rotationX(toRadians(this.getTimeOfDay() * 360.0F)));
+			float ang2 = toRadians(this.getTimeOfDay() * 360.0F);
+			poseStack.last().normal().rotateX(ang2);
+			modelView.rotateX(ang2);
 
 			float size = 30.0F;
 			if (!OptifineHelper.isOptifineLoaded() || OptifineHelper.isSunMoonEnabled())
@@ -653,15 +668,43 @@ public class MenuWorldRenderer {
 			for (int i = 0; i < 6; ++i)
 			{
 				poseStack.pushPose();
-				switch (i) {
-					case 1 -> poseStack.mulPose(new Quaternionf().rotationX(toRadians(90.0F)));
-					case 2 -> poseStack.mulPose(new Quaternionf().rotationX(toRadians(-90.0F)));
-					case 3 -> poseStack.mulPose(new Quaternionf().rotationX(toRadians(180.0F)));
-					case 4 -> poseStack.mulPose(new Quaternionf().rotationZ(toRadians(90.0F)));
-					case 5 -> poseStack.mulPose(new Quaternionf().rotationZ(toRadians(-90.0F)));
-				}
+				Matrix4f modelView = switch (i) {
+					case 1 ->
+					{
+						float ang1 = toRadians(90.0F);
+						poseStack.last().normal().rotateX(ang1);
+						yield poseStack.last().pose().rotateX(ang1);
+					}
+					case 2 ->
+					{
+						float ang2 = toRadians(-90.0F);
+						poseStack.last().normal().rotateX(ang2);
+						yield poseStack.last().pose().rotateX(ang2);
+					}
+					case 3 ->
+					{
+						float ang3 = toRadians(180.0F);
+						poseStack.last().normal().rotateX(ang3);
+						yield poseStack.last().pose().rotateX(ang3);
+					}
+					case 4 ->
+					{
+						float ang4 = toRadians(90.0F);
+						poseStack.last().normal().rotateZ(ang4);
+						yield poseStack.last().pose().rotateZ(ang4);
+					}
+					case 5 ->
+					{
+						float ang5 = toRadians(-90.0F);
+						poseStack.last().normal().rotateZ(ang5);
+						yield poseStack.last().pose().rotateZ(ang5);
+					}
+					default ->
+					{
+						yield poseStack.last().pose();
+					}
+				};
 
-				Matrix4f modelView = poseStack.last().pose();
 				bufferBuilder.begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
 				int r = 40;
@@ -865,7 +908,7 @@ public class MenuWorldRenderer {
 		}
 
 		RenderSystem.getModelViewStack().pushPose();
-		RenderSystem.getModelViewStack().mulPoseMatrix(poseStack.last().pose());
+		RenderSystem.getModelViewStack().last().pose().mul(poseStack.last().pose());
 		RenderSystem.applyModelViewMatrix();
 
 		int xFloor = roundUsing(inX, FLOOR);

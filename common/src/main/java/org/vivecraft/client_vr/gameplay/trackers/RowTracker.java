@@ -1,9 +1,8 @@
 package org.vivecraft.client_vr.gameplay.trackers;
 
-import org.vivecraft.client_vr.gameplay.VRPlayer;
-import org.vivecraft.common.utils.math.Quaternion;
-
+import org.joml.Quaternionf;
 import org.joml.Vector3d;
+import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.vehicle.Boat;
@@ -100,7 +99,17 @@ public class RowTracker extends Tracker
     public void doProcessFinaltransmithastofixthis()
     {
         Boat boat = (Boat)mc.player.getVehicle();
-        Quaternion quaternion = (new Quaternion(boat.getXRot(), -(boat.getYRot() % 360.0F), 0.0F)).normalized();
+        Quaternionf quaternion = new Quaternionf().setAngleAxis(-(boat.getYRot() % 360.0F), 0.0F, 1.0F, 0.0F)
+            .mul(new Quaternionf().setAngleAxis(boat.getXRot(), 1.0F, 0.0F, 0.0F))
+            .mul(new Quaternionf().setAngleAxis(0.0F, 0.0F, 0.0F, 1.0F));
+        if (sqrt(quaternion.lengthSquared()) > 0.0F)
+        {
+            quaternion.normalize();
+        }
+        else
+        {
+            quaternion.identity();
+        }
 
         for (int i = 0; i <= 1; ++i)
         {
@@ -119,7 +128,7 @@ public class RowTracker extends Tracker
                 {
                     Vec3 vec33 = this.lastUWPs[i].subtract(vec32);
                     vec33 = vec33.subtract(boat.getDeltaMovement());
-                    Vec3 vec34 = quaternion.multiply(new Vec3(0.0D, 0.0D, 1.0D));
+                    Vec3 vec34 = convertToVec3(quaternion.transformUnit(new Vector3f(0.0F, 0.0F, 1.0F)));
                     double d0 = vec33.dot(vec34) * this.transmissionEfficiency / 5.0D;
 
                     if ((!(d0 < 0.0D) || !(this.forces[i] > 0.0D)) && (!(d0 > 0.0D) || !(this.forces[i] < 0.0D)))
@@ -146,18 +155,30 @@ public class RowTracker extends Tracker
 
     Vec3 getAttachmentPoint(int paddle, Boat boat)
     {
-        Vec3 vec3 = new Vec3((double)((paddle == 0 ? 9.0F : -9.0F) / 16.0F), 0.625D, 0.1875D);
-        Quaternion quaternion = (new Quaternion(boat.getXRot(), -(boat.getYRot() % 360.0F), 0.0F)).normalized();
-        return boat.position().add(quaternion.multiply(vec3));
+        Quaternionf quaternion = new Quaternionf().setAngleAxis(-(boat.getYRot() % 360.0F), 0.0F, 1.0F, 0.0F)
+            .mul(new Quaternionf().setAngleAxis(boat.getXRot(), 1.0F, 0.0F, 0.0F))
+            .mul(new Quaternionf().setAngleAxis(0.0F, 0.0F, 0.0F, 1.0F));
+        if (sqrt(quaternion.lengthSquared()) > 0.0F)
+        {
+            quaternion.normalize();
+        }
+        else
+        {
+            quaternion.identity();
+        }
+        return boat.position().add(convertToVec3(quaternion.transformUnit(new Vector3f(
+            (paddle == 0 ? 9.0F : -9.0F) / 16.0F, 0.625F, 0.1875F)
+        )));
     }
 
     Vec3 getAbsArmPos(int side)
     {
-        return VRPlayer.get().roomOrigin.add(
-            new Quaternion(0.0F, dh.vrSettings.worldRotation, 0.0F).multiply(
-                convertToVec3(dh.vr.controllerHistory[side].averagePosition(0.1D, new Vector3d()))
-            )
-        );
+        return dh.vrPlayer.roomOrigin.add(convertToVec3(
+            new Quaternionf().setAngleAxis(dh.vrSettings.worldRotation, 0.0F, 1.0F, 0.0F)
+                .mul(new Quaternionf().setAngleAxis(0.0F, 1.0F, 0.0F, 0.0F))
+                .mul(new Quaternionf().setAngleAxis(0.0F, 0.0F, 0.0F, 1.0F))
+                .transformUnit(new Vector3f().set(dh.vr.controllerHistory[side].averagePosition(0.1D, new Vector3d())))
+        ));
     }
 
     boolean isPaddleUnderWater(int paddle, Boat boat)

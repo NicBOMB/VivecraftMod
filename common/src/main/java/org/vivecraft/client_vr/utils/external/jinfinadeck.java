@@ -9,6 +9,8 @@ import com.sun.jna.ptr.IntByReference;
 
 import static org.vivecraft.common.utils.Utils.logger;
 
+import static org.joml.Math.*;
+
 public class jinfinadeck implements Library
 {
     public static final String INFINADECK_LIBRARY_NAME = "InfinadeckAPI.dll";
@@ -65,11 +67,11 @@ public class jinfinadeck implements Library
             {
             }
 
-            yaw = (float)GetFloorSpeedAngle();
+            yaw = (float) GetFloorSpeedAngle();
             power = GetFloorSpeedMagnitude();
             direction = 1;
             ismoving = GetTreadmillRunState();
-            yaw *= 57.296F;
+            yaw = (float) toDegrees(yaw);
         }
         catch (Exception exception)
         {

@@ -165,7 +165,7 @@ public abstract class VRRenderer {
         RenderSystem.getModelViewStack().pushPose();
         RenderSystem.getModelViewStack().setIdentity();
         if (inverse) //draw on far clip
-            RenderSystem.getModelViewStack().translate(0, 0, -20);
+            RenderSystem.getModelViewStack().last().pose().translate(0.0F, 0.0F, -20.0F);
         RenderSystem.applyModelViewMatrix();
         int s = GlStateManager._getInteger(GL20C.GL_CURRENT_PROGRAM);
 

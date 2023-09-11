@@ -31,12 +31,12 @@ import org.vivecraft.client_vr.settings.VRSettings.MirrorMode;
 import org.vivecraft.client_vr.settings.VRSettings.VrOptions;
 import org.vivecraft.client_xr.render_pass.RenderPassManager;
 import org.vivecraft.client_xr.render_pass.WorldRenderPass;
-import org.vivecraft.common.utils.math.Vector3;
 import org.vivecraft.mod_compat_vr.iris.IrisHelper;
 import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
 import org.vivecraft.mod_compat_vr.sodium.SodiumHelper;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL13C;
 
@@ -101,6 +101,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.vivecraft.client.utils.Utils.*;
 import static org.vivecraft.client_vr.VRState.*;
+import static org.vivecraft.common.utils.Utils.forward;
 import static org.vivecraft.common.utils.Utils.logger;
 
 import static java.lang.Math.pow;
@@ -147,16 +148,9 @@ public abstract class MinecraftVRMixin extends ReentrantBlockableEventLoop<Runna
     @Unique
     private long currentNanoTime;
 
-    @Shadow
-    protected int missTime;
-
     @Final
     @Shadow
     public Gui gui;
-
-    @Shadow
-    @Final
-    public File gameDirectory;
 
     @Final
     @Shadow
@@ -283,9 +277,6 @@ public abstract class MinecraftVRMixin extends ReentrantBlockableEventLoop<Runna
     @Shadow
     @Final
     private EntityRenderDispatcher entityRenderDispatcher;
-
-    @Shadow
-    protected abstract boolean startAttack();
 
     @Shadow
     public abstract RenderTarget getMainRenderTarget();
@@ -534,7 +525,7 @@ public abstract class MinecraftVRMixin extends ReentrantBlockableEventLoop<Runna
             PoseStack poseStack = RenderSystem.getModelViewStack();
             poseStack.pushPose();
             poseStack.setIdentity();
-            poseStack.translate(0.0F, 0.0F, -2000.0F);
+            poseStack.last().pose().translate(0.0F, 0.0F, -2000.0F);
             RenderSystem.applyModelViewMatrix();
 
             int x = (int) (instance.mouseHandler.xpos() * instance.getWindow().getGuiScaledWidth() / instance.getWindow().getScreenWidth());
@@ -1174,10 +1165,8 @@ public abstract class MinecraftVRMixin extends ReentrantBlockableEventLoop<Runna
             ), VertexSorting.ORTHOGRAPHIC_Z);
             RenderSystem.getModelViewStack().pushPose();
             RenderSystem.getModelViewStack().setIdentity();
-            RenderSystem.getModelViewStack().translate(0, 0, -2000);
+            RenderSystem.getModelViewStack().last().pose().translate(0.0F, 0.0F, -2000.0F);
             RenderSystem.applyModelViewMatrix();
-            PoseStack p = new PoseStack();
-            p.scale(3, 3, 3);
             RenderSystem.clear(GL11C.GL_DEPTH_BUFFER_BIT, ON_OSX);
 
             if (this.mirrorNotifyClear) {
@@ -1511,14 +1500,11 @@ public abstract class MinecraftVRMixin extends ReentrantBlockableEventLoop<Runna
         RenderSystem.clear(GL11C.GL_COLOR_BUFFER_BIT | GL11C.GL_DEPTH_BUFFER_BIT, ON_OSX);
         Vec3 vec3 = dh.vrPlayer.vrdata_room_pre.getHeadPivot()
                 .subtract(dh.vrPlayer.vrdata_room_pre.getEye(RenderPass.THIRD).getPosition());
-        Matrix4f matrix4f = dh.vrPlayer.vrdata_room_pre.getEye(RenderPass.THIRD)
-                .getMatrix().transposed().toMCMatrix();
-        Vector3 vector3 = dh.vrPlayer.vrdata_room_pre.getEye(RenderPass.THIRD).getMatrix()
-                .transform(Vector3.forward());
+        Vector3f vector3 = new Vector3f().set(forward).mulProject(dh.vrPlayer.vrdata_room_pre.getEye(RenderPass.THIRD).getMatrix());
         VRShaders._DepthMask_projectionMatrix.set(((GameRendererExtension) this.gameRenderer).getThirdPassProjectionMatrix());
-        VRShaders._DepthMask_viewMatrix.set(matrix4f);
+        VRShaders._DepthMask_viewMatrix.set(dh.vrPlayer.vrdata_room_pre.getEye(RenderPass.THIRD).getMatrix());
         VRShaders._DepthMask_hmdViewPosition.set((float) vec3.x, (float) vec3.y, (float) vec3.z);
-        VRShaders._DepthMask_hmdPlaneNormal.set(-vector3.getX(), 0.0F, -vector3.getZ());
+        VRShaders._DepthMask_hmdPlaneNormal.set(-vector3.x, 0.0F, -vector3.z);
         VRShaders._DepthMask_keyColorUniform.set(
             dh.vrSettings.mixedRealityKeyColor.getR(),
             dh.vrSettings.mixedRealityKeyColor.getG(),

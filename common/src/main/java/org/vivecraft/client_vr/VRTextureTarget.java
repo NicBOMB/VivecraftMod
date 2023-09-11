@@ -25,14 +25,19 @@ public class VRTextureTarget extends RenderTarget {
 
     @Override
     public String toString() {
-        StringBuilder stringbuilder = new StringBuilder("\n");
-        if (this.name != null) {
-            stringbuilder.append("Name:   ").append(this.name).append("\n");
-        }
-        stringbuilder.append("Size:   ").append(this.viewWidth).append(" x ").append(this.viewHeight).append("\n");
-        stringbuilder.append("FB ID:  ").append(this.frameBufferId).append("\n");
-        stringbuilder.append("Tex ID: ").append(this.colorTextureId).append("\n");
-        return stringbuilder.toString();
+        return """
+        Texture Target:
+        Name:   %s
+        Size:   %d x %d
+        FB ID:  %d
+        Tex ID: %d
+        """.formatted(
+            this.name,
+            this.viewWidth,
+            this.viewHeight,
+            this.frameBufferId,
+            this.colorTextureId
+        );
     }
 
 }

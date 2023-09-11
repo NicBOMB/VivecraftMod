@@ -5,13 +5,11 @@ import org.vivecraft.client_vr.VRData.VRDevicePose;
 import org.vivecraft.client_vr.extensions.MinecraftExtension;
 import org.vivecraft.client_vr.provider.InputSimulator;
 import org.vivecraft.client_vr.settings.VRSettings.VrOptions;
-import org.vivecraft.common.utils.math.Angle;
-import org.vivecraft.common.utils.math.Axis;
-import org.vivecraft.common.utils.math.Matrix4f;
-import org.vivecraft.common.utils.math.Quaternion;
-import org.vivecraft.common.utils.math.Vector3;
 
 import com.google.common.util.concurrent.Runnables;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.network.chat.Component;
@@ -23,11 +21,11 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-import static org.vivecraft.client.utils.Utils.convertOVRMatrix;
 import static org.vivecraft.client.utils.Utils.message;
 import static org.vivecraft.client_vr.VRState.dh;
 import static org.vivecraft.client_vr.VRState.mc;
 
+import static org.joml.Math.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class VRHotkeys
@@ -40,7 +38,7 @@ public class VRHotkeys
     private static float startCamposX;
     private static float startCamposY;
     private static float startCamposZ;
-    private static Quaternion startCamrotQuat;
+    private static Quaternionf startCamrotQuat;
     private static Triggerer camTriggerer;
 
     public static boolean handleKeyboardInputs(int key, int scanCode, int action, int modifiers)
@@ -126,73 +124,73 @@ public class VRHotkeys
 
         if (isKeyDown(GLFW_KEY_LEFT) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && !isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamPos(new Vector3(-0.01F, 0.0F, 0.0F));
+            adjustCamPos(new Vector3f(-0.01F, 0.0F, 0.0F));
             flag = true;
         }
 
         if (isKeyDown(GLFW_KEY_RIGHT) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && !isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamPos(new Vector3(0.01F, 0.0F, 0.0F));
+            adjustCamPos(new Vector3f(0.01F, 0.0F, 0.0F));
             flag = true;
         }
 
         if (isKeyDown(GLFW_KEY_UP) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && !isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamPos(new Vector3(0.0F, 0.0F, -0.01F));
+            adjustCamPos(new Vector3f(0.0F, 0.0F, -0.01F));
             flag = true;
         }
 
         if (isKeyDown(GLFW_KEY_DOWN) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && !isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamPos(new Vector3(0.0F, 0.0F, 0.01F));
+            adjustCamPos(new Vector3f(0.0F, 0.0F, 0.01F));
             flag = true;
         }
 
         if (isKeyDown(GLFW_KEY_PAGE_UP) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && !isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamPos(new Vector3(0.0F, 0.01F, 0.0F));
+            adjustCamPos(new Vector3f(0.0F, 0.01F, 0.0F));
             flag = true;
         }
 
         if (isKeyDown(GLFW_KEY_PAGE_DOWN) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && !isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamPos(new Vector3(0.0F, -0.01F, 0.0F));
+            adjustCamPos(new Vector3f(0.0F, -0.01F, 0.0F));
             flag = true;
         }
 
         if (isKeyDown(GLFW_KEY_UP) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamRot(Axis.PITCH, 0.5F);
+            adjustCamRot(1.0F, 0.0F, 0.0F, 0.5F);
             flag = true;
         }
 
         if (isKeyDown(GLFW_KEY_DOWN) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamRot(Axis.PITCH, -0.5F);
+            adjustCamRot(1.0F, 0.0F, 0.0F, -0.5F);
             flag = true;
         }
 
         if (isKeyDown(GLFW_KEY_LEFT) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamRot(Axis.YAW, 0.5F);
+            adjustCamRot(0.0F, 1.0F, 0.0F, 0.5F);
             flag = true;
         }
 
         if (isKeyDown(GLFW_KEY_RIGHT) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamRot(Axis.YAW, -0.5F);
+            adjustCamRot(0.0F, 1.0F, 0.0F, -0.5F);
             flag = true;
         }
 
         if (isKeyDown(GLFW_KEY_PAGE_UP) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamRot(Axis.ROLL, 0.5F);
+            adjustCamRot(0.0F, 0.0F, 1.0F, 0.5F);
             flag = true;
         }
 
         if (isKeyDown(GLFW_KEY_PAGE_DOWN) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) && isKeyDown(GLFW_KEY_RIGHT_SHIFT))
         {
-            adjustCamRot(Axis.ROLL, -0.5F);
+            adjustCamRot(0.0F, 0.0F, 1.0F, -0.5F);
             flag = true;
         }
 
@@ -226,48 +224,84 @@ public class VRHotkeys
 
             if (dh.vr.mrMovingCamActive)
             {
-                mc.gui.getChat().addMessage(Component.literal(LangHelper.get("vivecraft.messages.coords", dh.vrSettings.mrMovingCamOffsetX, dh.vrSettings.mrMovingCamOffsetY, dh.vrSettings.mrMovingCamOffsetZ)));
-                Angle angle = dh.vrSettings.mrMovingCamOffsetRotQuat.toEuler();
-                mc.gui.getChat().addMessage(Component.literal(LangHelper.get("vivecraft.messages.angles", angle.getPitch(), angle.getYaw(), angle.getRoll())));
+                message(Component.literal(LangHelper.get("vivecraft.messages.coords", dh.vrSettings.mrMovingCamOffsetX, dh.vrSettings.mrMovingCamOffsetY, dh.vrSettings.mrMovingCamOffsetZ)));
+                message(Component.literal(LangHelper.get(
+                    "vivecraft.messages.angles",
+                    (float)toDegrees(asin((-2.0F * (dh.vrSettings.mrMovingCamOffsetRotQuat.y * dh.vrSettings.mrMovingCamOffsetRotQuat.z - dh.vrSettings.mrMovingCamOffsetRotQuat.w * dh.vrSettings.mrMovingCamOffsetRotQuat.x)))),
+                    (float)toDegrees(atan2((2.0F * (dh.vrSettings.mrMovingCamOffsetRotQuat.x * dh.vrSettings.mrMovingCamOffsetRotQuat.z + dh.vrSettings.mrMovingCamOffsetRotQuat.w * dh.vrSettings.mrMovingCamOffsetRotQuat.y)), (dh.vrSettings.mrMovingCamOffsetRotQuat.w * dh.vrSettings.mrMovingCamOffsetRotQuat.w - dh.vrSettings.mrMovingCamOffsetRotQuat.x * dh.vrSettings.mrMovingCamOffsetRotQuat.x - dh.vrSettings.mrMovingCamOffsetRotQuat.y * dh.vrSettings.mrMovingCamOffsetRotQuat.y + dh.vrSettings.mrMovingCamOffsetRotQuat.z * dh.vrSettings.mrMovingCamOffsetRotQuat.z))),
+                    (float)toDegrees(atan2((2.0F * (dh.vrSettings.mrMovingCamOffsetRotQuat.x * dh.vrSettings.mrMovingCamOffsetRotQuat.y + dh.vrSettings.mrMovingCamOffsetRotQuat.w * dh.vrSettings.mrMovingCamOffsetRotQuat.z)), (dh.vrSettings.mrMovingCamOffsetRotQuat.w * dh.vrSettings.mrMovingCamOffsetRotQuat.w - dh.vrSettings.mrMovingCamOffsetRotQuat.x * dh.vrSettings.mrMovingCamOffsetRotQuat.x + dh.vrSettings.mrMovingCamOffsetRotQuat.y * dh.vrSettings.mrMovingCamOffsetRotQuat.y - dh.vrSettings.mrMovingCamOffsetRotQuat.z * dh.vrSettings.mrMovingCamOffsetRotQuat.z)))
+                )));
             }
             else
             {
-                mc.gui.getChat().addMessage(Component.literal(LangHelper.get("vivecraft.messages.coords", dh.vrSettings.vrFixedCamposX, dh.vrSettings.vrFixedCamposY, dh.vrSettings.vrFixedCamposZ)));
-                Angle angle1 = dh.vrSettings.vrFixedCamrotQuat.toEuler();
-                mc.gui.getChat().addMessage(Component.literal(LangHelper.get("vivecraft.messages.angles", angle1.getPitch(), angle1.getYaw(), angle1.getRoll())));
+                message(Component.literal(LangHelper.get("vivecraft.messages.coords", dh.vrSettings.vrFixedCamposX, dh.vrSettings.vrFixedCamposY, dh.vrSettings.vrFixedCamposZ)));
+                message(Component.literal(LangHelper.get(
+                    "vivecraft.messages.angles",
+                    (float)toDegrees(asin((-2.0F * (dh.vrSettings.vrFixedCamrotQuat.y * dh.vrSettings.vrFixedCamrotQuat.z - dh.vrSettings.vrFixedCamrotQuat.w * dh.vrSettings.vrFixedCamrotQuat.x)))),
+                    (float)toDegrees(atan2((2.0F * (dh.vrSettings.vrFixedCamrotQuat.x * dh.vrSettings.vrFixedCamrotQuat.z + dh.vrSettings.vrFixedCamrotQuat.w * dh.vrSettings.vrFixedCamrotQuat.y)), (dh.vrSettings.vrFixedCamrotQuat.w * dh.vrSettings.vrFixedCamrotQuat.w - dh.vrSettings.vrFixedCamrotQuat.x * dh.vrSettings.vrFixedCamrotQuat.x - dh.vrSettings.vrFixedCamrotQuat.y * dh.vrSettings.vrFixedCamrotQuat.y + dh.vrSettings.vrFixedCamrotQuat.z * dh.vrSettings.vrFixedCamrotQuat.z))),
+                    (float)toDegrees(atan2((2.0F * (dh.vrSettings.vrFixedCamrotQuat.x * dh.vrSettings.vrFixedCamrotQuat.y + dh.vrSettings.vrFixedCamrotQuat.w * dh.vrSettings.vrFixedCamrotQuat.z)), (dh.vrSettings.vrFixedCamrotQuat.w * dh.vrSettings.vrFixedCamrotQuat.w - dh.vrSettings.vrFixedCamrotQuat.x * dh.vrSettings.vrFixedCamrotQuat.x + dh.vrSettings.vrFixedCamrotQuat.y * dh.vrSettings.vrFixedCamrotQuat.y - dh.vrSettings.vrFixedCamrotQuat.z * dh.vrSettings.vrFixedCamrotQuat.z)))
+                )));
             }
         }
     }
 
-    private static void adjustCamPos(Vector3 offset)
+    private static void adjustCamPos(Vector3f offset)
     {
 
         if (dh.vr.mrMovingCamActive)
         {
-            offset = dh.vrSettings.mrMovingCamOffsetRotQuat.multiply(offset);
-            dh.vrSettings.mrMovingCamOffsetX += offset.getX();
-            dh.vrSettings.mrMovingCamOffsetY += offset.getY();
-            dh.vrSettings.mrMovingCamOffsetZ += offset.getZ();
+            dh.vrSettings.mrMovingCamOffsetRotQuat.transformUnit(offset);
+            dh.vrSettings.mrMovingCamOffsetX += offset.x;
+            dh.vrSettings.mrMovingCamOffsetY += offset.y;
+            dh.vrSettings.mrMovingCamOffsetZ += offset.z;
         }
         else
         {
-            offset = dh.vrSettings.vrFixedCamrotQuat.inverse().multiply(offset);
-            dh.vrSettings.vrFixedCamposX += offset.getX();
-            dh.vrSettings.vrFixedCamposY += offset.getY();
-            dh.vrSettings.vrFixedCamposZ += offset.getZ();
+            dh.vrSettings.vrFixedCamrotQuat.conjugate(new Quaternionf()).transformUnit(offset);
+            dh.vrSettings.vrFixedCamposX += offset.x;
+            dh.vrSettings.vrFixedCamposY += offset.y;
+            dh.vrSettings.vrFixedCamposZ += offset.z;
         }
     }
 
-    private static void adjustCamRot(Axis axis, float degrees)
+    private static void adjustCamRot(float axisX, float axisY, float axisZ, float degrees)
     {
 
         if (dh.vr.mrMovingCamActive)
         {
-            dh.vrSettings.mrMovingCamOffsetRotQuat.set(dh.vrSettings.mrMovingCamOffsetRotQuat.rotate(axis, degrees, true));
+            dh.vrSettings.mrMovingCamOffsetRotQuat.set(dh.vrSettings.mrMovingCamOffsetRotQuat.mul(new Quaternionf().setAngleAxis(
+                    degrees,
+                    axisX,
+                    axisY,
+                    axisZ
+                ),
+                new Quaternionf()));
         }
         else
         {
-            dh.vrSettings.vrFixedCamrotQuat.set(dh.vrSettings.vrFixedCamrotQuat.rotate(axis, degrees, false));
+            Matrix4f matrix4f = new Matrix4f();
+            float f = dh.vrSettings.vrFixedCamrotQuat.w * dh.vrSettings.vrFixedCamrotQuat.w;
+            float f1 = dh.vrSettings.vrFixedCamrotQuat.x * dh.vrSettings.vrFixedCamrotQuat.x;
+            float f2 = dh.vrSettings.vrFixedCamrotQuat.y * dh.vrSettings.vrFixedCamrotQuat.y;
+            float f3 = dh.vrSettings.vrFixedCamrotQuat.z * dh.vrSettings.vrFixedCamrotQuat.z;
+            float f4 = 1.0F / (f1 + f2 + f3 + f);
+            matrix4f.m00((f1 - f2 - f3 + f) * f4);
+            matrix4f.m11((-f1 + f2 - f3 + f) * f4);
+            matrix4f.m22((-f1 - f2 + f3 + f) * f4);
+            float f5 = dh.vrSettings.vrFixedCamrotQuat.x * dh.vrSettings.vrFixedCamrotQuat.y;
+            float f6 = dh.vrSettings.vrFixedCamrotQuat.z * dh.vrSettings.vrFixedCamrotQuat.w;
+            matrix4f.m10(2.0F * (f5 + f6) * f4);
+            matrix4f.m01(2.0F * (f5 - f6) * f4);
+            f5 = dh.vrSettings.vrFixedCamrotQuat.x * dh.vrSettings.vrFixedCamrotQuat.z;
+            f6 = dh.vrSettings.vrFixedCamrotQuat.y * dh.vrSettings.vrFixedCamrotQuat.w;
+            matrix4f.m20(2.0F * (f5 - f6) * f4);
+            matrix4f.m02(2.0F * (f5 + f6) * f4);
+            f5 = dh.vrSettings.vrFixedCamrotQuat.y * dh.vrSettings.vrFixedCamrotQuat.z;
+            f6 = dh.vrSettings.vrFixedCamrotQuat.x * dh.vrSettings.vrFixedCamrotQuat.w;
+            matrix4f.m21(2.0F * (f5 + f6) * f4);
+            matrix4f.m12(2.0F * (f5 - f6) * f4);
+            matrix4f.rotate(toRadians(degrees), new Vector3f(axisX, axisY, axisZ));
+            dh.vrSettings.vrFixedCamrotQuat.setFromNormalized(matrix4f);
         }
     }
 
@@ -278,8 +312,7 @@ public class VRHotkeys
         dh.vrSettings.vrFixedCamposX = (float)vec3.x;
         dh.vrSettings.vrFixedCamposY = (float)vec3.y;
         dh.vrSettings.vrFixedCamposZ = (float)vec3.z;
-        Quaternion quaternion = new Quaternion(convertOVRMatrix(dh.vrPlayer.vrdata_room_pre.getController(controller).getMatrix()));
-        dh.vrSettings.vrFixedCamrotQuat.set(quaternion);
+        dh.vrSettings.vrFixedCamrotQuat.setFromNormalized(dh.vrPlayer.vrdata_room_pre.getController(controller).getMatrix());
     }
 
     public static void updateMovingThirdPersonCam()
@@ -290,13 +323,14 @@ public class VRHotkeys
             VRDevicePose vrdata$vrdevicepose = dh.vrPlayer.vrdata_room_pre.getController(startController);
             Vec3 vec3 = startControllerPose.getPosition();
             Vec3 vec31 = vrdata$vrdevicepose.getPosition().subtract(vec3);
-            Matrix4f matrix4f = Matrix4f.multiply(vrdata$vrdevicepose.getMatrix(), startControllerPose.getMatrix().inverted());
-            Vector3 vector3 = new Vector3(startCamposX - (float)vec3.x, startCamposY - (float)vec3.y, startCamposZ - (float)vec3.z);
-            Vector3 vector31 = matrix4f.transform(vector3);
-            dh.vrSettings.vrFixedCamposX = startCamposX + (float)vec31.x + (vector31.getX() - vector3.getX());
-            dh.vrSettings.vrFixedCamposY = startCamposY + (float)vec31.y + (vector31.getY() - vector3.getY());
-            dh.vrSettings.vrFixedCamposZ = startCamposZ + (float)vec31.z + (vector31.getZ() - vector3.getZ());
-            dh.vrSettings.vrFixedCamrotQuat.set(startCamrotQuat.multiply(new Quaternion(convertOVRMatrix(matrix4f))));
+            Matrix4f matrix4f = vrdata$vrdevicepose.getMatrix().mul0(startControllerPose.getMatrix(), new Matrix4f());
+            Vector3f vector3 = new Vector3f(startCamposX - (float)vec3.x, startCamposY - (float)vec3.y, startCamposZ - (float)vec3.z);
+            Vector3f vector31 = vector3.mulProject(matrix4f, new Vector3f());
+            dh.vrSettings.vrFixedCamposX = startCamposX + (float)vec31.x + (vector31.x - vector3.x);
+            dh.vrSettings.vrFixedCamposY = startCamposY + (float)vec31.y + (vector31.y - vector3.y);
+            dh.vrSettings.vrFixedCamposZ = startCamposZ + (float)vec31.z + (vector31.z - vector3.z);
+            dh.vrSettings.vrFixedCamrotQuat.setFromNormalized(matrix4f);
+            startCamrotQuat.mul(dh.vrSettings.vrFixedCamrotQuat, dh.vrSettings.vrFixedCamrotQuat);
         }
     }
 
@@ -308,7 +342,7 @@ public class VRHotkeys
         startCamposX = dh.vrSettings.vrFixedCamposX;
         startCamposY = dh.vrSettings.vrFixedCamposY;
         startCamposZ = dh.vrSettings.vrFixedCamposZ;
-        startCamrotQuat = dh.vrSettings.vrFixedCamrotQuat.copy();
+        startCamrotQuat = new Quaternionf(dh.vrSettings.vrFixedCamrotQuat);
         camTriggerer = triggerer;
     }
 
@@ -371,7 +405,19 @@ public class VRHotkeys
                 return;
             }
 
-            Quaternion quaternion = new Quaternion(f3, f4, f5, dh.vrSettings.externalCameraAngleOrder);
+            Quaternionf quaternion0 = new Quaternionf().setAngleAxis(f3, 1.0F, 0.0F, 0.0F);
+            Quaternionf quaternion1 = new Quaternionf().setAngleAxis(f4, 0.0F, 1.0F, 0.0F);
+            Quaternionf quaternion2 = new Quaternionf().setAngleAxis(f5, 0.0F, 0.0F, 1.0F);
+            Quaternionf quaternion = (switch (dh.vrSettings.externalCameraAngleOrder)
+                {
+                    case XYZ -> quaternion0.mul(quaternion1, new Quaternionf()).mul(quaternion2, new Quaternionf());
+                    case ZYX -> quaternion2.mul(quaternion1, new Quaternionf()).mul(quaternion0, new Quaternionf());
+                    case YXZ -> quaternion1.mul(quaternion0, new Quaternionf()).mul(quaternion2, new Quaternionf());
+                    case ZXY -> quaternion2.mul(quaternion0, new Quaternionf()).mul(quaternion1, new Quaternionf());
+                    case YZX -> quaternion1.mul(quaternion2, new Quaternionf()).mul(quaternion0, new Quaternionf());
+                    case XZY -> quaternion0.mul(quaternion2, new Quaternionf()).mul(quaternion1, new Quaternionf());
+                }
+            );
             dh.vrSettings.mrMovingCamOffsetX = f;
             dh.vrSettings.mrMovingCamOffsetY = f1;
             dh.vrSettings.mrMovingCamOffsetZ = f2;

@@ -2,16 +2,14 @@ package org.vivecraft.client_vr.gameplay.trackers;
 
 import org.vivecraft.client.VivecraftVRMod;
 import org.vivecraft.client.network.ClientNetworking;
-import org.vivecraft.client.utils.Utils;
 import org.vivecraft.client_vr.BlockTags;
 import org.vivecraft.client_vr.extensions.GameRendererExtension;
 import org.vivecraft.client_vr.extensions.PlayerExtension;
 import org.vivecraft.client_vr.gameplay.VRMovementStyle;
-import org.vivecraft.client_vr.provider.openvr_lwjgl.OpenVRUtil;
-import org.vivecraft.common.utils.math.Angle;
-import org.vivecraft.common.utils.math.Matrix4f;
-import org.vivecraft.common.utils.math.Quaternion;
-import org.vivecraft.common.utils.math.Vector3;
+
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -275,20 +273,16 @@ public class TeleportTracker extends Tracker
             matrix4f = dh.vr.getAimRotation(0);
         }
 
-        Matrix4f matrix4f1 = Matrix4f.rotationY(dh.vrPlayer.vrdata_world_render.rotation_radians);
-        matrix4f = Matrix4f.multiply(matrix4f1, matrix4f);
-        Quaternion quaternion = OpenVRUtil.convertMatrix4ftoRotationQuat(matrix4f);
-        Angle angle = quaternion.toEuler();
+        matrix4f = matrix4f.rotateY(dh.vrPlayer.vrdata_world_render.rotation_radians, new Matrix4f());
+        Quaternionf quaternion = new Quaternionf().setFromUnnormalized(matrix4f);
         int i = 50;
         this.movementTeleportArc[0] = new Vec3(vec3.x, vec3.y, vec3.z);
         this.movementTeleportArcSteps = 1;
         float f = 0.098F;
-        Matrix4f matrix4f2 = Utils.rotationZMatrix(toRadians(-angle.getRoll()));
-        Matrix4f matrix4f3 = Utils.rotationXMatrix(-2.5132742F);
-        Matrix4f matrix4f4 = Matrix4f.multiply(matrix4f, matrix4f2);
-        Vector3 vector3 = new Vector3(0.0F, 1.0F, 0.0F);
-        Vector3 vector31 = matrix4f4.transform(vector3);
-        Vec3 vec32 = vector31.negate().toVector3d();
+        Matrix4f matrix4f3 = new Matrix4f().rotationX(-2.5132742F);
+        Matrix4f matrix4f4 = matrix4f.rotateZ(toRadians(-(float)toDegrees(atan2((2.0F * (quaternion.x * quaternion.y + quaternion.w * quaternion.z)), (quaternion.w * quaternion.w - quaternion.x * quaternion.x + quaternion.y * quaternion.y - quaternion.z * quaternion.z)))));
+        Vector3f vector31 = new Vector3f(0.0F, 1.0F, 0.0F).mulProject(matrix4f4);
+        Vec3 vec32 = new Vec3(-vector31.x, -vector31.y, -vector31.z);
         vec32 = vec32.scale((double)f);
         float f1 = 0.5F;
         Vec3 vec33 = new Vec3(vec31.x * (double)f1, vec31.y * (double)f1, vec31.z * (double)f1);

@@ -86,11 +86,6 @@ public class VRPlayer
         return this.vrdata_world_render != null ? this.vrdata_world_render : this.vrdata_world_pre;
     }
 
-    public static VRPlayer get()
-    {
-        return dh.vrPlayer;
-    }
-
     public static Vec3 room_to_world_pos(Vec3 pos, VRData data)
     {
         Vec3 vec3 = new Vec3(pos.x * (double)data.worldScale, pos.y * (double)data.worldScale, pos.z * (double)data.worldScale);

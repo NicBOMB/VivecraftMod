@@ -7,13 +7,13 @@ import org.vivecraft.client_vr.provider.VRRenderer;
 import org.vivecraft.client_vr.provider.openvr_lwjgl.VRInputAction;
 import org.vivecraft.client_vr.settings.VRHotkeys;
 
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 
 import net.minecraft.client.KeyMapping;
 
 import java.util.List;
 
-import static org.vivecraft.client.utils.Utils.Matrix4fSetIdentity;
 import static org.vivecraft.client_vr.VRState.dh;
 import static org.vivecraft.client_vr.VRState.mc;
 import static org.vivecraft.common.utils.Utils.logger;
@@ -74,12 +74,12 @@ public class NullVR extends MCVR
             dh.vrSettings.seated = true;
 
             this.headIsTracking = false;
-            Matrix4fSetIdentity(this.hmdPose);
-            this.hmdPose.M[1][3] = 1.62F;
+            this.hmdPose.identity();
+            this.hmdPose.m13(1.62F);
 
             // eye offset, 10cm total distance
-            this.hmdPoseLeftEye.M[0][3] = -0.05F;
-            this.hmdPoseRightEye.M[0][3] = 0.05F;
+            this.hmdPoseLeftEye.m03(-0.05F);
+            this.hmdPoseRightEye.m03(0.05F);
 
             this.initialized = true;
             this.initSuccess = true;
@@ -112,27 +112,10 @@ public class NullVR extends MCVR
 
 
                 // point head in cursor direction
-                hmdRotation.M[0][0] = handRotation[0].M[0][0];
-                hmdRotation.M[0][1] = handRotation[0].M[0][1];
-                hmdRotation.M[0][2] = handRotation[0].M[0][2];
-                hmdRotation.M[1][0] = handRotation[0].M[1][0];
-                hmdRotation.M[1][1] = handRotation[0].M[1][1];
-                hmdRotation.M[1][2] = handRotation[0].M[1][2];
-                hmdRotation.M[2][0] = handRotation[0].M[2][0];
-                hmdRotation.M[2][1] = handRotation[0].M[2][1];
-                hmdRotation.M[2][2] = handRotation[0].M[2][2];
+                hmdRotation.set3x3(handRotation[0]);
             } else if(GuiHandler.guiRotation_room != null){
                 // look at screen, so that it's centered
-                hmdRotation.M[0][0] = GuiHandler.guiRotation_room.M[0][0];
-                hmdRotation.M[0][1] = GuiHandler.guiRotation_room.M[0][1];
-                hmdRotation.M[0][2] = GuiHandler.guiRotation_room.M[0][2];
-                hmdRotation.M[1][0] = GuiHandler.guiRotation_room.M[1][0];
-                hmdRotation.M[1][1] = GuiHandler.guiRotation_room.M[1][1];
-                hmdRotation.M[1][2] = GuiHandler.guiRotation_room.M[1][2];
-                hmdRotation.M[2][0] = GuiHandler.guiRotation_room.M[2][0];
-                hmdRotation.M[2][1] = GuiHandler.guiRotation_room.M[2][1];
-                hmdRotation.M[2][2] = GuiHandler.guiRotation_room.M[2][2];
-
+                hmdRotation.set3x3(GuiHandler.guiRotation_room);
             }
             mc.getProfiler().popPush("hmdSampling");
             this.hmdSampling();
@@ -159,9 +142,9 @@ public class NullVR extends MCVR
     }
 
     @Override
-    public org.vivecraft.common.utils.math.Matrix4f getControllerComponentTransform(int controllerIndex, String componentName)
+    public Matrix4f getControllerComponentTransform(int controllerIndex, String componentName)
     {
-        return new org.vivecraft.common.utils.math.Matrix4f();
+        return new Matrix4f();
     }
 
     @Override
