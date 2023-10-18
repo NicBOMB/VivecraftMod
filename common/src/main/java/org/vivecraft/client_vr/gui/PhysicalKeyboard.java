@@ -7,7 +7,6 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -22,6 +21,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.vivecraft.client.utils.Utils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.screenhandlers.GuiHandler;
 import org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler;
 import org.vivecraft.client_vr.provider.ControllerType;
@@ -47,8 +47,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class PhysicalKeyboard {
-    private final Minecraft mc = Minecraft.getInstance();
-    private final ClientDataHolderVR dh = ClientDataHolderVR.getInstance();
     private boolean reinit;
     private boolean shift;
     private boolean shiftSticky;
@@ -98,9 +96,9 @@ public class PhysicalKeyboard {
         this.keyHeight = KEY_HEIGHT * this.scale;
         this.keyWidthSpecial = KEY_WIDTH_SPECIAL * this.scale;
 
-        String chars = this.dh.vrSettings.keyboardKeys;
+        String chars = ClientDataHolderVR.vrSettings.keyboardKeys;
         if (this.shift) {
-            chars = this.dh.vrSettings.keyboardKeysShift;
+            chars = ClientDataHolderVR.vrSettings.keyboardKeysShift;
         }
 
         float calcRows = (float) chars.length() / (float) this.columns;
@@ -127,7 +125,7 @@ public class PhysicalKeyboard {
                             PhysicalKeyboard.this.setShift(false, false);
                         }
 
-                        if (c1 == '/' && PhysicalKeyboard.this.mc.screen == null) {
+                        if (c1 == '/' && VRState.mc.screen == null) {
                             InputSimulator.pressKey(GLFW.GLFW_KEY_SLASH);
                             InputSimulator.releaseKey(GLFW.GLFW_KEY_SLASH);
                         }
@@ -268,18 +266,18 @@ public class PhysicalKeyboard {
             }
         }
 
-        if (dh.vrSettings.physicalKeyboardTheme == KeyboardTheme.CUSTOM) {
+        if (ClientDataHolderVR.vrSettings.physicalKeyboardTheme == KeyboardTheme.CUSTOM) {
             customTheme.clear();
-            File themeFile = new File(mc.gameDirectory, "keyboardtheme.txt");
+            File themeFile = new File(VRState.mc.gameDirectory, "keyboardtheme.txt");
             if (!themeFile.exists()) {
                 // Write template theme file
                 try (PrintWriter pw = new PrintWriter(new FileWriter(themeFile, StandardCharsets.UTF_8))) {
-                    char[] normalChars = this.dh.vrSettings.keyboardKeys.toCharArray();
+                    char[] normalChars = ClientDataHolderVR.vrSettings.keyboardKeys.toCharArray();
                     for (int i = 0; i < normalChars.length; i++) {
                         pw.println("# " + normalChars[i] + " (Normal)");
                         pw.println(i + "=255,255,255");
                     }
-                    char[] shiftChars = this.dh.vrSettings.keyboardKeysShift.toCharArray();
+                    char[] shiftChars = ClientDataHolderVR.vrSettings.keyboardKeysShift.toCharArray();
                     for (int i = 0; i < shiftChars.length; i++) {
                         pw.println("# " + shiftChars[i] + " (Shifted)");
                         pw.println((i + 500) + "=255,255,255");
@@ -373,7 +371,7 @@ public class PhysicalKeyboard {
         matrix4f.translate(this.getCenterPos());
         Matrix4f.mul(matrix4f, (Matrix4f) Utils.convertOVRMatrix(KeyboardHandler.Rotation_room).invert(), matrix4f);
         matrix4f.translate((Vector3f) Utils.convertToVector3f(KeyboardHandler.Pos_room).negate());
-        Vec3 vec3 = Utils.convertToVector3d(Utils.transformVector(matrix4f, Utils.convertToVector3f(this.dh.vrPlayer.vrdata_room_pre.getController(controller.ordinal()).getPosition()), true));
+        Vec3 vec3 = Utils.convertToVector3d(Utils.transformVector(matrix4f, Utils.convertToVector3f(ClientDataHolderVR.vrPlayer.vrdata_room_pre.getController(controller.ordinal()).getPosition()), true));
 
         for (KeyButton physicalkeyboard$keybutton : this.keys) {
             if (physicalkeyboard$keybutton.getCollisionBoundingBox().contains(vec3)) {
@@ -439,14 +437,14 @@ public class PhysicalKeyboard {
         if (this.easterEggActive) {
             // https://qimg.techjargaming.com/i/UkG1cWAh.png
             for (KeyButton button : this.keys) {
-                RGBAColor color = RGBAColor.fromHSB(((float) this.dh.tickCounter + this.mc.getFrameTime()) / 100.0F + (float) (button.boundingBox.minX + (button.boundingBox.maxX - button.boundingBox.minX) / 2.0D) / 2.0F, 1.0F, 1.0F);
+                RGBAColor color = RGBAColor.fromHSB(((float) ClientDataHolderVR.tickCounter + VRState.mc.getFrameTime()) / 100.0F + (float) (button.boundingBox.minX + (button.boundingBox.maxX - button.boundingBox.minX) / 2.0D) / 2.0F, 1.0F, 1.0F);
                 button.color.r = color.r;
                 button.color.g = color.g;
                 button.color.b = color.b;
             }
         } else {
             this.keys.forEach(button -> {
-                if (dh.vrSettings.physicalKeyboardTheme == KeyboardTheme.CUSTOM) {
+                if (ClientDataHolderVR.vrSettings.physicalKeyboardTheme == KeyboardTheme.CUSTOM) {
                     RGBAColor color = customTheme.get(this.shift && button.id < 1000 ? button.id + 500 : button.id);
                     if (color != null) {
                         button.color.r = color.r;
@@ -454,7 +452,7 @@ public class PhysicalKeyboard {
                         button.color.b = color.b;
                     }
                 } else {
-                    dh.vrSettings.physicalKeyboardTheme.assignColor(button);
+                    ClientDataHolderVR.vrSettings.physicalKeyboardTheme.assignColor(button);
                 }
             });
         }
@@ -462,7 +460,7 @@ public class PhysicalKeyboard {
         RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
 
         // TODO: does this still do the right thing for shaders?
-        mc.getTextureManager().bindForSetup(new ResourceLocation("vivecraft:textures/white.png"));
+        VRState.mc.getTextureManager().bindForSetup(new ResourceLocation("vivecraft:textures/white.png"));
         RenderSystem.setShaderTexture(0, new ResourceLocation("vivecraft:textures/white.png"));
 
         // We need to ignore depth so we can see the back faces and text
@@ -470,7 +468,7 @@ public class PhysicalKeyboard {
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 
         // Stuff for drawing labels
-        Font font = this.mc.font;
+        Font font = VRState.mc.font;
         ArrayList<Tuple<String, Vector3f>> labels = new ArrayList<>();
         float textScale = 0.002F * this.scale;
 
@@ -531,7 +529,7 @@ public class PhysicalKeyboard {
             this.shift = false;
         }
 
-        this.scale = this.dh.vrSettings.physicalKeyboardScale;
+        this.scale = ClientDataHolderVR.vrSettings.physicalKeyboardScale;
         this.reinit = true;
     }
 
@@ -600,7 +598,7 @@ public class PhysicalKeyboard {
 
         public final void press(ControllerType controller, boolean isRepeat) {
             if (!isRepeat) {
-                PhysicalKeyboard.this.mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                VRState.mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             }
 
             MCVR.get().triggerHapticPulse(controller, isRepeat ? 300 : 600);

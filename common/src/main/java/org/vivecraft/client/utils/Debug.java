@@ -4,12 +4,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.common.utils.math.Quaternion;
 import org.vivecraft.common.utils.math.Vector3;
 
@@ -161,7 +161,7 @@ public class Debug {
         ArrayList<Polygon> toDraw = new ArrayList<>();
 
         public void render(float partialTicks, long finishTimeNano) {
-            Player player = Minecraft.getInstance().player;
+            Player player = VRState.mc.player;
             double d0 = player.xOld + (player.getX() - player.xOld) * (double) partialTicks;
             double d1 = player.yOld + (player.getY() - player.yOld) * (double) partialTicks;
             double d2 = player.zOld + (player.getZ() - player.zOld) * (double) partialTicks;

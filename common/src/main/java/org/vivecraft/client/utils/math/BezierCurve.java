@@ -5,9 +5,9 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import org.vivecraft.client_vr.VRState;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class BezierCurve {
     }
 
     public void render(int vertexCount, Color c, float partialTicks) {
-        Player player = Minecraft.getInstance().player;
+        Player player = VRState.mc.player;
         double d0 = player.xOld + (player.getX() - player.xOld) * (double) partialTicks;
         double d1 = player.yOld + (player.getY() - player.yOld) * (double) partialTicks;
         double d2 = player.zOld + (player.getZ() - player.zOld) * (double) partialTicks;

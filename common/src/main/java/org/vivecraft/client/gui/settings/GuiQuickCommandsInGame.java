@@ -8,7 +8,6 @@ import net.minecraft.network.chat.Component;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 
 public class GuiQuickCommandsInGame extends Screen {
-    protected ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();
     private int field_146445_a;
     private int field_146444_f;
     private static final String __OBFID = "CL_00000703";
@@ -25,7 +24,7 @@ public class GuiQuickCommandsInGame extends Screen {
         this.clearWidgets();
         byte b0 = -16;
         boolean flag = true;
-        String[] astring = this.dataholder.vrSettings.vrQuickCommands;
+        String[] astring = ClientDataHolderVR.vrSettings.vrQuickCommands;
         int i = 0;
 
         for (int j = 0; j < astring.length; ++j) {

@@ -2,31 +2,29 @@ package org.vivecraft.client.gui.settings;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.ArrayUtils;
+import org.vivecraft.client_vr.VRState;
 
 import java.util.Arrays;
 
 public class GuiRadialItemsList extends ObjectSelectionList {
     private final GuiRadialConfiguration parent;
-    private final Minecraft mc;
     private Entry[] listEntries;
     private int maxListLabelWidth = 0;
 
-    public GuiRadialItemsList(GuiRadialConfiguration parent, Minecraft mc) {
-        super(mc, parent.width, parent.height, 63, parent.height - 32, 20);
+    public GuiRadialItemsList(GuiRadialConfiguration parent) {
+        super(VRState.mc, parent.width, parent.height, 63, parent.height - 32, 20);
         this.parent = parent;
-        this.mc = mc;
         this.maxListLabelWidth = 90;
         this.buildList();
     }
 
     public void buildList() {
-        KeyMapping[] akeymapping = ArrayUtils.clone(this.mc.options.keyMappings);
+        KeyMapping[] akeymapping = ArrayUtils.clone(VRState.mc.options.keyMappings);
         Arrays.sort(akeymapping);
         String s = null;
 
@@ -50,11 +48,11 @@ public class GuiRadialItemsList extends ObjectSelectionList {
 
         public CategoryEntry(String name) {
             this.labelText = I18n.get(name);
-            this.labelWidth = GuiRadialItemsList.this.mc.font.width(this.labelText);
+            this.labelWidth = VRState.mc.font.width(this.labelText);
         }
 
         public void render(GuiGraphics guiGraphics, int pIndex, int pTop, int pLeft, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pIsMouseOver, float pPartialTicks) {
-            guiGraphics.drawString(mc.font, this.labelText, (mc.screen.width / 2 - this.labelWidth / 2), (pTop + pHeight - 9 - 1), 6777215);
+            guiGraphics.drawString(VRState.mc.font, this.labelText, (VRState.mc.screen.width / 2 - this.labelWidth / 2), (pTop + pHeight - 9 - 1), 6777215);
         }
 
         @Override
@@ -80,7 +78,7 @@ public class GuiRadialItemsList extends ObjectSelectionList {
                 chatformatting = ChatFormatting.GREEN;
             }
 
-            guiGraphics.drawString(mc.font, chatformatting + I18n.get(this.myKey.getName()), (mc.screen.width / 2 - GuiRadialItemsList.this.maxListLabelWidth / 2), (pTop + pHeight / 2 - 9 / 2), 16777215);
+            guiGraphics.drawString(VRState.mc.font, chatformatting + I18n.get(this.myKey.getName()), (VRState.mc.screen.width / 2 - GuiRadialItemsList.this.maxListLabelWidth / 2), (pTop + pHeight / 2 - 9 / 2), 16777215);
         }
 
         public boolean mouseClicked(double pMouseX, double p_94738_, int pMouseY) {

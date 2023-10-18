@@ -18,7 +18,7 @@ public class ForgeSodiumGameOptionPagesVRMixin {
     @Inject(at = @At("HEAD"), method = "lambda$quality$23", remap = false)
     private static void vivecraft$initframe(Options opts, GraphicsStatus value, CallbackInfo ci) {
         if (VRState.vrInitialized) {
-            ClientDataHolderVR.getInstance().vrRenderer.reinitFrameBuffers("gfx setting change");
+            ClientDataHolderVR.vrRenderer.reinitFrameBuffers("gfx setting change");
         }
     }
 }

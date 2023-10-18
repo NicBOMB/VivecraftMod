@@ -1,8 +1,6 @@
 package org.vivecraft.client_vr.gameplay.trackers;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.ClipContext;
@@ -20,6 +18,7 @@ import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.client.utils.Utils;
 import org.vivecraft.client_vr.BlockTags;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.extensions.GameRendererExtension;
 import org.vivecraft.client_vr.extensions.PlayerExtension;
 import org.vivecraft.client_vr.gameplay.VRMovementStyle;
@@ -41,12 +40,7 @@ public class TeleportTracker extends Tracker {
     private final Vec3[] movementTeleportArc = new Vec3[50];
     public int movementTeleportArcSteps = 0;
     public double lastTeleportArcDisplayOffset = 0.0D;
-    public VRMovementStyle vrMovementStyle;
-
-    public TeleportTracker(Minecraft mc, ClientDataHolderVR dh) {
-        super(mc, dh);
-        this.vrMovementStyle = new VRMovementStyle(dh);
-    }
+    public VRMovementStyle vrMovementStyle = new VRMovementStyle();
 
     public float getTeleportEnergy() {
         return this.teleportEnergy;
@@ -63,7 +57,7 @@ public class TeleportTracker extends Tracker {
     public boolean isActive(LocalPlayer p) {
         if (p == null) {
             return false;
-        } else if (this.mc.gameMode == null) {
+        } else if (VRState.mc.gameMode == null) {
             return false;
         } else if (!p.isAlive()) {
             return false;
@@ -87,8 +81,8 @@ public class TeleportTracker extends Tracker {
 
         boolean flag = false;
         Vec3 vec3 = null;
-        boolean flag1 = VivecraftVRMod.keyTeleport.isDown() && this.dh.vrPlayer.isTeleportEnabled();
-        boolean flag2 = this.dh.vrSettings.seated && !this.dh.vrPlayer.getFreeMove() && (player.input.forwardImpulse != 0.0F || player.input.leftImpulse != 0.0F);
+        boolean flag1 = VivecraftVRMod.keyTeleport.isDown() && ClientDataHolderVR.vrPlayer.isTeleportEnabled();
+        boolean flag2 = ClientDataHolderVR.vrSettings.seated && !ClientDataHolderVR.vrPlayer.getFreeMove() && (player.input.forwardImpulse != 0.0F || player.input.leftImpulse != 0.0F);
 
         if ((flag1 || flag2) && !player.isPassenger()) {
             vec3 = this.movementTeleportDestination;
@@ -108,7 +102,7 @@ public class TeleportTracker extends Tracker {
                     }
 
                     if (vec3.x != 0.0D || vec3.y != 0.0D || vec3.z != 0.0D) {
-                        Vec3 vec38 = this.dh.vrPlayer.vrdata_world_pre.hmd.getPosition();
+                        Vec3 vec38 = ClientDataHolderVR.vrPlayer.vrdata_world_pre.hmd.getPosition();
                         Vec3 vec31 = vec3.add(-vec38.x, -vec38.y, -vec38.z).normalize();
                         Vec3 vec32 = player.getLookAngle();
                         Vec3 vec33 = vec32.cross(new Vec3(0.0D, 1.0D, 0.0D));
@@ -187,9 +181,9 @@ public class TeleportTracker extends Tracker {
 
             Block block = null;
 
-            if (!this.dh.vrPlayer.isTeleportSupported()) {
+            if (!ClientDataHolderVR.vrPlayer.isTeleportSupported()) {
                 String s1 = "tp " + vec3.x + " " + vec3.y + " " + vec3.z;
-                this.mc.player.connection.sendCommand(s1);
+                VRState.mc.player.connection.sendCommand(s1);
             } else {
                 if (ClientNetworking.serverSupportsDirectTeleport) {
                     ((PlayerExtension) player).vivecraft$setTeleported(true);
@@ -199,36 +193,36 @@ public class TeleportTracker extends Tracker {
             }
 
             this.doTeleportCallback();
-            ((PlayerExtension) this.mc.player).vivecraft$stepSound(BlockPos.containing(vec3), vec3);
+            ((PlayerExtension) VRState.mc.player).vivecraft$stepSound(BlockPos.containing(vec3), vec3);
         }
     }
 
-    public void updateTeleportDestinations(GameRenderer renderer, Minecraft mc, LocalPlayer player) {
-        mc.getProfiler().push("updateTeleportDestinations");
+    public void updateTeleportDestinations(LocalPlayer player) {
+        VRState.mc.getProfiler().push("updateTeleportDestinations");
 
         if (this.vrMovementStyle.arcAiming) {
             this.movementTeleportDestination = new Vec3(0.0D, 0.0D, 0.0D);
 
             if (this.movementTeleportProgress > 0.0D) {
-                this.updateTeleportArc(mc, player);
+                this.updateTeleportArc(player);
             }
         }
 
-        mc.getProfiler().pop();
+        VRState.mc.getProfiler().pop();
     }
 
-    private void updateTeleportArc(Minecraft mc, LocalPlayer player) {
-        Vec3 vec3 = dh.vrPlayer.vrdata_world_render.getController(1).getPosition();
-        Vec3 vec31 = dh.vrPlayer.vrdata_world_render.getController(1).getDirection();
-        Matrix4f matrix4f = dh.vr.getAimRotation(1);
+    private void updateTeleportArc(LocalPlayer player) {
+        Vec3 vec3 = ClientDataHolderVR.vrPlayer.vrdata_world_render.getController(1).getPosition();
+        Vec3 vec31 = ClientDataHolderVR.vrPlayer.vrdata_world_render.getController(1).getDirection();
+        Matrix4f matrix4f = ClientDataHolderVR.vr.getAimRotation(1);
 
-        if (dh.vrSettings.seated) {
+        if (ClientDataHolderVR.vrSettings.seated) {
             vec3 = RenderHelper.getControllerRenderPos(0);
-            vec31 = dh.vrPlayer.vrdata_world_render.getController(0).getDirection();
-            matrix4f = dh.vr.getAimRotation(0);
+            vec31 = ClientDataHolderVR.vrPlayer.vrdata_world_render.getController(0).getDirection();
+            matrix4f = ClientDataHolderVR.vr.getAimRotation(0);
         }
 
-        Matrix4f matrix4f1 = Matrix4f.rotationY(dh.vrPlayer.vrdata_world_render.rotation_radians);
+        Matrix4f matrix4f1 = Matrix4f.rotationY(ClientDataHolderVR.vrPlayer.vrdata_world_render.rotation_radians);
         matrix4f = Matrix4f.multiply(matrix4f1, matrix4f);
         Quaternion quaternion = OpenVRUtil.convertMatrix4ftoRotationQuat(matrix4f);
         Angle angle = quaternion.toEuler();
@@ -251,27 +245,27 @@ public class TeleportTracker extends Tracker {
             Vec3 vec35 = new Vec3(vec34.x + vec33.x, vec34.y + vec33.y, vec34.z + vec33.z);
             boolean flag = false;
 
-            if (dh.vrSettings.seated) {
-                flag = ((GameRendererExtension) mc.gameRenderer).vivecraft$isInWater();
+            if (ClientDataHolderVR.vrSettings.seated) {
+                flag = ((GameRendererExtension) VRState.mc.gameRenderer).vivecraft$isInWater();
             } else {
-                flag = !mc.level.getFluidState(BlockPos.containing(vec3)).isEmpty();
+                flag = !VRState.mc.level.getFluidState(BlockPos.containing(vec3)).isEmpty();
             }
 
-            BlockHitResult blockhitresult = mc.level.clip(new ClipContext(vec34, vec35, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, mc.player));
+            BlockHitResult blockhitresult = VRState.mc.level.clip(new ClipContext(vec34, vec35, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, VRState.mc.player));
 
             if (blockhitresult != null && blockhitresult.getType() != HitResult.Type.MISS) {
                 this.movementTeleportArc[j] = blockhitresult.getLocation();
                 this.movementTeleportArcSteps = j + 1;
                 Vec3 vec36 = vec34.subtract(vec35).normalize();
                 Vec3 vec37 = new Vec3(-vec36.x * 0.02D, -vec36.y * 0.02D, -vec36.z * 0.02D);
-                this.checkAndSetTeleportDestination(mc, player, vec3, blockhitresult, vec37);
-                Vec3 vec38 = mc.player.position().subtract(this.movementTeleportDestination);
+                this.checkAndSetTeleportDestination(player, vec3, blockhitresult, vec37);
+                Vec3 vec38 = VRState.mc.player.position().subtract(this.movementTeleportDestination);
                 double d0 = vec38.y;
                 this.movementTeleportDistance = vec38.length();
                 double d1 = Math.sqrt(vec38.x * vec38.x + vec38.z * vec38.z);
-                boolean flag1 = !mc.player.isShiftKeyDown() || !(d0 > 0.2D);
+                boolean flag1 = !VRState.mc.player.isShiftKeyDown() || !(d0 > 0.2D);
 
-                if (!mc.player.getAbilities().mayfly && ClientNetworking.isLimitedSurvivalTeleport()) {
+                if (!VRState.mc.player.getAbilities().mayfly && ClientNetworking.isLimitedSurvivalTeleport()) {
                     if (ClientNetworking.getTeleportDownLimit() > 0 && d0 > (double) ClientNetworking.getTeleportDownLimit() + 0.2D) {
                         flag1 = false;
                     } else if (ClientNetworking.getTeleportUpLimit() > 0 && -d0 > (double) ClientNetworking.getTeleportUpLimit() * (double) ((PlayerExtension) player).vivecraft$getMuhJumpFactor() + 0.2D) {
@@ -297,42 +291,40 @@ public class TeleportTracker extends Tracker {
     }
 
     private void doTeleportCallback() {
-        Minecraft minecraft = Minecraft.getInstance();
-        ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();
-        dataholder.swingTracker.disableSwing = 3;
+        ClientDataHolderVR.swingTracker.disableSwing = 3;
 
         if (ClientNetworking.isLimitedSurvivalTeleport()) {
-            minecraft.player.causeFoodExhaustion((float) (this.movementTeleportDistance / 16.0D * (double) 1.2F));
+            VRState.mc.player.causeFoodExhaustion((float) (this.movementTeleportDistance / 16.0D * (double) 1.2F));
 
-            if (minecraft.gameMode.hasMissTime() && this.vrMovementStyle.arcAiming) {
+            if (VRState.mc.gameMode.hasMissTime() && this.vrMovementStyle.arcAiming) {
                 this.teleportEnergy = (float) ((double) this.teleportEnergy - this.movementTeleportDistance * 4.0D);
             }
         }
 
-        minecraft.player.fallDistance = 0.0F;
-        ((PlayerExtension) minecraft.player).vivecraft$setMovementTeleportTimer(-1);
+        VRState.mc.player.fallDistance = 0.0F;
+        ((PlayerExtension) VRState.mc.player).vivecraft$setMovementTeleportTimer(-1);
     }
 
-    private boolean checkAndSetTeleportDestination(Minecraft mc, LocalPlayer player, Vec3 start, BlockHitResult collision, Vec3 reverseEpsilon) {
+    private boolean checkAndSetTeleportDestination(LocalPlayer player, Vec3 start, BlockHitResult collision, Vec3 reverseEpsilon) {
         BlockPos blockpos = collision.getBlockPos();
         BlockState blockstate = player.level().getBlockState(blockpos);
 
-        if (!mc.level.getFluidState(blockpos).isEmpty()) {
+        if (!VRState.mc.level.getFluidState(blockpos).isEmpty()) {
             Vec3 vec3 = new Vec3(collision.getLocation().x, blockpos.getY(), collision.getLocation().z);
             Vec3 vec31 = vec3.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
             AABB aabb = player.getBoundingBox().move(vec31.x, vec31.y, vec31.z);
-            boolean flag = mc.level.noCollision(player, aabb);
+            boolean flag = VRState.mc.level.noCollision(player, aabb);
 
             if (!flag) {
                 Vec3 vec32 = Vec3.atBottomCenterOf(blockpos);
                 vec31 = vec32.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
                 aabb = player.getBoundingBox().move(vec31.x, vec31.y, vec31.z);
-                flag = mc.level.noCollision(player, aabb);
+                flag = VRState.mc.level.noCollision(player, aabb);
             }
 
             float f = 0.0F;
 
-            if (dh.vrSettings.seated) {
+            if (ClientDataHolderVR.vrSettings.seated) {
                 f = 0.5F;
             }
 
@@ -344,7 +336,7 @@ public class TeleportTracker extends Tracker {
         } else if (collision.getDirection() != Direction.UP) {
             if (blockstate.getBlock() instanceof LadderBlock || blockstate.getBlock() instanceof VineBlock || blockstate.is(BlockTags.VIVECRAFT_CLIMBABLE)) {
                 Vec3 vec36 = new Vec3((double) blockpos.getX() + 0.5D, (double) blockpos.getY() + 0.5D, (double) blockpos.getZ() + 0.5D);
-                Block block = mc.level.getBlockState(blockpos.below()).getBlock();
+                Block block = VRState.mc.level.getBlockState(blockpos.below()).getBlock();
 
                 if (block == blockstate.getBlock()) {
                     vec36 = vec36.add(0.0D, -1.0D, 0.0D);
@@ -355,7 +347,7 @@ public class TeleportTracker extends Tracker {
                 return true;
             }
 
-            if (!mc.player.getAbilities().mayfly && ClientNetworking.isLimitedSurvivalTeleport()) {
+            if (!VRState.mc.player.getAbilities().mayfly && ClientNetworking.isLimitedSurvivalTeleport()) {
                 return false;
             }
         }
@@ -366,10 +358,10 @@ public class TeleportTracker extends Tracker {
         for (int i = 0; i < 2; ++i) {
             blockstate = player.level().getBlockState(blockpos1);
 
-            if (blockstate.getCollisionShape(mc.level, blockpos1).isEmpty()) {
+            if (blockstate.getCollisionShape(VRState.mc.level, blockpos1).isEmpty()) {
                 blockpos1 = blockpos1.above();
             } else {
-                double d2 = blockstate.getCollisionShape(mc.level, blockpos1).max(Direction.Axis.Y);
+                double d2 = blockstate.getCollisionShape(VRState.mc.level, blockpos1).max(Direction.Axis.Y);
                 Vec3 vec33 = new Vec3(collision.getLocation().x, (double) blockpos1.getY() + d2, collision.getLocation().z);
                 Vec3 vec34 = vec33.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
                 AABB aabb1 = player.getBoundingBox().move(vec34.x, vec34.y, vec34.z);
@@ -379,13 +371,13 @@ public class TeleportTracker extends Tracker {
                     d0 = 0.05D;
                 }
 
-                boolean flag1 = mc.level.noCollision(player, aabb1) && !mc.level.noCollision(player, aabb1.inflate(0.0D, 0.125D + d0, 0.0D));
+                boolean flag1 = VRState.mc.level.noCollision(player, aabb1) && !VRState.mc.level.noCollision(player, aabb1.inflate(0.0D, 0.125D + d0, 0.0D));
 
                 if (!flag1) {
                     Vec3 vec35 = Vec3.upFromBottomCenterOf(blockpos1, d2);
                     vec34 = vec35.subtract(player.getX(), player.getBoundingBox().minY, player.getZ());
                     aabb1 = player.getBoundingBox().move(vec34.x, vec34.y, vec34.z);
-                    flag1 = mc.level.noCollision(player, aabb1) && !mc.level.noCollision(player, aabb1.inflate(0.0D, 0.125D + d0, 0.0D));
+                    flag1 = VRState.mc.level.noCollision(player, aabb1) && !VRState.mc.level.noCollision(player, aabb1.inflate(0.0D, 0.125D + d0, 0.0D));
                 }
 
                 if (flag1) {

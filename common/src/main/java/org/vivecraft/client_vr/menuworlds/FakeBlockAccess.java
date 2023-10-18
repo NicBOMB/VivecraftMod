@@ -1,6 +1,5 @@
 package org.vivecraft.client_vr.menuworlds;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.*;
 import net.minecraft.util.Mth;
@@ -23,6 +22,7 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.vivecraft.client_vr.VRState;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -178,7 +178,7 @@ public class FakeBlockAccess implements LevelReader {
 
     @Override
     public int getBlockTint(BlockPos blockPosIn, ColorResolver colorResolverIn) {
-        int i = Minecraft.getInstance().options.biomeBlendRadius().get();
+        int i = VRState.mc.options.biomeBlendRadius().get();
 
         if (i == 0) {
             return colorResolverIn.getColor(this.getBiome(blockPosIn).value(), blockPosIn.getX(), blockPosIn.getZ());

@@ -6,7 +6,6 @@ import com.google.common.io.Files;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.ComponentCollector;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -22,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.lwjgl.openvr.HmdMatrix44;
 import org.vivecraft.client.Xplat;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.render.VRShaders;
 import org.vivecraft.client_vr.utils.LoaderUtils;
 import org.vivecraft.common.utils.lwjgl.*;
@@ -260,7 +260,7 @@ public class Utils {
 
         try {
             try {
-                Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(new ResourceLocation("vivecraft", name));
+                Optional<Resource> resource = VRState.mc.getResourceManager().getResource(new ResourceLocation("vivecraft", name));
                 if (resource.isPresent()) {
                     inputstream = resource.get().open();
                 }
@@ -614,8 +614,6 @@ public class Utils {
     }
 
     public static void spawnParticles(ParticleOptions type, int count, Vec3 position, Vec3 size, double speed) {
-        Minecraft minecraft = Minecraft.getInstance();
-
         for (int i = 0; i < count; ++i) {
             double d0 = avRandomizer.nextGaussian() * size.x;
             double d1 = avRandomizer.nextGaussian() * size.y;
@@ -625,7 +623,7 @@ public class Utils {
             double d5 = avRandomizer.nextGaussian() * speed;
 
             try {
-                minecraft.level.addParticle(type, position.x + d0, position.y + d1, position.z + d2, d3, d4, d5);
+                VRState.mc.level.addParticle(type, position.x + d0, position.y + d1, position.z + d2, d3, d4, d5);
             } catch (Throwable throwable) {
                 LogManager.getLogger().warn("Could not spawn particle effect {}", type);
                 return;
@@ -646,11 +644,10 @@ public class Utils {
     }
 
     public static void takeScreenshot(RenderTarget fb) {
-        Minecraft minecraft = Minecraft.getInstance();
-        Screenshot.grab(minecraft.gameDirectory, fb, (text) ->
+        Screenshot.grab(VRState.mc.gameDirectory, fb, (text) ->
         {
-            minecraft.execute(() -> {
-                minecraft.gui.getChat().addMessage(text);
+            VRState.mc.execute(() -> {
+                VRState.mc.gui.getChat().addMessage(text);
             });
         });
     }

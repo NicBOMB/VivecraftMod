@@ -7,7 +7,6 @@ import com.google.gson.GsonBuilder;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.sun.jna.NativeLibrary;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.phys.Vec3;
@@ -18,6 +17,7 @@ import org.lwjgl.system.MemoryUtil;
 import org.vivecraft.client.VivecraftVRMod;
 import org.vivecraft.client.utils.Utils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.screenhandlers.GuiHandler;
 import org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler;
 import org.vivecraft.client_vr.gameplay.screenhandlers.RadialHandler;
@@ -93,8 +93,8 @@ public class MCOpenVR extends MCVR {
     InputDigitalActionData digital = InputDigitalActionData.calloc();
     InputAnalogActionData analog = InputAnalogActionData.calloc();
 
-    public MCOpenVR(Minecraft mc, ClientDataHolderVR dh) {
-        super(mc, dh);
+    public MCOpenVR() {
+        super();
         ome = this;
         this.hapticScheduler = new OpenVRHapticScheduler();
 
@@ -204,7 +204,7 @@ public class MCOpenVR extends MCVR {
                 FloatBuffer pSizeZ = stack.callocFloat(1);
                 FloatBuffer pSizeX = stack.callocFloat(1);
                 boolean b0 = VRChaperone.VRChaperone_GetPlayAreaSize(pSizeX, pSizeZ);
-                return b0 ? new Vector2f(pSizeX.get(0) * this.dh.vrSettings.walkMultiplier, pSizeZ.get(0) * this.dh.vrSettings.walkMultiplier) : null;
+                return b0 ? new Vector2f(pSizeX.get(0) * ClientDataHolderVR.vrSettings.walkMultiplier, pSizeZ.get(0) * ClientDataHolderVR.vrSettings.walkMultiplier) : null;
             } else {
                 return null;
             }
@@ -218,7 +218,6 @@ public class MCOpenVR extends MCVR {
             return this.initialized;
         } else {
             this.tried = true;
-            this.mc = Minecraft.getInstance();
             try {
                 this.initializeOpenVR();
                 this.initOpenVRCompositor();
@@ -237,7 +236,7 @@ public class MCOpenVR extends MCVR {
 
             if (OpenVR.VRInput == null) {
                 System.out.println("Controller input not available. Forcing seated mode.");
-                this.dh.vrSettings.seated = true;
+                ClientDataHolderVR.vrSettings.seated = true;
             }
 
             System.out.println("OpenVR initialized & VR connected.");
@@ -292,38 +291,38 @@ public class MCOpenVR extends MCVR {
     public void poll(long frameIndex) {
         if (this.initialized) {
             this.paused = VRSystem_ShouldApplicationPause();
-            this.mc.getProfiler().push("events");
+            VRState.mc.getProfiler().push("events");
             this.pollVREvents();
 
-            if (!this.dh.vrSettings.seated) {
-                this.mc.getProfiler().popPush("controllers");
-                this.mc.getProfiler().push("gui");
+            if (!ClientDataHolderVR.vrSettings.seated) {
+                VRState.mc.getProfiler().popPush("controllers");
+                VRState.mc.getProfiler().push("gui");
 
-                if (this.mc.screen == null && this.dh.vrSettings.vrTouchHotbar) {
-                    VRSettings vrsettings = this.dh.vrSettings;
+                if (VRState.mc.screen == null && ClientDataHolderVR.vrSettings.vrTouchHotbar) {
+                    VRSettings vrsettings = ClientDataHolderVR.vrSettings;
 
-                    if (this.dh.vrSettings.vrHudLockMode != VRSettings.HUDLock.HEAD && this.hudPopup) {
+                    if (ClientDataHolderVR.vrSettings.vrHudLockMode != VRSettings.HUDLock.HEAD && this.hudPopup) {
                         this.processHotbar();
                     }
                 }
 
-                this.mc.getProfiler().pop();
+                VRState.mc.getProfiler().pop();
             }
 
-            this.mc.getProfiler().popPush("processEvents");
+            VRState.mc.getProfiler().popPush("processEvents");
             this.processVREvents();
-            this.mc.getProfiler().popPush("updatePose/Vsync");
+            VRState.mc.getProfiler().popPush("updatePose/Vsync");
             this.updatePose();
-            this.mc.getProfiler().popPush("processInputs");
+            VRState.mc.getProfiler().popPush("processInputs");
             this.processInputs();
-            this.mc.getProfiler().popPush("hmdSampling");
+            VRState.mc.getProfiler().popPush("hmdSampling");
             this.hmdSampling();
-            this.mc.getProfiler().pop();
+            VRState.mc.getProfiler().pop();
         }
     }
 
     public void processInputs() {
-        if (!this.dh.vrSettings.seated && !ClientDataHolderVR.viewonly && this.inputInitialized) {
+        if (!ClientDataHolderVR.vrSettings.seated && !ClientDataHolderVR.viewonly && this.inputInitialized) {
             for (VRInputAction vrinputaction : this.inputActions.values()) {
                 if (vrinputaction.isHanded()) {
                     for (ControllerType controllertype : ControllerType.values()) {
@@ -432,7 +431,7 @@ public class MCOpenVR extends MCVR {
         for (VRInputActionSet vrinputactionset : VRInputActionSet.values()) {
             String s = vrinputactionset.usage;
 
-            if (vrinputactionset.advanced && !this.dh.vrSettings.allowAdvancedBindings) {
+            if (vrinputactionset.advanced && !ClientDataHolderVR.vrSettings.allowAdvancedBindings) {
                 s = "hidden";
             }
 
@@ -495,7 +494,7 @@ public class MCOpenVR extends MCVR {
             throw new RuntimeException("Failed to write action manifest", exception);
         }
 
-        String s1 = this.dh.vrSettings.reverseHands ? "_reversed" : "";
+        String s1 = ClientDataHolderVR.vrSettings.reverseHands ? "_reversed" : "";
         Utils.loadAssetToFile("input/vive_defaults" + s1 + ".json", new File("openvr/input/vive_defaults.json"), false);
         Utils.loadAssetToFile("input/oculus_defaults" + s1 + ".json", new File("openvr/input/oculus_defaults.json"), false);
         Utils.loadAssetToFile("input/wmr_defaults" + s1 + ".json", new File("openvr/input/wmr_defaults.json"), false);
@@ -527,12 +526,12 @@ public class MCOpenVR extends MCVR {
         arraylist.add(VRInputActionSet.MIXED_REALITY);
         arraylist.add(VRInputActionSet.TECHNICAL);
 
-        if (this.mc.screen == null) {
+        if (VRState.mc.screen == null) {
             arraylist.add(VRInputActionSet.INGAME);
             arraylist.add(VRInputActionSet.CONTEXTUAL);
         } else {
             arraylist.add(VRInputActionSet.GUI);
-            if (ClientDataHolderVR.getInstance().vrSettings.ingameBindingsInGui) {
+            if (ClientDataHolderVR.vrSettings.ingameBindingsInGui) {
                 arraylist.add(VRInputActionSet.INGAME);
             }
         }
@@ -749,7 +748,7 @@ public class MCOpenVR extends MCVR {
                 System.out.println("Device manufacturer is: " + s);
                 this.detectedHardware = HardwareType.fromManufacturer(s);
             }
-            this.dh.vrSettings.loadOptions();
+            ClientDataHolderVR.vrSettings.loadOptions();
             VRHotkeys.loadExternalCameraConfig();
         }
 
@@ -895,8 +894,8 @@ public class MCOpenVR extends MCVR {
     private void processInputAction(VRInputAction action) {
         if (action.isActive() && action.isEnabledRaw()
             // try to prevent double left clicks
-            && (!ClientDataHolderVR.getInstance().vrSettings.ingameBindingsInGui
-            || !(action.actionSet == VRInputActionSet.INGAME && action.keyBinding.key.getType() == InputConstants.Type.MOUSE && action.keyBinding.key.getValue() == 0 && mc.screen != null))) {
+            && (!ClientDataHolderVR.vrSettings.ingameBindingsInGui
+            || !(action.actionSet == VRInputActionSet.INGAME && action.keyBinding.key.getType() == InputConstants.Type.MOUSE && action.keyBinding.key.getValue() == 0 && VRState.mc.screen != null))) {
             if (action.isButtonChanged()) {
                 if (action.isButtonPressed() && action.isEnabled()) {
                     if (!this.ignorePressesNextFrame) {
@@ -976,7 +975,7 @@ public class MCOpenVR extends MCVR {
                     break;
 
                 case 700:
-                    this.mc.stop();
+                    VRState.mc.stop();
             }
         }
     }
@@ -1109,7 +1108,7 @@ public class MCOpenVR extends MCVR {
             }
 
             if (this.inputInitialized) {
-                this.mc.getProfiler().push("updateActionState");
+                VRState.mc.getProfiler().push("updateActionState");
 
                 if (this.updateActiveActionSets()) {
                     int k = VRInput.VRInput_UpdateActionState(activeActionSetsBuffer, VRActiveActionSet.SIZEOF);
@@ -1120,9 +1119,9 @@ public class MCOpenVR extends MCVR {
                 }
 
                 this.inputActions.values().forEach(this::readNewData);
-                this.mc.getProfiler().pop();
+                VRState.mc.getProfiler().pop();
 
-                if (this.dh.vrSettings.reverseHands) {
+                if (ClientDataHolderVR.vrSettings.reverseHands) {
                     this.updateControllerPose(0, this.leftPoseHandle);
                     this.updateControllerPose(1, this.rightPoseHandle);
                 } else {
@@ -1142,7 +1141,7 @@ public class MCOpenVR extends MCVR {
     }
 
     long getControllerHandle(ControllerType hand) {
-        if (this.dh.vrSettings.reverseHands) {
+        if (ClientDataHolderVR.vrSettings.reverseHands) {
             return hand == ControllerType.RIGHT ? this.leftControllerHandle : this.rightControllerHandle;
         } else {
             return hand == ControllerType.RIGHT ? this.rightControllerHandle : this.leftControllerHandle;

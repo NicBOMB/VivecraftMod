@@ -37,7 +37,7 @@ public class UpdateChecker {
             updateType = ServerConfig.checkForUpdateType.get().charAt(0);
         } else {
             // client
-            updateType = switch (ClientDataHolderVR.getInstance().vrSettings.updateType) {
+            updateType = switch (ClientDataHolderVR.vrSettings.updateType) {
                 case RELEASE -> 'r';
                 case BETA -> 'b';
                 case ALPHA -> 'a';

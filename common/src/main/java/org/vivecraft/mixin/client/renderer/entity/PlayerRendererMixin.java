@@ -1,6 +1,5 @@
 package org.vivecraft.mixin.client.renderer.entity;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -16,9 +15,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.vivecraft.client.extensions.EntityRenderDispatcherExtension;
 import org.vivecraft.client.extensions.RenderLayerExtension;
-import org.vivecraft.mixin.client.model.PlayerModelAccessor;
 import org.vivecraft.client.utils.RenderLayerTypes;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.settings.VRSettings;
+import org.vivecraft.mixin.client.model.PlayerModelAccessor;
 import org.vivecraft.mixin.client.renderer.entity.layers.RenderLayerAccessor;
 
 import java.lang.reflect.Constructor;
@@ -45,7 +45,7 @@ public abstract class PlayerRendererMixin<T extends LivingEntity, M extends Enti
         // check if the layer gets added from the PlayerRenderer, we don't want to copy, if we add it to the VRPlayerRenderer
         // also check that the VRPlayerRenderers were created, this method also gets called in the constructor,
         // those default Layers already are added to the VRPlayerRenderer there
-        if ((Object) this.getClass() == PlayerRenderer.class && !((EntityRenderDispatcherExtension) Minecraft.getInstance().getEntityRenderDispatcher()).vivecraft$getSkinMapVRSeated().isEmpty()) {
+        if ((Object) this.getClass() == PlayerRenderer.class && !((EntityRenderDispatcherExtension) VRState.mc.getEntityRenderDispatcher()).vivecraft$getSkinMapVRSeated().isEmpty()) {
 
             // try to find a suitable constructor, so we can create a new Object without issues
             Constructor<?> constructor = null;
@@ -119,16 +119,16 @@ public abstract class PlayerRendererMixin<T extends LivingEntity, M extends Enti
             switch (type) {
                 case PARENT_ONLY -> target.addLayer((RenderLayer<T, M>) constructor.newInstance(target));
                 case PARENT_MODELSET ->
-                    target.addLayer((RenderLayer<T, M>) constructor.newInstance(target, Minecraft.getInstance().getEntityModels()));
+                    target.addLayer((RenderLayer<T, M>) constructor.newInstance(target, VRState.mc.getEntityModels()));
                 case PARENT_MODEL_MODEL -> {
                     if (((PlayerModelAccessor) model).isSlim()) {
                         target.addLayer((RenderLayer<T, M>) constructor.newInstance(target,
-                            new HumanoidModel(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.PLAYER_SLIM_INNER_ARMOR)),
-                            new HumanoidModel(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.PLAYER_SLIM_OUTER_ARMOR))));
+                            new HumanoidModel(VRState.mc.getEntityModels().bakeLayer(ModelLayers.PLAYER_SLIM_INNER_ARMOR)),
+                            new HumanoidModel(VRState.mc.getEntityModels().bakeLayer(ModelLayers.PLAYER_SLIM_OUTER_ARMOR))));
                     } else {
                         target.addLayer((RenderLayer<T, M>) constructor.newInstance(target,
-                            new HumanoidModel(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)),
-                            new HumanoidModel(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR))));
+                            new HumanoidModel(VRState.mc.getEntityModels().bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)),
+                            new HumanoidModel(VRState.mc.getEntityModels().bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR))));
                     }
                 }
             }

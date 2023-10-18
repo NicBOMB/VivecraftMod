@@ -15,7 +15,7 @@ public class PunchTreeTutorialStepInstanceVRMixin {
         if (!VRState.vrRunning) {
             return component;
         }
-        if (!ClientDataHolderVR.getInstance().vrSettings.seated) {
+        if (!ClientDataHolderVR.vrSettings.seated) {
             return Component.translatable("tutorial.find_tree.description");
         }
         return component;

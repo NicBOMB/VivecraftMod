@@ -18,7 +18,7 @@ public class IrisBeginFrameHack {
     // only update the timer on the first RenderPass, so that it counts the time from all RenderPasses
     @Inject(method = "beginFrame", at = @At("HEAD"), cancellable = true, remap = false)
     private void vivecraft$cancelShadows(CallbackInfo ci) {
-        if (!RenderPassType.isVanilla() && !ClientDataHolderVR.getInstance().isFirstPass) {
+        if (!RenderPassType.isVanilla() && !ClientDataHolderVR.isFirstPass) {
             ci.cancel();
         }
     }

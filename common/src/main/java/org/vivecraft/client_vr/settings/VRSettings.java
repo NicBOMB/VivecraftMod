@@ -6,7 +6,6 @@ package org.vivecraft.client_vr.settings;
 
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -31,7 +30,6 @@ import org.vivecraft.common.utils.math.Vector3;
 import org.vivecraft.mod_compat_vr.ShadersHelper;
 
 import java.awt.*;
-import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -457,15 +455,12 @@ public class VRSettings {
     // This map is only here to preserve old settings, not intended for general use
     private Map<String, String> preservedSettingMap;
 
-    private final Minecraft mc;
-
-    public VRSettings(Minecraft minecraft, File dataDir) {
+    public VRSettings() {
         // Need to do this in the instance because array sizes aren't known until instantiation
         initializeFieldInfo();
 
         // Assumes GameSettings (and hence optifine's settings) have been read first
 
-        mc = minecraft;
         inst = this;
 
         // Store our class defaults to a member variable for later use
@@ -1044,23 +1039,23 @@ public class VRSettings {
 
             @Override
             Object loadOption(String value) {
-                Minecraft.getInstance().options.hideGui = value.equals("true");
+                VRState.mc.options.hideGui = value.equals("true");
                 return false;
             }
 
             @Override
             String saveOption(Object value) {
-                return Boolean.toString(Minecraft.getInstance().options.hideGui);
+                return Boolean.toString(VRState.mc.options.hideGui);
             }
 
             @Override
             String getDisplayString(String prefix, Object value) {
-                return Minecraft.getInstance().options.hideGui ? prefix + LangHelper.getYes() : prefix + LangHelper.getNo();
+                return VRState.mc.options.hideGui ? prefix + LangHelper.getYes() : prefix + LangHelper.getNo();
             }
 
             @Override
             Object setOptionValue(Object value) {
-                Minecraft.getInstance().options.hideGui = !Minecraft.getInstance().options.hideGui;
+                VRState.mc.options.hideGui = !VRState.mc.options.hideGui;
                 return false;
             }
         },
@@ -1144,7 +1139,7 @@ public class VRSettings {
 
             @Override
             void onOptionChange() {
-                KeyboardHandler.physicalKeyboard.setScale(ClientDataHolderVR.getInstance().vrSettings.physicalKeyboardScale);
+                KeyboardHandler.physicalKeyboard.setScale(ClientDataHolderVR.vrSettings.physicalKeyboardScale);
             }
         },
         PHYSICAL_KEYBOARD_THEME(false, false), // Keyboard Theme
@@ -1175,7 +1170,7 @@ public class VRSettings {
             @Override
             void onOptionChange() {
                 if (VRState.vrRunning && !ShadersHelper.isShaderActive()) {
-                    ClientDataHolderVR.getInstance().vrRenderer.reinitFrameBuffers("Mirror Setting Changed");
+                    ClientDataHolderVR.vrRenderer.reinitFrameBuffers("Mirror Setting Changed");
                 }
             }
         },
@@ -1234,7 +1229,7 @@ public class VRSettings {
             @Override
             void onOptionChange() {
                 // reinit, because of maybe new first person pass
-                ClientDataHolderVR.getInstance().vrRenderer.reinitFrameBuffers("MR Setting Changed");
+                ClientDataHolderVR.vrRenderer.reinitFrameBuffers("MR Setting Changed");
             }
         },
         MIXED_REALITY_UNDISTORTED(false, true) { // Undistorted Pass
@@ -1242,7 +1237,7 @@ public class VRSettings {
             @Override
             void onOptionChange() {
                 // reinit, because of maybe new first person pass
-                ClientDataHolderVR.getInstance().vrRenderer.reinitFrameBuffers("MR Setting Changed");
+                ClientDataHolderVR.vrRenderer.reinitFrameBuffers("MR Setting Changed");
             }
         },
         MIXED_REALITY_ALPHA_MASK(false, true), // Alpha Mask,
@@ -1388,8 +1383,8 @@ public class VRSettings {
             @Override
             void onOptionChange() {
                 if (VRState.vrRunning) {
-                    ClientDataHolderVR.getInstance().vrPlayer.roomScaleMovementDelay = 2;
-                    ClientDataHolderVR.getInstance().vrPlayer.snapRoomOriginToPlayerEntity(Minecraft.getInstance().player, false, true);
+                    ClientDataHolderVR.vrPlayer.roomScaleMovementDelay = 2;
+                    ClientDataHolderVR.vrPlayer.snapRoomOriginToPlayerEntity(VRState.mc.player, false, true);
                     VRPlayer.get().preTick();
                 }
             }
@@ -1464,7 +1459,7 @@ public class VRSettings {
 
             @Override
             void onOptionChange() {
-                ClientDataHolderVR.getInstance().vrSettings.worldRotation = 0;
+                ClientDataHolderVR.vrSettings.worldRotation = 0;
             }
         },
         TOUCH_HOTBAR(false, true), // Touch Hotbar Enabled
@@ -1475,7 +1470,7 @@ public class VRSettings {
             @Override
             String getDisplayString(String prefix, Object value) {
                 if (VRState.vrEnabled) {
-                    RenderTarget eye0 = ClientDataHolderVR.getInstance().vrRenderer.framebufferEye0;
+                    RenderTarget eye0 = ClientDataHolderVR.vrRenderer.framebufferEye0;
                     return prefix + Math.round((float) value * 100) + "% (" + (int) Math.ceil(eye0.viewWidth * Math.sqrt((float) value)) + "x" + (int) Math.ceil(eye0.viewHeight * Math.sqrt((float) value)) + ")";
                 } else {
                     return prefix + Math.round((float) value * 100) + "%";
@@ -1486,17 +1481,17 @@ public class VRSettings {
 
             @Override
             String getDisplayString(String prefix, Object value) {
-                return prefix + String.format("%.0f" + DEGREE, (float) Minecraft.getInstance().options.fov().get());
+                return prefix + String.format("%.0f" + DEGREE, (float) VRState.mc.options.fov().get());
             }
 
             @Override
             Float getOptionFloatValue(float value) {
-                return (float) Minecraft.getInstance().options.fov().get();
+                return (float) VRState.mc.options.fov().get();
             }
 
             @Override
             Float setOptionFloatValue(float value) {
-                Minecraft.getInstance().options.fov().set((int) value);
+                VRState.mc.options.fov().set((int) value);
                 return 0f;
             }
         },
@@ -1512,7 +1507,7 @@ public class VRSettings {
             @Override
             String getDisplayString(String prefix, Object value) {
 //                if (Config.isShaders()) { //optifine
-//                    RenderTarget camfb = Minecraft.getInstance().vrRenderer.cameraFramebuffer;
+//                    RenderTarget camfb = mc.vrRenderer.cameraFramebuffer;
 //                    return prefix + camfb.viewWidth + "x" + camfb.viewHeight;
 //                } else {
                 return prefix + Math.round(1920 * (float) value) + "x" + Math.round(1080 * (float) value);
@@ -1802,27 +1797,27 @@ public class VRSettings {
         }
     }
 
-    public static synchronized void initSettings(Minecraft mc, File dataDir) {
-        ProfileManager.init(dataDir);
-        var vrSettings = new VRSettings(mc, dataDir);
+    public static synchronized void initSettings() {
+        ProfileManager.init(VRState.mc.gameDirectory);
+        var vrSettings = new VRSettings();
 
         vrSettings.saveOptions();
 
-        ClientDataHolderVR.getInstance().vrSettings = vrSettings;
+        ClientDataHolderVR.vrSettings = vrSettings;
     }
 
-    public static synchronized void loadAll(Minecraft mc) {
-        mc.options.load();
-        ClientDataHolderVR.getInstance().vrSettings.loadOptions();
+    public static synchronized void loadAll() {
+        VRState.mc.options.load();
+        ClientDataHolderVR.vrSettings.loadOptions();
     }
 
-    public static synchronized void saveAll(Minecraft mc) {
-        mc.options.save();
-        ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+    public static synchronized void saveAll() {
+        VRState.mc.options.save();
+        ClientDataHolderVR.vrSettings.saveOptions();
     }
 
-    public static synchronized void resetAll(Minecraft mc) {
-        ClientDataHolderVR.getInstance().vrSettings.resetSettings();
+    public static synchronized void resetAll() {
+        ClientDataHolderVR.vrSettings.resetSettings();
     }
 
     public static synchronized String getCurrentProfile() {
@@ -1844,17 +1839,16 @@ public class VRSettings {
 
     public static synchronized boolean setCurrentProfile(String profile, StringBuilder error) {
         boolean result = true;
-        Minecraft mc = Minecraft.getInstance();
 
         // Save settings in current profile
-        VRSettings.saveAll(mc);
+        VRSettings.saveAll();
 
         // Set the new profile
         result = ProfileManager.setCurrentProfile(profile, error);
 
         if (result) {
             // Load new profile
-            VRSettings.loadAll(mc);
+            VRSettings.loadAll();
         }
 
         return result;
@@ -1862,11 +1856,10 @@ public class VRSettings {
 
     public static synchronized boolean createProfile(String profile, boolean useDefaults, StringBuilder error) {
         boolean result = true;
-        Minecraft mc = Minecraft.getInstance();
         String originalProfile = VRSettings.getCurrentProfile();
 
         // Save settings in original profile
-        VRSettings.saveAll(mc);
+        VRSettings.saveAll();
 
         // Create the new profile
         if (!ProfileManager.createProfile(profile, error)) {
@@ -1880,15 +1873,15 @@ public class VRSettings {
 
         if (useDefaults) {
             // ...unless set to use defaults
-            VRSettings.resetAll(mc);
+            VRSettings.resetAll();
         }
 
         // Save new profile settings to file
-        VRSettings.saveAll(mc);
+        VRSettings.saveAll();
 
         // Select the original profile
         ProfileManager.setCurrentProfile(originalProfile, error);
-        VRSettings.loadAll(mc);
+        VRSettings.loadAll();
 
         return result;
     }
@@ -1899,10 +1892,8 @@ public class VRSettings {
     }
 
     public static synchronized boolean deleteProfile(String profile, StringBuilder error) {
-        Minecraft mc = Minecraft.getInstance();
-
         // Save settings in current profile
-        VRSettings.saveAll(mc);
+        VRSettings.saveAll();
 
         // Nuke the profile data
         if (!ProfileManager.deleteProfile(profile, error)) {
@@ -1910,26 +1901,22 @@ public class VRSettings {
         }
 
         // Load settings in case the selected profile has changed
-        VRSettings.loadAll(mc);
+        VRSettings.loadAll();
 
         return true;
     }
 
     public static synchronized boolean duplicateProfile(String originalProfile, String newProfile, StringBuilder error) {
-        Minecraft mc = Minecraft.getInstance();
-
         // Save settings in current profile
-        VRSettings.saveAll(mc);
+        VRSettings.saveAll();
 
         // Duplicate the profile data
         return ProfileManager.duplicateProfile(originalProfile, newProfile, error);
     }
 
     public static synchronized boolean renameProfile(String originalProfile, String newProfile, StringBuilder error) {
-        Minecraft mc = Minecraft.getInstance();
-
         // Save settings in current profile
-        VRSettings.saveAll(mc);
+        VRSettings.saveAll();
 
         // Rename the profile
         return ProfileManager.renameProfile(originalProfile, newProfile, error);

@@ -1,6 +1,5 @@
 package org.vivecraft.client;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.player.Player;
@@ -9,6 +8,7 @@ import net.minecraft.world.phys.Vec3;
 import org.vivecraft.client.utils.Utils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRData;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.common.network.VrPlayerState;
 import org.vivecraft.common.utils.math.Quaternion;
 import org.vivecraft.common.utils.math.Vector3;
@@ -17,7 +17,6 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public class VRPlayersClient {
-    private final Minecraft mc;
     private final Map<UUID, RotInfo> vivePlayers = new HashMap<>();
     private final Map<UUID, RotInfo> vivePlayersLast = new HashMap<>();
     private final Map<UUID, RotInfo> vivePlayersReceived = Collections.synchronizedMap(new HashMap<>());
@@ -38,9 +37,7 @@ public class VRPlayersClient {
         instance = null;
     }
 
-    private VRPlayersClient() {
-        this.mc = Minecraft.getInstance();
-    }
+    private VRPlayersClient() {}
 
     public boolean isVRPlayer(Player player) {
         return vivePlayers.containsKey(player.getUUID());
@@ -53,7 +50,7 @@ public class VRPlayersClient {
     }
 
     public void Update(UUID uuid, VrPlayerState vrPlayerState, float worldScale, float heightScale, boolean localPlayer) {
-        if (localPlayer || !this.mc.player.getUUID().equals(uuid)) {
+        if (localPlayer || !VRState.mc.player.getUUID().equals(uuid)) {
             Vector3 forward = new Vector3(0.0F, 0.0F, -1.0F);
             Vector3 hmdDir = vrPlayerState.hmd().orientation().multiply(forward);
             Vector3 controller0Dir = vrPlayerState.controller0().orientation().multiply(forward);
@@ -108,7 +105,7 @@ public class VRPlayersClient {
             this.vivePlayers.put(entry1.getKey(), entry1.getValue());
         }
 
-        Level level = Minecraft.getInstance().level;
+        Level level = VRState.mc.level;
 
         if (level != null) {
             Iterator<UUID> iterator = this.vivePlayers.keySet().iterator();
@@ -123,7 +120,7 @@ public class VRPlayersClient {
                 }
             }
 
-            if (!this.mc.isPaused()) {
+            if (!VRState.mc.isPaused()) {
                 for (Player player : level.players()) {
                     if (this.donors.getOrDefault(player.getUUID(), 0) > 3 && this.rand.nextInt(10) < 4) {
                         RotInfo playermodelcontroller$rotinfo = this.vivePlayers.get(player.getUUID());
@@ -144,8 +141,8 @@ public class VRPlayersClient {
                         }
 
                         vec3 = vec3.scale(0.1F);
-                        Vec3 vec31 = playermodelcontroller$rotinfo != null && player == this.mc.player ? playermodelcontroller$rotinfo.Headpos.add(player.position()) : player.getEyePosition(1.0F);
-                        Particle particle = this.mc.particleEngine.createParticle(ParticleTypes.FIREWORK, vec31.x + (player.isShiftKeyDown() ? -vec3.x * 3.0D : 0.0D) + ((double) this.rand.nextFloat() - 0.5D) * (double) 0.02F, vec31.y - (double) (player.isShiftKeyDown() ? 1.0F : 0.8F) + ((double) this.rand.nextFloat() - 0.5D) * (double) 0.02F, vec31.z + (player.isShiftKeyDown() ? -vec3.z * 3.0D : 0.0D) + ((double) this.rand.nextFloat() - 0.5D) * (double) 0.02F, -vec3.x + ((double) this.rand.nextFloat() - 0.5D) * (double) 0.01F, ((double) this.rand.nextFloat() - (double) 0.05F) * (double) 0.05F, -vec3.z + ((double) this.rand.nextFloat() - 0.5D) * (double) 0.01F);
+                        Vec3 vec31 = playermodelcontroller$rotinfo != null && player == VRState.mc.player ? playermodelcontroller$rotinfo.Headpos.add(player.position()) : player.getEyePosition(1.0F);
+                        Particle particle = VRState.mc.particleEngine.createParticle(ParticleTypes.FIREWORK, vec31.x + (player.isShiftKeyDown() ? -vec3.x * 3.0D : 0.0D) + ((double) this.rand.nextFloat() - 0.5D) * (double) 0.02F, vec31.y - (double) (player.isShiftKeyDown() ? 1.0F : 0.8F) + ((double) this.rand.nextFloat() - 0.5D) * (double) 0.02F, vec31.z + (player.isShiftKeyDown() ? -vec3.z * 3.0D : 0.0D) + ((double) this.rand.nextFloat() - 0.5D) * (double) 0.02F, -vec3.x + ((double) this.rand.nextFloat() - 0.5D) * (double) 0.01F, ((double) this.rand.nextFloat() - (double) 0.05F) * (double) 0.05F, -vec3.z + ((double) this.rand.nextFloat() - 0.5D) * (double) 0.01F);
 
                         if (particle != null) {
                             particle.setColor(0.5F + this.rand.nextFloat() / 2.0F, 0.5F + this.rand.nextFloat() / 2.0F, 0.5F + this.rand.nextFloat() / 2.0F);
@@ -166,7 +163,7 @@ public class VRPlayersClient {
 
     public RotInfo getRotationsForPlayer(UUID uuid) {
         if (this.debug) {
-            uuid = this.mc.player.getUUID();
+            uuid = VRState.mc.player.getUUID();
         }
 
         RotInfo playermodelcontroller$rotinfo = this.vivePlayers.get(uuid);
@@ -174,7 +171,7 @@ public class VRPlayersClient {
         if (playermodelcontroller$rotinfo != null && this.vivePlayersLast.containsKey(uuid)) {
             RotInfo playermodelcontroller$rotinfo1 = this.vivePlayersLast.get(uuid);
             RotInfo playermodelcontroller$rotinfo2 = new RotInfo();
-            float f = Minecraft.getInstance().getFrameTime();
+            float f = VRState.mc.getFrameTime();
             playermodelcontroller$rotinfo2.reverse = playermodelcontroller$rotinfo.reverse;
             playermodelcontroller$rotinfo2.seated = playermodelcontroller$rotinfo.seated;
             playermodelcontroller$rotinfo2.hmd = playermodelcontroller$rotinfo.hmd;
@@ -204,7 +201,7 @@ public class VRPlayersClient {
         playermodelcontroller$rotinfo.headQuat = quaternion2;
         playermodelcontroller$rotinfo.leftArmQuat = quaternion;
         playermodelcontroller$rotinfo.rightArmQuat = quaternion1;
-        playermodelcontroller$rotinfo.seated = ClientDataHolderVR.getInstance().vrSettings.seated;
+        playermodelcontroller$rotinfo.seated = ClientDataHolderVR.vrSettings.seated;
         playermodelcontroller$rotinfo.leftArmPos = data.getController(1).getPosition();
         playermodelcontroller$rotinfo.rightArmPos = data.getController(0).getPosition();
         playermodelcontroller$rotinfo.Headpos = data.hmd.getPosition();

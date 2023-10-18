@@ -2,7 +2,6 @@ package org.vivecraft.mixin.client_vr.renderer.entity;
 
 import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -19,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.extensions.EntityRenderDispatcherVRExtension;
 import org.vivecraft.client_vr.extensions.LevelRendererExtension;
 import org.vivecraft.client_vr.render.RenderPass;
@@ -45,13 +45,13 @@ public abstract class EntityRenderDispatcherVRMixin implements ResourceManagerRe
         if (RenderPassType.isVanilla() || RenderPassType.isGuiOnly()) {
             cir.setReturnValue(cameraOrientation);
         } else {
-            Entity entity = ((LevelRendererExtension) Minecraft.getInstance().levelRenderer).vivecraft$getRenderedEntity();
+            Entity entity = ((LevelRendererExtension) VRState.mc.levelRenderer).vivecraft$getRenderedEntity();
             if (entity == null) {
                 cir.setReturnValue(this.camera.rotation());
             } else {
-                Vec3 vec3 = ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition();
-                if (ClientDataHolderVR.getInstance().currentPass == RenderPass.THIRD || ClientDataHolderVR.getInstance().currentPass == RenderPass.CAMERA) {
-                    vec3 = ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld().getEye(ClientDataHolderVR.getInstance().currentPass).getPosition();
+                Vec3 vec3 = ClientDataHolderVR.vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition();
+                if (ClientDataHolderVR.currentPass == RenderPass.THIRD || ClientDataHolderVR.currentPass == RenderPass.CAMERA) {
+                    vec3 = ClientDataHolderVR.vrPlayer.getVRDataWorld().getEye(ClientDataHolderVR.currentPass).getPosition();
                 }
                 Vec3 vec31 = entity.position().add(0.0D, entity.getBbHeight() / 2.0F, 0.0D).subtract(vec3).normalize();
                 Quaternionf q = new Quaternionf();
@@ -76,13 +76,13 @@ public abstract class EntityRenderDispatcherVRMixin implements ResourceManagerRe
         if (RenderPassType.isVanilla() || RenderPassType.isGuiOnly()) {
             return cameraOrientation;
         } else {
-            Entity entity = ((LevelRendererExtension) Minecraft.getInstance().levelRenderer).vivecraft$getRenderedEntity();
+            Entity entity = ((LevelRendererExtension) VRState.mc.levelRenderer).vivecraft$getRenderedEntity();
             if (entity == null) {
                 return this.camera.rotation();
             } else {
-                Vec3 vec3 = ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition();
-                if (ClientDataHolderVR.getInstance().currentPass == RenderPass.THIRD || ClientDataHolderVR.getInstance().currentPass == RenderPass.CAMERA) {
-                    vec3 = ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld().getEye(ClientDataHolderVR.getInstance().currentPass).getPosition();
+                Vec3 vec3 = ClientDataHolderVR.vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition();
+                if (ClientDataHolderVR.currentPass == RenderPass.THIRD || ClientDataHolderVR.currentPass == RenderPass.CAMERA) {
+                    vec3 = ClientDataHolderVR.vrPlayer.getVRDataWorld().getEye(ClientDataHolderVR.currentPass).getPosition();
                 }
                 Vec3 vec31 = entity.position().add(0.0D, entity.getBbHeight() + offset, 0.0D).subtract(vec3).normalize();
                 Quaternionf q = new Quaternionf();

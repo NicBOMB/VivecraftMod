@@ -14,6 +14,6 @@ public class LiquidBlockRendererMixin {
     public int vivecraft$chunkClipping(int i) {
         // -1 is 0xFFFF FFFF
         // so no change
-        return ClientDataHolderVR.getInstance().skipStupidGoddamnChunkBoundaryClipping ? -1 : 15;
+        return ClientDataHolderVR.skipStupidGoddamnChunkBoundaryClipping ? -1 : 15;
     }
 }

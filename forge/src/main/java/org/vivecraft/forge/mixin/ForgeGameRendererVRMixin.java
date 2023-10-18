@@ -17,14 +17,14 @@ public class ForgeGameRendererVRMixin {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setAnglesInternal(FF)V", remap = false), method = "renderLevel")
     public void forgeInternal(Camera camera, float yaw, float pitch) {
-        if (RenderPassType.isVanilla() || ClientDataHolderVR.getInstance().currentPass != RenderPass.LEFT && ClientDataHolderVR.getInstance().currentPass != RenderPass.RIGHT) {
+        if (RenderPassType.isVanilla() || ClientDataHolderVR.currentPass != RenderPass.LEFT && ClientDataHolderVR.currentPass != RenderPass.RIGHT) {
             camera.setAnglesInternal(yaw, pitch);
         }
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lorg/joml/Quaternionf;)V", ordinal = 2), method = "renderLevel")
     public void forgeMulposZ(PoseStack poseStack, Quaternionf quaternion) {
-        if (RenderPassType.isVanilla() || ClientDataHolderVR.getInstance().currentPass != RenderPass.LEFT && ClientDataHolderVR.getInstance().currentPass != RenderPass.RIGHT) {
+        if (RenderPassType.isVanilla() || ClientDataHolderVR.currentPass != RenderPass.LEFT && ClientDataHolderVR.currentPass != RenderPass.RIGHT) {
             poseStack.mulPose(quaternion);
         }
     }
@@ -41,7 +41,7 @@ public class ForgeGameRendererVRMixin {
         if (RenderPassType.isVanilla()) {
             s.mulPose(quaternion);
         } else {
-            RenderHelper.applyVRModelView(ClientDataHolderVR.getInstance().currentPass, s);
+            RenderHelper.applyVRModelView(ClientDataHolderVR.currentPass, s);
         }
     }
 }

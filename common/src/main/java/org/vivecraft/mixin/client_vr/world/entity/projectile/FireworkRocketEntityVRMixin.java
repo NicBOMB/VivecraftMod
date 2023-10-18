@@ -1,6 +1,5 @@
 package org.vivecraft.mixin.client_vr.world.entity.projectile;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
@@ -26,8 +25,8 @@ public class FireworkRocketEntityVRMixin {
 
     @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addParticle(Lnet/minecraft/core/particles/ParticleOptions;DDDDDD)V"), index = 1, method = "tick")
     private double vivecraft$modifyX(double x) {
-        if (attachedToEntity instanceof LocalPlayer localPlayer && attachedToEntity == Minecraft.getInstance().player && VRState.vrRunning) {
-            var controller = ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld().getHand(!localPlayer.getOffhandItem().is(Items.FIREWORK_ROCKET) && localPlayer.getMainHandItem().is(Items.FIREWORK_ROCKET) ? 0 : 1);
+        if (attachedToEntity instanceof LocalPlayer localPlayer && attachedToEntity == VRState.mc.player && VRState.vrRunning) {
+            var controller = ClientDataHolderVR.vrPlayer.getVRDataWorld().getHand(!localPlayer.getOffhandItem().is(Items.FIREWORK_ROCKET) && localPlayer.getMainHandItem().is(Items.FIREWORK_ROCKET) ? 0 : 1);
             vivecraft$handPos = controller.getPosition().add(controller.getDirection().scale(0.25));
             return vivecraft$handPos.x;
         }

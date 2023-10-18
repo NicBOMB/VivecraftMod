@@ -1,6 +1,5 @@
 package org.vivecraft.client_vr.gameplay.trackers;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -20,6 +19,7 @@ import org.vivecraft.client.VivecraftVRMod;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.client_vr.BlockTags;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.extensions.PlayerExtension;
 import org.vivecraft.client_vr.gameplay.VRPlayer;
 import org.vivecraft.client_vr.provider.ControllerType;
@@ -54,10 +54,6 @@ public class ClimbTracker extends Tracker {
     private final Random rand = new Random();
     boolean unsetflag;
 
-    public ClimbTracker(Minecraft mc, ClientDataHolderVR dh) {
-        super(mc, dh);
-    }
-
     public boolean isGrabbingLadder() {
         return this.latched[0] || this.latched[1];
     }
@@ -89,14 +85,14 @@ public class ClimbTracker extends Tracker {
     }
 
     public boolean isActive(LocalPlayer p) {
-        if (this.dh.vrSettings.seated) {
+        if (ClientDataHolderVR.vrSettings.seated) {
             return false;
-        } else if (!this.dh.vrPlayer.getFreeMove() && !ClientDataHolderVR.getInstance().vrSettings.simulateFalling) {
+        } else if (!ClientDataHolderVR.vrPlayer.getFreeMove() && !ClientDataHolderVR.vrSettings.simulateFalling) {
             return false;
-        } else if (!this.dh.vrSettings.realisticClimbEnabled) {
+        } else if (!ClientDataHolderVR.vrSettings.realisticClimbEnabled) {
             return false;
         } else if (p != null && p.isAlive()) {
-            if (this.mc.gameMode == null) {
+            if (VRState.mc.gameMode == null) {
                 return false;
             } else if (p.isPassenger()) {
                 return false;
@@ -109,11 +105,11 @@ public class ClimbTracker extends Tracker {
     }
 
     public boolean isClimbeyClimb() {
-        return this.isActive(this.mc.player) && this.isClimbeyClimbEquipped();
+        return this.isActive(VRState.mc.player) && this.isClimbeyClimbEquipped();
     }
 
     public boolean isClimbeyClimbEquipped() {
-        return ClientNetworking.serverAllowsClimbey && ((PlayerExtension) this.mc.player).vivecraft$isClimbeyClimbEquipped();
+        return ClientNetworking.serverAllowsClimbey && ((PlayerExtension) VRState.mc.player).vivecraft$isClimbeyClimbEquipped();
     }
 
     private boolean canstand(BlockPos bp, LocalPlayer p) {
@@ -143,12 +139,12 @@ public class ClimbTracker extends Tracker {
 
         if (this.wasGrabbingLadder() && !this.isGrabbingLadder()) {
             this.forceActivate = true;
-        } else if (this.mc.player.onGround() || this.mc.player.getAbilities().flying) {
+        } else if (VRState.mc.player.onGround() || VRState.mc.player.getAbilities().flying) {
             this.forceActivate = false;
         }
 
-        this.dh.vr.getInputAction(VivecraftVRMod.keyClimbeyGrab).setEnabled(ControllerType.RIGHT, this.isClimbeyClimb() && (this.isGrabbingLadder() || this.inblock[0] || this.forceActivate));
-        this.dh.vr.getInputAction(VivecraftVRMod.keyClimbeyGrab).setEnabled(ControllerType.LEFT, this.isClimbeyClimb() && (this.isGrabbingLadder() || this.inblock[1] || this.forceActivate));
+        ClientDataHolderVR.vr.getInputAction(VivecraftVRMod.keyClimbeyGrab).setEnabled(ControllerType.RIGHT, this.isClimbeyClimb() && (this.isGrabbingLadder() || this.inblock[0] || this.forceActivate));
+        ClientDataHolderVR.vr.getInputAction(VivecraftVRMod.keyClimbeyGrab).setEnabled(ControllerType.LEFT, this.isClimbeyClimb() && (this.isGrabbingLadder() || this.inblock[1] || this.forceActivate));
     }
 
     public void reset(LocalPlayer player) {
@@ -168,13 +164,13 @@ public class ClimbTracker extends Tracker {
         boolean flag3 = false;
 
         for (int i = 0; i < 2; ++i) {
-            avec3[i] = this.dh.vrPlayer.vrdata_world_pre.getController(i).getPosition();
-            Vec3 vec3 = this.dh.vrPlayer.vrdata_world_pre.getController(i).getDirection();
+            avec3[i] = ClientDataHolderVR.vrPlayer.vrdata_world_pre.getController(i).getPosition();
+            Vec3 vec3 = ClientDataHolderVR.vrPlayer.vrdata_world_pre.getController(i).getDirection();
             this.inblock[i] = false;
             BlockPos blockpos = BlockPos.containing(avec3[i]);
-            BlockState blockstate = this.mc.level.getBlockState(blockpos);
+            BlockState blockstate = VRState.mc.level.getBlockState(blockpos);
             Block block = blockstate.getBlock();
-            VoxelShape voxelshape = blockstate.getCollisionShape(this.mc.level, blockpos);
+            VoxelShape voxelshape = blockstate.getCollisionShape(VRState.mc.level, blockpos);
 
             if (voxelshape.isEmpty()) {
                 this.box[i] = null;
@@ -182,15 +178,15 @@ public class ClimbTracker extends Tracker {
                 this.box[i] = voxelshape.bounds();
             }
 
-            if (!this.dh.climbTracker.isClimbeyClimb()) {
-                Vec3 vec31 = this.dh.vrPlayer.vrdata_world_pre.getController(i).getPosition().subtract(vec3.scale(0.2D));
+            if (!ClientDataHolderVR.climbTracker.isClimbeyClimb()) {
+                Vec3 vec31 = ClientDataHolderVR.vrPlayer.vrdata_world_pre.getController(i).getPosition().subtract(vec3.scale(0.2D));
                 AABB aabb = new AABB(avec3[i], vec31);
                 flag3 = true;
                 boolean flag4 = block instanceof LadderBlock || block instanceof VineBlock || blockstate.is(BlockTags.VIVECRAFT_CLIMBABLE);
 
                 if (!flag4) {
                     BlockPos blockpos1 = BlockPos.containing(vec31);
-                    BlockState blockstate1 = this.mc.level.getBlockState(blockpos1);
+                    BlockState blockstate1 = VRState.mc.level.getBlockState(blockpos1);
                     Block block1 = blockstate1.getBlock();
 
                     if (block1 instanceof LadderBlock || block1 instanceof VineBlock || blockstate1.is(BlockTags.VIVECRAFT_CLIMBABLE)) {
@@ -198,7 +194,7 @@ public class ClimbTracker extends Tracker {
                         blockstate = blockstate1;
                         block = blockstate1.getBlock();
                         avec3[i] = vec31;
-                        VoxelShape voxelshape1 = blockstate1.getCollisionShape(this.mc.level, blockpos1);
+                        VoxelShape voxelshape1 = blockstate1.getCollisionShape(VRState.mc.level, blockpos1);
 
                         if (voxelshape1.isEmpty()) {
                             this.box[i] = null;
@@ -248,19 +244,19 @@ public class ClimbTracker extends Tracker {
                         flag4 = true;
                         this.box[i] = new AABB(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
 
-                        if (blockstate.getValue(VineBlock.NORTH) && this.mc.level.getBlockState(blockpos.north()).canOcclude()) {
+                        if (blockstate.getValue(VineBlock.NORTH) && VRState.mc.level.getBlockState(blockpos.north()).canOcclude()) {
                             list.add(this.southBB);
                         }
 
-                        if (blockstate.getValue(VineBlock.EAST) && this.mc.level.getBlockState(blockpos.east()).canOcclude()) {
+                        if (blockstate.getValue(VineBlock.EAST) && VRState.mc.level.getBlockState(blockpos.east()).canOcclude()) {
                             list.add(this.westBB);
                         }
 
-                        if (blockstate.getValue(VineBlock.SOUTH) && this.mc.level.getBlockState(blockpos.south()).canOcclude()) {
+                        if (blockstate.getValue(VineBlock.SOUTH) && VRState.mc.level.getBlockState(blockpos.south()).canOcclude()) {
                             list.add(this.northbb);
                         }
 
-                        if (blockstate.getValue(VineBlock.WEST) && this.mc.level.getBlockState(blockpos.west()).canOcclude()) {
+                        if (blockstate.getValue(VineBlock.WEST) && VRState.mc.level.getBlockState(blockpos.west()).canOcclude()) {
                             list.add(this.eastBB);
                         }
                     }
@@ -294,7 +290,7 @@ public class ClimbTracker extends Tracker {
                         this.inblock[i] = false;
                     } else {
                         BlockPos blockpos5 = BlockPos.containing(this.latchStart[i]);
-                        BlockState blockstate2 = this.mc.level.getBlockState(blockpos5);
+                        BlockState blockstate2 = VRState.mc.level.getBlockState(blockpos5);
                         this.inblock[i] = this.wasinblock[i] && blockstate2.getBlock() instanceof LadderBlock || blockstate2.getBlock() instanceof VineBlock || blockstate2.is(BlockTags.VIVECRAFT_CLIMBABLE);
                     }
                 }
@@ -302,8 +298,8 @@ public class ClimbTracker extends Tracker {
                 aboolean[i] = this.inblock[i];
                 aboolean1[i] = this.inblock[i];
             } else {
-                if (this.mc.player.onGround()) {
-                    this.mc.player.setOnGround(!this.latched[0] && !this.latched[1]);
+                if (VRState.mc.player.onGround()) {
+                    VRState.mc.player.setOnGround(!this.latched[0] && !this.latched[1]);
                 }
 
                 if (i == 0) {
@@ -342,14 +338,14 @@ public class ClimbTracker extends Tracker {
 
             if (!this.latched[i] && !flag && aboolean1[i]) {
                 if (!this.wasinblock[i] && this.inblock[i]) {
-                    this.dh.vr.triggerHapticPulse(i, 750);
+                    ClientDataHolderVR.vr.triggerHapticPulse(i, 750);
                 }
 
                 if (!this.wasinblock[i] && this.inblock[i] && aboolean[i] || !this.wasbutton[i] && aboolean[i] && this.inblock[i]) {
                     flag1 = true;
                     this.wantjump = false;
                     this.latchStart[i] = avec3[i];
-                    this.latchStart_room[i] = this.dh.vrPlayer.vrdata_room_pre.getController(i).getPosition();
+                    this.latchStart_room[i] = ClientDataHolderVR.vrPlayer.vrdata_room_pre.getController(i).getPosition();
                     this.latchStartBody[i] = player.position();
                     this.latchStartController = i;
                     this.latchbox[i] = this.box[i];
@@ -362,11 +358,11 @@ public class ClimbTracker extends Tracker {
                         this.latched[0] = false;
                     }
 
-                    this.dh.vr.triggerHapticPulse(i, 2000);
-                    ((PlayerExtension) this.mc.player).vivecraft$stepSound(blockpos, this.latchStart[i]);
+                    ClientDataHolderVR.vr.triggerHapticPulse(i, 2000);
+                    ((PlayerExtension) VRState.mc.player).vivecraft$stepSound(blockpos, this.latchStart[i]);
 
                     if (!flag3) {
-                        this.dh.vrPlayer.blockDust(this.latchStart[i].x, this.latchStart[i].y, this.latchStart[i].z, 5, blockpos, blockstate, 0.1F, 0.2F);
+                        ClientDataHolderVR.vrPlayer.blockDust(this.latchStart[i].x, this.latchStart[i].y, this.latchStart[i].z, 5, blockpos, blockstate, 0.1F, 0.2F);
                     }
                 }
             }
@@ -380,25 +376,25 @@ public class ClimbTracker extends Tracker {
                 if (this.inblock[k] && aboolean[k] && aboolean1[k]) {
                     flag1 = true;
                     this.latchStart[k] = avec3[k];
-                    this.latchStart_room[k] = this.dh.vrPlayer.vrdata_room_pre.getController(k).getPosition();
+                    this.latchStart_room[k] = ClientDataHolderVR.vrPlayer.vrdata_room_pre.getController(k).getPosition();
                     this.latchStartBody[k] = player.position();
                     this.latchStartController = k;
                     this.latched[k] = true;
                     this.latchbox[k] = this.box[k];
                     this.wantjump = false;
-                    this.dh.vr.triggerHapticPulse(k, 2000);
+                    ClientDataHolderVR.vr.triggerHapticPulse(k, 2000);
                     BlockPos blockpos4 = BlockPos.containing(this.latchStart[k]);
-                    BlockState blockstate4 = this.mc.level.getBlockState(blockpos4);
+                    BlockState blockstate4 = VRState.mc.level.getBlockState(blockpos4);
 
                     if (!flag3) {
-                        this.dh.vrPlayer.blockDust(this.latchStart[k].x, this.latchStart[k].y, this.latchStart[k].z, 5, blockpos4, blockstate4, 0.1F, 0.2F);
+                        ClientDataHolderVR.vrPlayer.blockDust(this.latchStart[k].x, this.latchStart[k].y, this.latchStart[k].z, 5, blockpos4, blockstate4, 0.1F, 0.2F);
                     }
                 }
             }
         }
 
         if (!this.wantjump && !flag3) {
-            this.wantjump = VivecraftVRMod.keyClimbeyJump.isDown() && this.dh.jumpTracker.isClimbeyJumpEquipped();
+            this.wantjump = VivecraftVRMod.keyClimbeyJump.isDown() && ClientDataHolderVR.jumpTracker.isClimbeyJumpEquipped();
         }
 
         flag2 = flag2 & this.wantjump;
@@ -424,23 +420,23 @@ public class ClimbTracker extends Tracker {
             this.latchStartController = -1;
         } else {
             if ((this.latched[0] || this.latched[1]) && this.rand.nextInt(20) == 10) {
-                this.mc.player.causeFoodExhaustion(0.1F);
+                VRState.mc.player.causeFoodExhaustion(0.1F);
                 BlockPos blockpos3 = BlockPos.containing(this.latchStart[this.latchStartController]);
-                BlockState blockstate3 = this.mc.level.getBlockState(blockpos3);
+                BlockState blockstate3 = VRState.mc.level.getBlockState(blockpos3);
 
                 if (!flag3) {
-                    this.dh.vrPlayer.blockDust(this.latchStart[this.latchStartController].x, this.latchStart[this.latchStartController].y, this.latchStart[this.latchStartController].z, 1, blockpos3, blockstate3, 0.1F, 0.2F);
+                    ClientDataHolderVR.vrPlayer.blockDust(this.latchStart[this.latchStartController].x, this.latchStart[this.latchStartController].y, this.latchStart[this.latchStartController].z, 1, blockpos3, blockstate3, 0.1F, 0.2F);
                 }
             }
 
-            Vec3 vec34 = this.dh.vrPlayer.vrdata_world_pre.getController(this.latchStartController).getPosition();
-            VRPlayer vrplayer = this.dh.vrPlayer;
-            Vec3 vec35 = VRPlayer.room_to_world_pos(this.latchStart_room[this.latchStartController], this.dh.vrPlayer.vrdata_world_pre);
+            Vec3 vec34 = ClientDataHolderVR.vrPlayer.vrdata_world_pre.getController(this.latchStartController).getPosition();
+            VRPlayer vrplayer = ClientDataHolderVR.vrPlayer;
+            Vec3 vec35 = VRPlayer.room_to_world_pos(this.latchStart_room[this.latchStartController], ClientDataHolderVR.vrPlayer.vrdata_world_pre);
             Vec3 vec36 = vec34.subtract(vec35);
-            this.latchStart_room[this.latchStartController] = this.dh.vrPlayer.vrdata_room_pre.getController(this.latchStartController).getPosition();
+            this.latchStart_room[this.latchStartController] = ClientDataHolderVR.vrPlayer.vrdata_room_pre.getController(this.latchStartController).getPosition();
 
             if (this.wantjump) {
-                this.dh.vr.triggerHapticPulse(this.latchStartController, 200);
+                ClientDataHolderVR.vr.triggerHapticPulse(this.latchStartController, 200);
             }
 
             if (!flag2) {
@@ -471,22 +467,22 @@ public class ClimbTracker extends Tracker {
                         if (j == 4 || j == 5) {
                             d0 = d8 - vec36.z;
                             d10 = (float) blockpos2.getX() + 0.5F;
-                            d10 += (1.0 - Math.min(ClientDataHolderVR.getInstance().vrPlayer.worldScale, 1.0)) * (j == 4 ? 0.5 : -0.5);
+                            d10 += (1.0 - Math.min(ClientDataHolderVR.vrPlayer.worldScale, 1.0)) * (j == 4 ? 0.5 : -0.5);
                         }
                     } else {
                         d10 = d4 - vec36.x;
                         d0 = (float) blockpos2.getZ() + 0.5F;
-                        d0 += (1.0 - Math.min(ClientDataHolderVR.getInstance().vrPlayer.worldScale, 1.0)) * (j == 2 ? 0.5 : -0.5);
+                        d0 += (1.0 - Math.min(ClientDataHolderVR.vrPlayer.worldScale, 1.0)) * (j == 2 ? 0.5 : -0.5);
                     }
                 }
 
-                double d12 = this.dh.vrPlayer.vrdata_room_pre.getHeadPivot().y;
-                double d1 = this.dh.vrPlayer.vrdata_room_pre.getController(this.latchStartController).getPosition().y;
+                double d12 = ClientDataHolderVR.vrPlayer.vrdata_room_pre.getHeadPivot().y;
+                double d1 = ClientDataHolderVR.vrPlayer.vrdata_room_pre.getController(this.latchStartController).getPosition().y;
 
                 if (!this.wantjump && this.latchbox[this.latchStartController] != null && d1 <= d12 / 2.0D && this.latchStart[this.latchStartController].y > this.latchbox[this.latchStartController].maxY * 0.8D + (double) blockpos2.getY()) {
-                    Vec3 vec32 = this.dh.vrPlayer.vrdata_world_pre.hmd.getDirection().scale(0.1F);
+                    Vec3 vec32 = ClientDataHolderVR.vrPlayer.vrdata_world_pre.hmd.getDirection().scale(0.1F);
                     Vec3 vec33 = (new Vec3(vec32.x, 0.0D, vec32.z)).normalize().scale(0.1D);
-                    boolean flag5 = this.mc.level.noCollision(player, player.getBoundingBox().move(vec33.x, this.latchbox[this.latchStartController].maxY + (double) blockpos2.getY() - player.getY(), vec33.z));
+                    boolean flag5 = VRState.mc.level.noCollision(player, player.getBoundingBox().move(vec33.x, this.latchbox[this.latchStartController].maxY + (double) blockpos2.getY() - player.getY(), vec33.z));
 
                     if (flag5) {
                         d10 = player.getX() + vec33.x;
@@ -542,12 +538,12 @@ public class ClimbTracker extends Tracker {
 
                     player.setPos(d13, d2, d3);
                     AABB aabb1 = player.getBoundingBox();
-                    flag6 = this.mc.level.noCollision(player, aabb1);
+                    flag6 = VRState.mc.level.noCollision(player, aabb1);
 
                     if (flag6) {
                         if (l > 1) {
-                            this.dh.vr.triggerHapticPulse(0, 100);
-                            this.dh.vr.triggerHapticPulse(1, 100);
+                            ClientDataHolderVR.vr.triggerHapticPulse(0, 100);
+                            ClientDataHolderVR.vr.triggerHapticPulse(1, 100);
                         }
 
                         break;
@@ -556,28 +552,28 @@ public class ClimbTracker extends Tracker {
 
                 if (!flag6) {
                     player.setPos(d4, d6, d8);
-                    this.dh.vr.triggerHapticPulse(0, 100);
-                    this.dh.vr.triggerHapticPulse(1, 100);
+                    ClientDataHolderVR.vr.triggerHapticPulse(0, 100);
+                    ClientDataHolderVR.vr.triggerHapticPulse(1, 100);
                 }
 
-                if (this.mc.isLocalServer()) {
-                    for (ServerPlayer serverplayer : this.mc.getSingleplayerServer().getPlayerList().getPlayers()) {
-                        if (serverplayer.getId() == this.mc.player.getId()) {
+                if (VRState.mc.isLocalServer()) {
+                    for (ServerPlayer serverplayer : VRState.mc.getSingleplayerServer().getPlayerList().getPlayers()) {
+                        if (serverplayer.getId() == VRState.mc.player.getId()) {
                             serverplayer.fallDistance = 0.0F;
                         }
                     }
                 } else {
                     ServerboundCustomPayloadPacket serverboundcustompayloadpacket = ClientNetworking.getVivecraftClientPacket(CommonNetworkHelper.PacketDiscriminators.CLIMBING, new byte[0]);
 
-                    if (this.mc.getConnection() != null) {
-                        this.mc.getConnection().send(serverboundcustompayloadpacket);
+                    if (VRState.mc.getConnection() != null) {
+                        VRState.mc.getConnection().send(serverboundcustompayloadpacket);
                     }
                 }
             } else {
                 this.wantjump = false;
                 Vec3 vec38 = player.position().subtract(vec36);
-                Vec3 vec39 = this.dh.vr.controllerHistory[this.latchStartController].netMovement(0.3D);
-                double d5 = this.dh.vr.controllerHistory[this.latchStartController].averageSpeed(0.3F);
+                Vec3 vec39 = ClientDataHolderVR.vr.controllerHistory[this.latchStartController].netMovement(0.3D);
+                double d5 = ClientDataHolderVR.vr.controllerHistory[this.latchStartController].averageSpeed(0.3F);
                 vec39 = vec39.scale(0.66D * d5);
                 float f = 0.66F;
 
@@ -589,15 +585,15 @@ public class ClimbTracker extends Tracker {
                     vec39 = vec39.scale((double) player.getEffect(MobEffects.JUMP).getAmplifier() + 1.5D);
                 }
 
-                vec39 = vec39.yRot(this.dh.vrPlayer.vrdata_world_pre.rotation_radians);
+                vec39 = vec39.yRot(ClientDataHolderVR.vrPlayer.vrdata_world_pre.rotation_radians);
                 player.setDeltaMovement(vec39.multiply(-1.0D, -1.0D, -1.0D));
                 player.xOld = vec38.x;
                 player.yOld = vec38.y;
                 player.zOld = vec38.z;
                 vec38 = vec38.add(player.getDeltaMovement().x, player.getDeltaMovement().y, player.getDeltaMovement().z);
                 player.setPos(vec38.x, vec38.y, vec38.z);
-                this.dh.vrPlayer.snapRoomOriginToPlayerEntity(player, false, false);
-                this.mc.player.causeFoodExhaustion(0.3F);
+                ClientDataHolderVR.vrPlayer.snapRoomOriginToPlayerEntity(player, false, false);
+                VRState.mc.player.causeFoodExhaustion(0.3F);
             }
         }
     }

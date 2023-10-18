@@ -43,8 +43,8 @@ public class IrisShadowMatricesMixin {
     @ModifyVariable(method = "snapModelViewToGrid", at = @At(value = "STORE"), ordinal = 1, remap = false)
     private static float vivecraft$modifyOffsetX(float original) {
         if (!RenderPassType.isVanilla()) {
-            vivecraft$currentPass = RenderHelper.getSmoothCameraPosition(ClientDataHolderVR.getInstance().currentPass, ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld());
-            if (ClientDataHolderVR.getInstance().currentPass == RenderPass.LEFT) {
+            vivecraft$currentPass = RenderHelper.getSmoothCameraPosition(ClientDataHolderVR.currentPass, ClientDataHolderVR.vrPlayer.getVRDataWorld());
+            if (ClientDataHolderVR.currentPass == RenderPass.LEFT) {
                 vivecraft$leftPass = vivecraft$currentPass;
             }
             return (float) (vivecraft$leftPass.x % vivecraft$cachedShadowIntervalSize - (vivecraft$leftPass.x - vivecraft$currentPass.x));

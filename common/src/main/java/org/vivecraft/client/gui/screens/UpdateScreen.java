@@ -1,6 +1,5 @@
 package org.vivecraft.client.gui.screens;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -9,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.vivecraft.client.gui.widgets.TextScrollWidget;
 import org.vivecraft.client.utils.UpdateChecker;
+import org.vivecraft.client_vr.VRState;
 
 
 public class UpdateScreen extends Screen {
@@ -17,7 +17,7 @@ public class UpdateScreen extends Screen {
 
     public UpdateScreen() {
         super(Component.literal("New Update Available"));
-        lastScreen = Minecraft.getInstance().screen;
+        lastScreen = VRState.mc.screen;
     }
 
     protected void init() {
@@ -37,7 +37,7 @@ public class UpdateScreen extends Screen {
             .build());
 
         this.addRenderableWidget(new Button.Builder(Component.translatable("gui.back"), (p) ->
-            Minecraft.getInstance().setScreen(this.lastScreen))
+            VRState.mc.setScreen(this.lastScreen))
             .pos(this.width / 2 - 75, this.height - 32)
             .size(150, 20)
             .build());

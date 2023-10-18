@@ -29,8 +29,8 @@ public class VivecraftMainSettings extends GuiListScreen {
             .withTooltip(value -> Tooltip.create(Component.translatable("vivecraft.options.VR_MODE.tooltip")))
             .create(0, 0, SettingsList.WidgetEntry.valueButtonWidth, 20, Component.empty(), (cycleButton, object) -> {
                 VRState.vrEnabled = !VRState.vrEnabled;
-                ClientDataHolderVR.getInstance().vrSettings.vrEnabled = VRState.vrEnabled;
-                ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+                ClientDataHolderVR.vrSettings.vrEnabled = VRState.vrEnabled;
+                ClientDataHolderVR.vrSettings.saveOptions();
             });
         vrButton.active = ClientNetworking.serverAllowsVrSwitching || minecraft.player == null;
 
@@ -51,21 +51,21 @@ public class VivecraftMainSettings extends GuiListScreen {
 
         entries.add(new SettingsList.WidgetEntry(
             Component.translatable("vivecraft.options.VR_TOGGLE_BUTTON_VISIBLE"),
-            CycleButton.onOffBuilder(ClientDataHolderVR.getInstance().vrSettings.vrToggleButtonEnabled).displayOnlyValue().create(0, 0, SettingsList.WidgetEntry.valueButtonWidth, 20, Component.empty(), (cycleButton, object) -> {
-                ClientDataHolderVR.getInstance().vrSettings.vrToggleButtonEnabled = !ClientDataHolderVR.getInstance().vrSettings.vrToggleButtonEnabled;
-                ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+            CycleButton.onOffBuilder(ClientDataHolderVR.vrSettings.vrToggleButtonEnabled).displayOnlyValue().create(0, 0, SettingsList.WidgetEntry.valueButtonWidth, 20, Component.empty(), (cycleButton, object) -> {
+                ClientDataHolderVR.vrSettings.vrToggleButtonEnabled = !ClientDataHolderVR.vrSettings.vrToggleButtonEnabled;
+                ClientDataHolderVR.vrSettings.saveOptions();
             })));
         entries.add(new SettingsList.WidgetEntry(
             Component.translatable("vivecraft.options.VR_SETTINGS_BUTTON_VISIBLE"),
-            CycleButton.onOffBuilder(ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonEnabled).displayOnlyValue().create(0, 0, SettingsList.WidgetEntry.valueButtonWidth, 20, Component.empty(), (cycleButton, object) -> {
-                ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonEnabled = !ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonEnabled;
-                ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+            CycleButton.onOffBuilder(ClientDataHolderVR.vrSettings.vrSettingsButtonEnabled).displayOnlyValue().create(0, 0, SettingsList.WidgetEntry.valueButtonWidth, 20, Component.empty(), (cycleButton, object) -> {
+                ClientDataHolderVR.vrSettings.vrSettingsButtonEnabled = !ClientDataHolderVR.vrSettings.vrSettingsButtonEnabled;
+                ClientDataHolderVR.vrSettings.saveOptions();
             })));
         entries.add(new SettingsList.WidgetEntry(
             Component.translatable("vivecraft.options.VR_SETTINGS_BUTTON_POSITION"),
-            new CycleButton.Builder<Boolean>(bool -> bool ? Component.translatable("vivecraft.options.left") : Component.translatable("vivecraft.options.right")).withValues(ImmutableList.of(Boolean.TRUE, Boolean.FALSE)).withInitialValue(ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonPositionLeft).displayOnlyValue().create(0, 0, SettingsList.WidgetEntry.valueButtonWidth, 20, Component.empty(), (cycleButton, object) -> {
-                ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonPositionLeft = !ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonPositionLeft;
-                ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+            new CycleButton.Builder<Boolean>(bool -> bool ? Component.translatable("vivecraft.options.left") : Component.translatable("vivecraft.options.right")).withValues(ImmutableList.of(Boolean.TRUE, Boolean.FALSE)).withInitialValue(ClientDataHolderVR.vrSettings.vrSettingsButtonPositionLeft).displayOnlyValue().create(0, 0, SettingsList.WidgetEntry.valueButtonWidth, 20, Component.empty(), (cycleButton, object) -> {
+                ClientDataHolderVR.vrSettings.vrSettingsButtonPositionLeft = !ClientDataHolderVR.vrSettings.vrSettingsButtonPositionLeft;
+                ClientDataHolderVR.vrSettings.saveOptions();
             })));
         return entries;
     }

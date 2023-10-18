@@ -5,14 +5,15 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.gui.framework.TwoHandedScreen;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.provider.InputSimulator;
 
 public class GuiKeyboard extends TwoHandedScreen {
     private boolean isShift = false;
 
     public void init() {
-        String s = this.dataholder.vrSettings.keyboardKeys;
-        String s1 = this.dataholder.vrSettings.keyboardKeysShift;
+        String s = ClientDataHolderVR.vrSettings.keyboardKeys;
+        String s1 = ClientDataHolderVR.vrSettings.keyboardKeysShift;
         this.clearWidgets();
 
         if (this.isShift) {

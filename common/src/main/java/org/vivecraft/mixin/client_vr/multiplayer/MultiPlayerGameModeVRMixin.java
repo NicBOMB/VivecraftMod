@@ -21,14 +21,14 @@ public class MultiPlayerGameModeVRMixin {
     @Inject(at = @At("HEAD"), method = "useItem")
     public void vivecraft$overrideUse(Player player, InteractionHand interactionHand, CallbackInfoReturnable<InteractionResult> cir) {
         if (VRState.vrRunning) {
-            ClientNetworking.overrideLook(player, ClientDataHolderVR.getInstance().vrPlayer.getRightClickLookOverride(player, interactionHand.ordinal()));
+            ClientNetworking.overrideLook(player, ClientDataHolderVR.vrPlayer.getRightClickLookOverride(player, interactionHand.ordinal()));
         }
     }
 
     @Inject(at = @At("HEAD"), method = "releaseUsingItem")
     public void vivecraft$overrideReleaseUse(Player player, CallbackInfo ci) {
         if (VRState.vrRunning) {
-            ClientNetworking.overrideLook(player, ClientDataHolderVR.getInstance().vrPlayer.getRightClickLookOverride(player, player.getUsedItemHand().ordinal()));
+            ClientNetworking.overrideLook(player, ClientDataHolderVR.vrPlayer.getRightClickLookOverride(player, player.getUsedItemHand().ordinal()));
         }
     }
 

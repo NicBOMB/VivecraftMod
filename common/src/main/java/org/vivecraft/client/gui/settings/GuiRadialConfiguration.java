@@ -9,6 +9,8 @@ import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.ArrayUtils;
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
 import org.vivecraft.client.gui.framework.VROptionLayout;
+import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.settings.VRSettings;
 
 public class GuiRadialConfiguration extends GuiVROptionsBase {
@@ -38,17 +40,17 @@ public class GuiRadialConfiguration extends GuiVROptionsBase {
         this.visibleList = null;
 
         if (!this.isShift) {
-            this.dataholder.vrSettings.vrRadialItems = ArrayUtils.clone(this.arr);
+            ClientDataHolderVR.vrSettings.vrRadialItems = ArrayUtils.clone(this.arr);
         } else {
-            this.dataholder.vrSettings.vrRadialItemsAlt = ArrayUtils.clone(this.arr);
+            ClientDataHolderVR.vrSettings.vrRadialItemsAlt = ArrayUtils.clone(this.arr);
         }
 
-        this.dataholder.vrSettings.saveOptions();
+        ClientDataHolderVR.vrSettings.saveOptions();
     }
 
     public void init() {
         this.vrTitle = "vivecraft.options.screen.radialmenu";
-        this.list = new GuiRadialItemsList(this, this.minecraft);
+        this.list = new GuiRadialItemsList(this);
         this.clearWidgets();
 
         if (this.isselectmode) {
@@ -96,8 +98,8 @@ public class GuiRadialConfiguration extends GuiVROptionsBase {
             int l = 48;
             int i1 = this.width / 2;
             int j1 = this.height / 2;
-            this.arr = ArrayUtils.clone(this.dataholder.vrSettings.vrRadialItems);
-            String[] astring = ArrayUtils.clone(this.dataholder.vrSettings.vrRadialItemsAlt);
+            this.arr = ArrayUtils.clone(ClientDataHolderVR.vrSettings.vrRadialItems);
+            String[] astring = ArrayUtils.clone(ClientDataHolderVR.vrSettings.vrRadialItemsAlt);
 
             if (this.isShift) {
                 this.arr = astring;
@@ -106,7 +108,7 @@ public class GuiRadialConfiguration extends GuiVROptionsBase {
             for (int k1 = 0; k1 < i; ++k1) {
                 KeyMapping keymapping = null;
 
-                for (KeyMapping keymapping1 : this.minecraft.options.keyMappings) {
+                for (KeyMapping keymapping1 : VRState.mc.options.keyMappings) {
                     if (keymapping1.getName().equalsIgnoreCase(this.arr[k1])) {
                         keymapping = keymapping1;
                     }

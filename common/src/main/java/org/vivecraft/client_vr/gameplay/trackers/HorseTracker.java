@@ -1,6 +1,5 @@
 package org.vivecraft.client_vr.gameplay.trackers;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.phys.Vec3;
@@ -23,10 +22,6 @@ public class HorseTracker extends Tracker {
     Horse horse = null;
     ModelInfo info = new ModelInfo();
 
-    public HorseTracker(Minecraft mc, ClientDataHolderVR dh) {
-        super(mc, dh);
-    }
-
     public boolean isActive(LocalPlayer p) {
         return false;
     }
@@ -44,8 +39,8 @@ public class HorseTracker extends Tracker {
         this.horse.setNoAi(true);
         float f = (this.horse.getYRot() + 360.0F) % 360.0F;
         float f1 = (this.horse.yBodyRot + 360.0F) % 360.0F;
-        Vec3 vec3 = this.dh.vr.controllerHistory[1].netMovement(0.1D).scale(10.0D);
-        Vec3 vec31 = this.dh.vr.controllerHistory[0].netMovement(0.1D).scale(10.0D);
+        Vec3 vec3 = ClientDataHolderVR.vr.controllerHistory[1].netMovement(0.1D).scale(10.0D);
+        Vec3 vec31 = ClientDataHolderVR.vr.controllerHistory[0].netMovement(0.1D).scale(10.0D);
         double d0 = Math.min(-vec3.y, -vec31.y);
 
         if (d0 > this.boostTrigger) {
@@ -57,8 +52,8 @@ public class HorseTracker extends Tracker {
         Vec3 vec33 = quaternion.multiply(new Vec3(1.0D, 0.0D, 0.0D));
         Vec3 vec34 = quaternion.multiply(new Vec3(-1.0D, 0.0D, 0.0D));
         Quaternion quaternion1 = new Quaternion(0.0F, VRSettings.inst.worldRotation, 0.0F);
-        Vec3 vec35 = VRPlayer.get().roomOrigin.add(quaternion1.multiply(this.dh.vr.controllerHistory[1].latest()));
-        Vec3 vec36 = VRPlayer.get().roomOrigin.add(quaternion1.multiply(this.dh.vr.controllerHistory[0].latest()));
+        Vec3 vec35 = VRPlayer.get().roomOrigin.add(quaternion1.multiply(ClientDataHolderVR.vr.controllerHistory[1].latest()));
+        Vec3 vec36 = VRPlayer.get().roomOrigin.add(quaternion1.multiply(ClientDataHolderVR.vr.controllerHistory[0].latest()));
         double d1 = vec35.subtract(this.info.leftReinPos).dot(vec32) + vec35.subtract(this.info.leftReinPos).dot(vec33);
         double d2 = vec36.subtract(this.info.rightReinPos).dot(vec32) + vec36.subtract(this.info.rightReinPos).dot(vec34);
 

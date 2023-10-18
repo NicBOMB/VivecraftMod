@@ -11,8 +11,8 @@ public class VRServerPerms {
     public void setTeleportSupported(boolean supported) {
         this.noTeleportClient = !supported;
 
-        if (ClientDataHolderVR.getInstance().vrPlayer != null) {
-            ClientDataHolderVR.getInstance().vrPlayer.updateTeleportKeys();
+        if (ClientDataHolderVR.vrPlayer != null) {
+            ClientDataHolderVR.vrPlayer.updateTeleportKeys();
         }
     }
 }

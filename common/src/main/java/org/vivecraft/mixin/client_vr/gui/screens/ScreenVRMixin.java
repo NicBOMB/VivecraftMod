@@ -15,7 +15,7 @@ public abstract class ScreenVRMixin extends AbstractContainerEventHandler implem
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fillGradient(IIIIII)V"), method = "renderBackground")
     public void vivecraft$vrBackground(GuiGraphics guiGraphics, int i, int j, int k, int l, int m, int n) {
-        if (VRState.vrRunning && ClientDataHolderVR.getInstance().vrSettings != null && !ClientDataHolderVR.getInstance().vrSettings.menuBackground) {
+        if (VRState.vrRunning && ClientDataHolderVR.vrSettings != null && !ClientDataHolderVR.vrSettings.menuBackground) {
             guiGraphics.fillGradient(i, j, k, l, 0, 0);
         } else {
             guiGraphics.fillGradient(i, j, k, l, m, n);

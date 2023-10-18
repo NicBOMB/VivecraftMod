@@ -1,11 +1,11 @@
 package org.vivecraft.mod_compat_vr.optifine;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.phys.Vec3;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.settings.VRSettings;
 
 import java.lang.reflect.Field;
@@ -184,7 +184,7 @@ public class OptifineHelper {
 
     public static void setRenderRegions(boolean active) {
         try {
-            optionsOfRenderRegions.set(Minecraft.getInstance().options, active);
+            optionsOfRenderRegions.set(VRState.mc.options, active);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -256,7 +256,7 @@ public class OptifineHelper {
 
     public static double getCloudHeight() {
         try {
-            return (double) optionsOfCloudHeight.get(Minecraft.getInstance().options);
+            return (double) optionsOfCloudHeight.get(VRState.mc.options);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             return 0;

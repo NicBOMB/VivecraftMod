@@ -1,6 +1,5 @@
 package org.vivecraft.mixin.client_vr.gui.screens;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.LayoutElement;
@@ -44,11 +43,11 @@ public abstract class PauseScreenVRMixin extends Screen {
         } catch (IllegalArgumentException e) {
         }
 
-        if (!((MinecraftAccessor) Minecraft.getInstance()).callIsMultiplayerServer()) {
+        if (!((MinecraftAccessor) VRState.mc).callIsMultiplayerServer()) {
             rowHelper.addChild(new Button.Builder(Component.translatable("vivecraft.gui.chat"), (p) ->
             {
                 this.minecraft.setScreen(new ChatScreen(""));
-                if (ClientDataHolderVR.getInstance().vrSettings.autoOpenKeyboard) {
+                if (ClientDataHolderVR.vrSettings.autoOpenKeyboard) {
                     KeyboardHandler.setOverlayShowing(true);
                 }
             }).width(98).build());
@@ -59,7 +58,7 @@ public abstract class PauseScreenVRMixin extends Screen {
             rowHelperChat_Social.addChild(new Button.Builder(Component.translatable("vivecraft.gui.chat"), (p) ->
             {
                 this.minecraft.setScreen(new ChatScreen(""));
-                if (ClientDataHolderVR.getInstance().vrSettings.autoOpenKeyboard) {
+                if (ClientDataHolderVR.vrSettings.autoOpenKeyboard) {
                     KeyboardHandler.setOverlayShowing(true);
                 }
             }).width(48).build());
@@ -100,14 +99,14 @@ public abstract class PauseScreenVRMixin extends Screen {
         rowHelper.addChild(new Button.Builder(Component.translatable("vivecraft.gui.screenshot"), (p) ->
         {
             this.minecraft.setScreen(null);
-            ClientDataHolderVR.getInstance().grabScreenShot = true;
+            ClientDataHolderVR.grabScreenShot = true;
         }).width(98).build());
 
-        if (!ClientDataHolderVR.getInstance().vrSettings.seated) {
+        if (!ClientDataHolderVR.vrSettings.seated) {
             rowHelper.addChild(new Button.Builder(Component.translatable("vivecraft.gui.calibrateheight"), (p) ->
             {
                 AutoCalibration.calibrateManual();
-                ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+                ClientDataHolderVR.vrSettings.saveOptions();
                 this.minecraft.setScreen(null);
             }).width(98).build());
         }
@@ -115,19 +114,19 @@ public abstract class PauseScreenVRMixin extends Screen {
         if (ClientDataHolderVR.katvr) {
             rowHelper.addChild(new Button.Builder(Component.translatable("vivecraft.gui.alignkatwalk"), (p) ->
             {
-                jkatvr.resetYaw(ClientDataHolderVR.getInstance().vrPlayer.vrdata_room_pre.hmd.getYaw());
+                jkatvr.resetYaw(ClientDataHolderVR.vrPlayer.vrdata_room_pre.hmd.getYaw());
                 this.minecraft.setScreen(null);
             }).width(98).build());
         }
 
-        if (!ClientDataHolderVR.getInstance().vrSettings.seated || ClientDataHolderVR.getInstance().vrSettings.displayMirrorMode == VRSettings.MirrorMode.THIRD_PERSON || ClientDataHolderVR.getInstance().vrSettings.displayMirrorMode == VRSettings.MirrorMode.MIXED_REALITY) {
+        if (!ClientDataHolderVR.vrSettings.seated || ClientDataHolderVR.vrSettings.displayMirrorMode == VRSettings.MirrorMode.THIRD_PERSON || ClientDataHolderVR.vrSettings.displayMirrorMode == VRSettings.MirrorMode.MIXED_REALITY) {
             rowHelper.addChild(new Button.Builder(Component.translatable("vivecraft.gui.movethirdpersoncam"), (p) ->
             {
                 if (!VRHotkeys.isMovingThirdPersonCam()) {
                     VRHotkeys.startMovingThirdPersonCam(1, VRHotkeys.Triggerer.MENUBUTTON);
                 } else if (VRHotkeys.getMovingThirdPersonCamTriggerer() == VRHotkeys.Triggerer.MENUBUTTON) {
                     VRHotkeys.stopMovingThirdPersonCam();
-                    ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+                    ClientDataHolderVR.vrSettings.saveOptions();
                 }
             }).width(98).build());
         }

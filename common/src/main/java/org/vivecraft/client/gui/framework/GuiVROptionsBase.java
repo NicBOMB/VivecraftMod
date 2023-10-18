@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class GuiVROptionsBase extends Screen {
-    protected ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();
     public static final int DONE_BUTTON = 200;
     public static final int DEFAULTS_BUTTON = 201;
     protected final Screen lastScreen;
@@ -36,14 +35,14 @@ public abstract class GuiVROptionsBase extends Screen {
     public GuiVROptionsBase(Screen lastScreen) {
         super(Component.literal(""));
         this.lastScreen = lastScreen;
-        this.settings = ClientDataHolderVR.getInstance().vrSettings;
+        this.settings = ClientDataHolderVR.vrSettings;
     }
 
     protected void addDefaultButtons() {
         this.addRenderableWidget(this.btnDone = new Button.Builder(Component.translatable("gui.back"), (p) ->
         {
             if (!this.onDoneClicked()) {
-                this.dataholder.vrSettings.saveOptions();
+                ClientDataHolderVR.vrSettings.saveOptions();
                 this.minecraft.setScreen(this.lastScreen);
             }
         })
@@ -53,7 +52,7 @@ public abstract class GuiVROptionsBase extends Screen {
         this.addRenderableWidget(this.btnDefaults = new Button.Builder(Component.translatable("vivecraft.gui.loaddefaults"), (p) ->
         {
             this.loadDefaults();
-            this.dataholder.vrSettings.saveOptions();
+            ClientDataHolderVR.vrSettings.saveOptions();
             this.reinit = true;
         })
             .pos(this.width / 2 - 155, this.height - 30)
@@ -246,7 +245,7 @@ public abstract class GuiVROptionsBase extends Screen {
     public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
         if (pKeyCode == 256) {
             if (!this.onDoneClicked()) {
-                this.dataholder.vrSettings.saveOptions();
+                ClientDataHolderVR.vrSettings.saveOptions();
                 this.minecraft.setScreen(this.lastScreen);
             }
 

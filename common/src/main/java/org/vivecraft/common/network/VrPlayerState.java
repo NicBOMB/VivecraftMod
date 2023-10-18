@@ -1,9 +1,9 @@
 package org.vivecraft.common.network;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.VRPlayer;
 import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.common.utils.lwjgl.Matrix4f;
@@ -17,11 +17,11 @@ public record VrPlayerState(boolean seated, Pose hmd, boolean reverseHands, Pose
 
     public static VrPlayerState create(VRPlayer vrPlayer) {
         return new VrPlayerState(
-            ClientDataHolderVR.getInstance().vrSettings.seated,
+            ClientDataHolderVR.vrSettings.seated,
             hmdPose(vrPlayer),
-            ClientDataHolderVR.getInstance().vrSettings.reverseHands,
+            ClientDataHolderVR.vrSettings.reverseHands,
             controllerPose(vrPlayer, 0),
-            ClientDataHolderVR.getInstance().vrSettings.reverseHands,
+            ClientDataHolderVR.vrSettings.reverseHands,
             controllerPose(vrPlayer, 1)
         );
     }
@@ -31,13 +31,13 @@ public record VrPlayerState(boolean seated, Pose hmd, boolean reverseHands, Pose
         ((Buffer) floatbuffer).rewind();
         Matrix4f matrix4f = new Matrix4f();
         matrix4f.load(floatbuffer);
-        Vec3 vec3 = vrPlayer.vrdata_world_post.getEye(RenderPass.CENTER).getPosition().subtract(Minecraft.getInstance().player.position());
+        Vec3 vec3 = vrPlayer.vrdata_world_post.getEye(RenderPass.CENTER).getPosition().subtract(VRState.mc.player.position());
         Quaternion quaternion = new Quaternion(matrix4f);
         return new Pose(vec3, quaternion);
     }
 
     private static Pose controllerPose(VRPlayer vrPlayer, int i) {
-        Vec3 position = vrPlayer.vrdata_world_post.getController(i).getPosition().subtract(Minecraft.getInstance().player.position());
+        Vec3 position = vrPlayer.vrdata_world_post.getController(i).getPosition().subtract(VRState.mc.player.position());
         FloatBuffer floatbuffer1 = vrPlayer.vrdata_world_post.getController(i).getMatrix().toFloatBuffer();
         ((Buffer) floatbuffer1).rewind();
         Matrix4f matrix4f1 = new Matrix4f();

@@ -1,7 +1,6 @@
 package org.vivecraft.mixin.client_vr.tutorial;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.tutorial.OpenInventoryTutorialStep;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,8 +17,8 @@ public class OpenInventoryTutorialStepVRMixin {
         if (!VRState.vrRunning) {
             return component;
         }
-        if (!ClientDataHolderVR.getInstance().vrSettings.seated && MCVR.get().getInputAction(Minecraft.getInstance().options.keyInventory).isActive()) {
-            return Component.translatable("tutorial.open_inventory.description", Component.literal(MCVR.get().getOriginName(MCVR.get().getInputAction(Minecraft.getInstance().options.keyInventory).getLastOrigin())).withStyle(ChatFormatting.BOLD));
+        if (!ClientDataHolderVR.vrSettings.seated && MCVR.get().getInputAction(VRState.mc.options.keyInventory).isActive()) {
+            return Component.translatable("tutorial.open_inventory.description", Component.literal(MCVR.get().getOriginName(MCVR.get().getInputAction(VRState.mc.options.keyInventory).getLastOrigin())).withStyle(ChatFormatting.BOLD));
         }
         return component;
     }

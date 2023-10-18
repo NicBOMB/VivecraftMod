@@ -1,9 +1,9 @@
 package org.vivecraft.server.config;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.network.chat.Component;
 import org.vivecraft.client.gui.settings.GuiListValueEditScreen;
+import org.vivecraft.client_vr.VRState;
 
 import java.util.function.Supplier;
 
@@ -27,7 +27,7 @@ public class WidgetBuilder {
 
     public static Supplier<AbstractWidget> getEditBoxWidget(ConfigBuilder.StringValue stringValue, int width, int height) {
         return () -> {
-            EditBox box = new EditBox(Minecraft.getInstance().font, 0, 0, width - 1, height, Component.literal(stringValue.get())) {
+            EditBox box = new EditBox(VRState.mc.font, 0, 0, width - 1, height, Component.literal(stringValue.get())) {
                 @Override
                 public boolean charTyped(char c, int i) {
                     boolean ret = super.charTyped(c, i);
@@ -83,9 +83,9 @@ public class WidgetBuilder {
         return () -> Button
             .builder(
                 Component.translatable("vivecraft.options.editlist"),
-                button -> Minecraft.getInstance()
+                button -> VRState.mc
                     .setScreen(
-                        new GuiListValueEditScreen(Component.literal(listValue.getPath().substring(listValue.getPath().lastIndexOf("."))), Minecraft.getInstance().screen, (ConfigBuilder.ListValue<String>) listValue)
+                        new GuiListValueEditScreen(Component.literal(listValue.getPath().substring(listValue.getPath().lastIndexOf("."))), VRState.mc.screen, (ConfigBuilder.ListValue<String>) listValue)
                     ))
             .size(width, height)
             .tooltip(Tooltip.create(Component.literal(listValue.getComment())))

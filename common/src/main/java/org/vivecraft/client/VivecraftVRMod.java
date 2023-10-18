@@ -1,8 +1,8 @@
 package org.vivecraft.client;
 
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.screenhandlers.GuiHandler;
 import org.vivecraft.client_vr.provider.HandedKeyBinding;
 
@@ -101,10 +101,8 @@ public class VivecraftVRMod {
         hiddenKeyBindingSet.stream()
     ).collect(Collectors.toSet());
 
-    private static final Minecraft mc = Minecraft.getInstance();
-
     public static boolean isSafeBinding(KeyMapping kb) {
-        return allKeyBindingSet.contains(kb) || kb == mc.options.keyChat || kb == mc.options.keyInventory;
+        return allKeyBindingSet.contains(kb) || kb == VRState.mc.options.keyChat || kb == VRState.mc.options.keyInventory;
     }
 
     /** checks if a key bind is NOT provided by vanilla NOR internal to vivecraft */

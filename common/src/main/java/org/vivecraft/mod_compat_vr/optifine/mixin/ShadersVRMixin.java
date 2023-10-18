@@ -31,14 +31,14 @@ public class ShadersVRMixin {
         if (RenderPassType.isVanilla()) {
             return camera.getPosition();
         } else {
-            return ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition();
+            return ClientDataHolderVR.vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition();
         }
     }
 
     @ModifyVariable(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack$Pose;pose()Lorg/joml/Matrix4f;", shift = At.Shift.AFTER, remap = true), method = "setCameraShadow", remap = false)
     private static PoseStack vivecraft$offsetShadow(PoseStack shadowModelViewMat) {
         if (!RenderPassType.isVanilla()) {
-            Vec3 offset = RenderHelper.getSmoothCameraPosition(ClientDataHolderVR.getInstance().currentPass, ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld()).subtract(ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition());
+            Vec3 offset = RenderHelper.getSmoothCameraPosition(ClientDataHolderVR.currentPass, ClientDataHolderVR.vrPlayer.getVRDataWorld()).subtract(ClientDataHolderVR.vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition());
             shadowModelViewMat.translate((float) offset.x, (float) offset.y, (float) offset.z);
         }
         return shadowModelViewMat;
@@ -49,7 +49,7 @@ public class ShadersVRMixin {
         if (RenderPassType.isVanilla()) {
             return entity.getX();
         } else {
-            return ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition().x;
+            return ClientDataHolderVR.vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition().x;
         }
     }
 
@@ -58,7 +58,7 @@ public class ShadersVRMixin {
         if (RenderPassType.isVanilla()) {
             return entity.getZ();
         } else {
-            return ClientDataHolderVR.getInstance().vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition().z;
+            return ClientDataHolderVR.vrPlayer.getVRDataWorld().getEye(RenderPass.CENTER).getPosition().z;
         }
     }
 }

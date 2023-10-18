@@ -1,6 +1,5 @@
 package org.vivecraft.mixin.client_vr.particle;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ItemPickupParticle;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -19,9 +18,6 @@ import org.vivecraft.mod_compat_vr.pehkui.PehkuiHelper;
 @Mixin(ItemPickupParticle.class)
 public class ItemPickupParticleVRMixin {
 
-    @Unique
-    private static final Minecraft vivecraft$mc = Minecraft.getInstance();
-
     @Final
     @Shadow
     private Entity target;
@@ -34,7 +30,7 @@ public class ItemPickupParticleVRMixin {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(DDD)D", ordinal = 0), method = "render")
     public double vivecraft$updateX(double d, double e, double f) {
-        if (VRState.vrRunning && target == vivecraft$mc.player) {
+        if (VRState.vrRunning && target == VRState.mc.player) {
             vivecraft$playerPos = RenderHelper.getControllerRenderPos(0);
             e = f = vivecraft$playerPos.x;
         }
@@ -44,7 +40,7 @@ public class ItemPickupParticleVRMixin {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(DDD)D", ordinal = 1), method = "render")
     public double vivecraft$updateY(double d, double e, double f) {
-        if (VRState.vrRunning && target == vivecraft$mc.player) {
+        if (VRState.vrRunning && target == VRState.mc.player) {
             float offset = 0.5F;
             if (Xplat.isModLoaded("pehkui")) {
                 // pehkui changes the offset, need to account for that
@@ -60,7 +56,7 @@ public class ItemPickupParticleVRMixin {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(DDD)D", ordinal = 2), method = "render")
     public double vivecraft$updateZ(double d, double e, double f) {
-        if (VRState.vrRunning && target == vivecraft$mc.player) {
+        if (VRState.vrRunning && target == VRState.mc.player) {
             e = f = vivecraft$playerPos.z;
             vivecraft$playerPos = null;
         }

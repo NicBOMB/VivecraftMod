@@ -1,11 +1,11 @@
 package org.vivecraft.client_vr.gameplay.trackers;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.phys.Vec3;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.VRPlayer;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.common.utils.math.Quaternion;
@@ -18,24 +18,20 @@ public class RowTracker extends Tracker {
     public float ROar;
     public float Foar;
 
-    public RowTracker(Minecraft mc, ClientDataHolderVR dh) {
-        super(mc, dh);
-    }
-
     public boolean isActive(LocalPlayer p) {
-        if (ClientDataHolderVR.getInstance().vrSettings.seated) {
+        if (ClientDataHolderVR.vrSettings.seated) {
             return false;
-        } else if (!ClientDataHolderVR.getInstance().vrSettings.realisticRowEnabled) {
+        } else if (!ClientDataHolderVR.vrSettings.realisticRowEnabled) {
             return false;
         } else if (p != null && p.isAlive()) {
-            if (this.mc.gameMode == null) {
+            if (VRState.mc.gameMode == null) {
                 return false;
-            } else if (Minecraft.getInstance().options.keyUp.isDown()) {
+            } else if (VRState.mc.options.keyUp.isDown()) {
                 return false;
             } else if (!(p.getVehicle() instanceof Boat)) {
                 return false;
             } else {
-                return !ClientDataHolderVR.getInstance().bowTracker.isNotched();
+                return !ClientDataHolderVR.bowTracker.isNotched();
             }
         } else {
             return false;
@@ -53,8 +49,8 @@ public class RowTracker extends Tracker {
     }
 
     public void doProcess(LocalPlayer player) {
-        double d0 = this.dh.vr.controllerHistory[0].averageSpeed(0.5D);
-        double d1 = this.dh.vr.controllerHistory[1].averageSpeed(0.5D);
+        double d0 = ClientDataHolderVR.vr.controllerHistory[0].averageSpeed(0.5D);
+        double d1 = ClientDataHolderVR.vr.controllerHistory[1].averageSpeed(0.5D);
         float f = 0.5F;
         float f1 = 2.0F;
         this.ROar = (float) Math.max(d0 - (double) f, 0.0D);
@@ -118,7 +114,7 @@ public class RowTracker extends Tracker {
     }
 
     Vec3 getAbsArmPos(int side) {
-        Vec3 vec3 = this.dh.vr.controllerHistory[side].averagePosition(0.1D);
+        Vec3 vec3 = ClientDataHolderVR.vr.controllerHistory[side].averagePosition(0.1D);
         Quaternion quaternion = new Quaternion(0.0F, VRSettings.inst.worldRotation, 0.0F);
         return VRPlayer.get().roomOrigin.add(quaternion.multiply(vec3));
     }

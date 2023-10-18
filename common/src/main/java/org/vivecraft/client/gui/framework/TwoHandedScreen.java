@@ -5,14 +5,12 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.extensions.GuiExtension;
 import org.vivecraft.client_vr.gameplay.screenhandlers.GuiHandler;
 import org.vivecraft.client_vr.provider.ControllerType;
 import org.vivecraft.client_vr.provider.MCVR;
 
 public abstract class TwoHandedScreen extends Screen {
-    protected ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();
     public float cursorX1;
     public float cursorY1;
     public float cursorX2;

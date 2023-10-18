@@ -1,7 +1,6 @@
 package org.vivecraft.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -11,6 +10,7 @@ import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.world.phys.Vec3;
 import org.vivecraft.client.VRPlayersClient;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.render.RenderPass;
 
 import java.util.UUID;
@@ -59,7 +59,7 @@ public class VRPlayerRenderer extends PlayerRenderer {
 
         this.getModel().crouching &= !pClientPlayer.isVisuallySwimming();
 
-        if (pClientPlayer == Minecraft.getInstance().player && this.getModel() instanceof VRPlayerModel_WithArms<?> armsModel && ClientDataHolderVR.getInstance().currentPass == RenderPass.CAMERA && ClientDataHolderVR.getInstance().cameraTracker.isQuickMode() && ClientDataHolderVR.getInstance().grabScreenShot) {
+        if (pClientPlayer == VRState.mc.player && this.getModel() instanceof VRPlayerModel_WithArms<?> armsModel && ClientDataHolderVR.currentPass == RenderPass.CAMERA && ClientDataHolderVR.cameraTracker.isQuickMode() && ClientDataHolderVR.grabScreenShot) {
             // player hands block the camera, so disable them for the screenshot
             armsModel.leftHand.visible = false;
             armsModel.rightHand.visible = false;
@@ -71,7 +71,7 @@ public class VRPlayerRenderer extends PlayerRenderer {
     @Override
     protected void setupRotations(AbstractClientPlayer pEntityLiving, PoseStack pMatrixStack, float pAgeInTicks, float pRotationYaw, float pPartialTicks) {
         UUID uuid = pEntityLiving.getUUID();
-        if (ClientDataHolderVR.getInstance().currentPass != RenderPass.GUI && VRPlayersClient.getInstance().isTracked(uuid)) {
+        if (ClientDataHolderVR.currentPass != RenderPass.GUI && VRPlayersClient.getInstance().isTracked(uuid)) {
             VRPlayersClient.RotInfo playermodelcontroller$rotinfo = VRPlayersClient.getInstance().getRotationsForPlayer(uuid);
             pRotationYaw = (float) Math.toDegrees(playermodelcontroller$rotinfo.getBodyYawRadians());
         }

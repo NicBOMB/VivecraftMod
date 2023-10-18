@@ -3,6 +3,7 @@ package org.vivecraft.client.gui.settings;
 import net.minecraft.client.gui.screens.Screen;
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
 import org.vivecraft.client.gui.framework.VROptionLayout;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.provider.MCVR;
 import org.vivecraft.client_vr.settings.VRSettings;
@@ -18,7 +19,7 @@ public class GuiMainVRSettings extends GuiVROptionsBase {
         new VROptionLayout(VRSettings.VrOptions.PLAY_MODE_SEATED, (button, mousePos) -> {
             this.reinit = true;
 
-            if (!this.dataholder.vrSettings.seated) {
+            if (!ClientDataHolderVR.vrSettings.seated) {
                 this.isConfirm = true;
                 return true;
             } else {
@@ -48,7 +49,7 @@ public class GuiMainVRSettings extends GuiVROptionsBase {
             return false;
         }, VROptionLayout.Position.POS_RIGHT, 2.0F, true, "gui.cancel"),
         new VROptionLayout((button, mousePos) -> {
-            this.dataholder.vrSettings.seated = true;
+            ClientDataHolderVR.vrSettings.seated = true;
             this.settings.saveOptions();
             this.reinit = true;
             this.isConfirm = false;
@@ -65,12 +66,12 @@ public class GuiMainVRSettings extends GuiVROptionsBase {
         if (!this.isConfirm) {
             this.vrTitle = "vivecraft.options.screen.main";
 
-            if (this.dataholder.vrSettings.seated) {
+            if (ClientDataHolderVR.vrSettings.seated) {
                 super.init(this.vrSeatedOptions, true);
             } else {
                 super.init(this.vrStandingOptions, true);
 
-                if (this.dataholder.vrSettings.allowStandingOriginOffset) {
+                if (ClientDataHolderVR.vrSettings.allowStandingOriginOffset) {
                     super.init(new VROptionLayout[]{new VROptionLayout(VRSettings.VrOptions.RESET_ORIGIN, (button, mousePos) -> {
                         this.resetOrigin();
                         return true;

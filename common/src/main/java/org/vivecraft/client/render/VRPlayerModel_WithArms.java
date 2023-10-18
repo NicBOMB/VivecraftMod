@@ -3,7 +3,6 @@ package org.vivecraft.client.render;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.ModelPart.Polygon;
 import net.minecraft.client.model.geom.ModelPart.Vertex;
@@ -18,6 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.vivecraft.client.VRPlayersClient;
 import org.vivecraft.client.Xplat;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
 import org.vivecraft.mod_compat_vr.pehkui.PehkuiHelper;
 import org.vivecraft.mod_compat_vr.sodium.SodiumHelper;
@@ -161,8 +161,8 @@ public class VRPlayerModel_WithArms<T extends LivingEntity> extends VRPlayerMode
         Vec3 vec32 = rotinfo.rightArmPos;
         if (Xplat.isModLoaded("pehkui")) {
             // remove pehkui scale from that, since the whole entity is scaled
-            vec3 = vec3.scale(1.0F / PehkuiHelper.getPlayerScale(pEntity, Minecraft.getInstance().getFrameTime()));
-            vec32 = vec32.scale(1.0F / PehkuiHelper.getPlayerScale(pEntity, Minecraft.getInstance().getFrameTime()));
+            vec3 = vec3.scale(1.0F / PehkuiHelper.getPlayerScale(pEntity, VRState.mc.getFrameTime()));
+            vec32 = vec32.scale(1.0F / PehkuiHelper.getPlayerScale(pEntity, VRState.mc.getFrameTime()));
         }
         vec3 = vec3.add(0.0D, d0, 0.0D);
         vec3 = vec3.yRot((float) (-Math.PI + d1));

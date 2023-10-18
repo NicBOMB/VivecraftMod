@@ -4,13 +4,12 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.resources.ResourceLocation;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.VRTextureTarget;
 
 import java.io.IOException;
 
 public class WorldRenderPass implements AutoCloseable {
-
-    private static final Minecraft mc = Minecraft.getInstance();
 
     public static WorldRenderPass stereoXR;
     public static WorldRenderPass center;
@@ -36,7 +35,7 @@ public class WorldRenderPass implements AutoCloseable {
     }
 
     public static PostChain createPostChain(ResourceLocation resourceLocation, RenderTarget target) throws IOException {
-        PostChain postchain = new PostChain(mc.getTextureManager(), mc.getResourceManager(), target, resourceLocation);
+        PostChain postchain = new PostChain(VRState.mc.getTextureManager(), VRState.mc.getResourceManager(), target, resourceLocation);
         postchain.resize(target.viewWidth, target.viewHeight);
         return postchain;
     }

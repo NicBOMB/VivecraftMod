@@ -45,15 +45,15 @@ public abstract class TitleScreenMixin extends Screen {
 
         vivecraft$vrModeButton = new Button.Builder(Component.translatable("vivecraft.gui.vr", VRState.vrEnabled ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF), (button) -> {
             VRState.vrEnabled = !VRState.vrEnabled;
-            ClientDataHolderVR.getInstance().vrSettings.vrEnabled = VRState.vrEnabled;
-            ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+            ClientDataHolderVR.vrSettings.vrEnabled = VRState.vrEnabled;
+            ClientDataHolderVR.vrSettings.saveOptions();
 
             button.setMessage(Component.translatable("vivecraft.gui.vr", VRState.vrEnabled ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF));
         })
             .size(56, 20)
             .pos(this.width / 2 + 104, this.height / 4 + 72)
             .build();
-        vivecraft$vrModeButton.visible = ClientDataHolderVR.getInstance().vrSettings.vrToggleButtonEnabled;
+        vivecraft$vrModeButton.visible = ClientDataHolderVR.vrSettings.vrToggleButtonEnabled;
 
         this.addRenderableWidget(vivecraft$vrModeButton);
 
@@ -82,7 +82,7 @@ public abstract class TitleScreenMixin extends Screen {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/PanoramaRenderer;render(FF)V"), method = "render")
     public void vivecraft$maybeNoPanorama(PanoramaRenderer instance, float f, float g) {
-        if (VRState.vrRunning && ClientDataHolderVR.getInstance().menuWorldRenderer.isReady()) {
+        if (VRState.vrRunning && ClientDataHolderVR.menuWorldRenderer.isReady()) {
             return;
         }
         instance.render(f, g);

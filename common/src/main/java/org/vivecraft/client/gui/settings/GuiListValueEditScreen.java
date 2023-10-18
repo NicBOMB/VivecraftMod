@@ -1,7 +1,6 @@
 package org.vivecraft.client.gui.settings;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -12,6 +11,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.vivecraft.client.gui.widgets.SettingsList;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.server.config.ConfigBuilder;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class GuiListValueEditScreen extends GuiListScreen {
         clearWidgets();
         double scrollAmount = list != null ? list.getScrollAmount() : 0.0D;
 
-        this.list = new SettingsList(this, minecraft, getEntries());
+        this.list = new SettingsList(this, getEntries());
         list.setScrollAmount(scrollAmount);
         this.addWidget(this.list);
 
@@ -67,7 +67,7 @@ public class GuiListValueEditScreen extends GuiListScreen {
         }
         int i = 0;
         for (String item : elements) {
-            EditBox box = new EditBox(Minecraft.getInstance().font, 0, 0, ListValueEntry.valueButtonWidth - 1, 20, Component.literal(item));
+            EditBox box = new EditBox(VRState.mc.font, 0, 0, ListValueEntry.valueButtonWidth - 1, 20, Component.literal(item));
             box.setMaxLength(1000);
             box.setValue(item);
             int index = i++;

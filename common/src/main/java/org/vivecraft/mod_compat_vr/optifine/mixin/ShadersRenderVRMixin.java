@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.extensions.GameRendererExtension;
 import org.vivecraft.client_vr.render.RenderPass;
 import org.vivecraft.client_xr.render_pass.RenderPassType;
@@ -50,7 +51,7 @@ public class ShadersRenderVRMixin {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getInstance()Lnet/minecraft/client/Minecraft;", remap = true), method = "renderShadowMap", remap = false, cancellable = true)
     private static void vivecraft$shadowsOnlyOnce(GameRenderer gameRenderer, Camera activeRenderInfo, int pass, float partialTicks, long finishTimeNano, CallbackInfo ci) {
-        if (!RenderPassType.isVanilla() && ClientDataHolderVR.getInstance().currentPass != RenderPass.LEFT) {
+        if (!RenderPassType.isVanilla() && ClientDataHolderVR.currentPass != RenderPass.LEFT) {
             if (vivecraft$setCameraShadow == null) {
                 try {
                     vivecraft$setCameraShadow = Class.forName("net.optifine.shaders.Shaders").getMethod("setCameraShadow", PoseStack.class, Camera.class, float.class);
@@ -59,7 +60,7 @@ public class ShadersRenderVRMixin {
                 }
             }
             try {
-                updateActiveRenderInfo(activeRenderInfo, Minecraft.getInstance(), partialTicks);
+                updateActiveRenderInfo(activeRenderInfo, VRState.mc, partialTicks);
                 vivecraft$setCameraShadow.invoke(null, new PoseStack(), activeRenderInfo, partialTicks);
             } catch (IllegalAccessException | InvocationTargetException ignored) {
             }

@@ -1,21 +1,19 @@
 package org.vivecraft.client_vr.gameplay.screenhandlers;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.vivecraft.client.VivecraftVRMod;
 import org.vivecraft.client.utils.Utils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRData;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gui.GuiRadial;
 import org.vivecraft.client_vr.provider.ControllerType;
 import org.vivecraft.common.utils.math.Matrix4f;
 import org.vivecraft.common.utils.math.Vector3;
 
 public class RadialHandler {
-    public static Minecraft mc = Minecraft.getInstance();
-    public static ClientDataHolderVR dh = ClientDataHolderVR.getInstance();
     private static boolean Showing = false;
     public static GuiRadial UI = new GuiRadial();
     public static Vec3 Pos_room = new Vec3(0.0D, 0.0D, 0.0D);
@@ -33,14 +31,14 @@ public class RadialHandler {
         if (ClientDataHolderVR.kiosk) {
             return false;
         } else {
-            if (dh.vrSettings.seated) {
+            if (ClientDataHolderVR.vrSettings.seated) {
                 showingState = false;
             }
 
             int i = 1;
 
             if (showingState) {
-                UI.init(Minecraft.getInstance(), GuiHandler.scaledWidth, GuiHandler.scaledHeight);
+                UI.init(VRState.mc, GuiHandler.scaledWidth, GuiHandler.scaledHeight);
                 Showing = true;
                 activecontroller = controller;
                 orientOverlay(activecontroller);
@@ -58,10 +56,10 @@ public class RadialHandler {
         PointedR = false;
 
         if (isShowing()) {
-            if (!dh.vrSettings.seated) {
+            if (!ClientDataHolderVR.vrSettings.seated) {
                 if (Rotation_room != null) {
-                    Vec2 vec2 = GuiHandler.getTexCoordsForCursor(Pos_room, Rotation_room, mc.screen, GuiHandler.guiScale, dh.vrPlayer.vrdata_room_pre.getController(1));
-                    Vec2 vec21 = GuiHandler.getTexCoordsForCursor(Pos_room, Rotation_room, mc.screen, GuiHandler.guiScale, dh.vrPlayer.vrdata_room_pre.getController(0));
+                    Vec2 vec2 = GuiHandler.getTexCoordsForCursor(Pos_room, Rotation_room, VRState.mc.screen, GuiHandler.guiScale, ClientDataHolderVR.vrPlayer.vrdata_room_pre.getController(1));
+                    Vec2 vec21 = GuiHandler.getTexCoordsForCursor(Pos_room, Rotation_room, VRState.mc.screen, GuiHandler.guiScale, ClientDataHolderVR.vrPlayer.vrdata_room_pre.getController(0));
                     float f = vec21.x;
                     float f1 = vec21.y;
 
@@ -110,7 +108,7 @@ public class RadialHandler {
 
     public static void orientOverlay(ControllerType controller) {
         if (isShowing()) {
-            VRData.VRDevicePose vrdata$vrdevicepose = dh.vrPlayer.vrdata_room_pre.hmd;
+            VRData.VRDevicePose vrdata$vrdevicepose = ClientDataHolderVR.vrPlayer.vrdata_room_pre.hmd;
             float f = 2.0F;
             int i = 0;
 
@@ -118,8 +116,8 @@ public class RadialHandler {
                 i = 1;
             }
 
-            if (dh.vrSettings.radialModeHold) {
-                vrdata$vrdevicepose = dh.vrPlayer.vrdata_room_pre.getController(i);
+            if (ClientDataHolderVR.vrSettings.radialModeHold) {
+                vrdata$vrdevicepose = ClientDataHolderVR.vrPlayer.vrdata_room_pre.getController(i);
                 f = 1.2F;
             }
 
@@ -167,7 +165,7 @@ public class RadialHandler {
             double d2 = (double) Math.min(Math.max((int) UI.cursorX2, 0), GuiHandler.guiWidth) * (double) UI.width / (double) GuiHandler.guiWidth;
             double d3 = (double) Math.min(Math.max((int) UI.cursorY2, 0), GuiHandler.guiHeight) * (double) UI.height / (double) GuiHandler.guiHeight;
 
-            if (dh.vrSettings.radialModeHold) {
+            if (ClientDataHolderVR.vrSettings.radialModeHold) {
                 if (activecontroller == null) {
                     return;
                 }

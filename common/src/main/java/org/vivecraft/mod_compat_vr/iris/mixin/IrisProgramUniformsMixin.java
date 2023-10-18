@@ -28,10 +28,10 @@ public class IrisProgramUniformsMixin {
     private int vivecraft$checkNewFrame(int currentFrame) {
         if (!RenderPassType.isVanilla()) {
             vivecraft$actualFrame = currentFrame;
-            if (lastFrame == currentFrame && vivecraft$lastPass != ClientDataHolderVR.getInstance().currentPass) {
+            if (lastFrame == currentFrame && vivecraft$lastPass != ClientDataHolderVR.currentPass) {
                 currentFrame--;
             }
-            vivecraft$lastPass = ClientDataHolderVR.getInstance().currentPass;
+            vivecraft$lastPass = ClientDataHolderVR.currentPass;
         }
         return currentFrame;
     }

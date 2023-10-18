@@ -14,6 +14,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.FluidState;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.fabric.mixin.world.level.biome.BiomeAccessor;
 
 import java.nio.file.Path;
@@ -75,12 +76,12 @@ public class XplatImpl {
             // return vanilla textures
             if (fluidStateIn.is(FluidTags.LAVA)) {
                 return new TextureAtlasSprite[]{
-                    Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState()).getParticleIcon(),
+                    VRState.mc.getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState()).getParticleIcon(),
                     ModelBakery.LAVA_FLOW.sprite()
                 };
             } else {
                 return new TextureAtlasSprite[]{
-                    Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState()).getParticleIcon(),
+                    VRState.mc.getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState()).getParticleIcon(),
                     ModelBakery.WATER_FLOW.sprite()
                 };
             }

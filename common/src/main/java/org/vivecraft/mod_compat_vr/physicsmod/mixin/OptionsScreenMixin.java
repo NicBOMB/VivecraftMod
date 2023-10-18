@@ -22,12 +22,12 @@ public abstract class OptionsScreenMixin extends Screen {
 
     @Inject(at = @At("TAIL"), method = "init")
     private void vivecraft$reducePhysicsmodButtonSize(CallbackInfo ci) {
-        if (ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonEnabled) {
+        if (ClientDataHolderVR.vrSettings.vrSettingsButtonEnabled) {
             for (GuiEventListener guiEventListener : children()) {
                 if (guiEventListener instanceof Button button) {
                     if (button.getMessage().getContents() instanceof TranslatableContents contents && "physicsmod.menu.main.title".equals(contents.getKey())) {
                         // physics mods button would collide with ours, so make it half size to the right
-                        if (ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonPositionLeft) {
+                        if (ClientDataHolderVR.vrSettings.vrSettingsButtonPositionLeft) {
                             button.setX(button.getX() + button.getWidth() / 2 + 5);
                         }
                         button.setWidth(button.getWidth() / 2 - 5);

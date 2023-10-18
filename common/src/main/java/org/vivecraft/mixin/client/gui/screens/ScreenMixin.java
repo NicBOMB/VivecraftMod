@@ -1,6 +1,5 @@
 package org.vivecraft.mixin.client.gui.screens;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Style;
 import org.spongepowered.asm.mixin.Mixin;
@@ -8,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.vivecraft.client.gui.VivecraftClickEvent;
+import org.vivecraft.client_vr.VRState;
 
 @Mixin(Screen.class)
 public abstract class ScreenMixin {
@@ -17,7 +17,7 @@ public abstract class ScreenMixin {
         if (style.getClickEvent() instanceof VivecraftClickEvent) {
             VivecraftClickEvent.VivecraftAction action = ((VivecraftClickEvent) style.getClickEvent()).getVivecraftAction();
             if (action == VivecraftClickEvent.VivecraftAction.OPEN_SCREEN) {
-                Minecraft.getInstance().setScreen((Screen) ((VivecraftClickEvent) style.getClickEvent()).getVivecraftValue());
+                VRState.mc.setScreen((Screen) ((VivecraftClickEvent) style.getClickEvent()).getVivecraftValue());
                 cir.setReturnValue(true);
             }
         }

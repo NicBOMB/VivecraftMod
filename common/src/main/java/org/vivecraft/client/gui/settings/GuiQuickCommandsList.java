@@ -1,23 +1,20 @@
 package org.vivecraft.client.gui.settings;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.network.chat.Component;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 
 public class GuiQuickCommandsList extends ObjectSelectionList<GuiQuickCommandsList.CommandEntry> {
-    protected ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();
     private final GuiQuickCommandEditor parent;
-    private final Minecraft mc;
 
-    public GuiQuickCommandsList(GuiQuickCommandEditor parent, Minecraft mc) {
-        super(mc, parent.width, parent.height, 32, parent.height - 32, 20);
+    public GuiQuickCommandsList(GuiQuickCommandEditor parent) {
+        super(VRState.mc, parent.width, parent.height, 32, parent.height - 32, 20);
         this.parent = parent;
-        this.mc = mc;
-        String[] astring = this.dataholder.vrSettings.vrQuickCommands;
+        String[] astring = ClientDataHolderVR.vrSettings.vrQuickCommands;
         String s = null;
         int i = 0;
 

@@ -15,7 +15,7 @@ public class reiTextFieldWidgetMixin {
 
     @Inject(method = "setFocused(Z)V", at = @At("HEAD"))
     private void vivecraft$openKeyboard(boolean focused, CallbackInfo ci) {
-        if (VRState.vrRunning && !ClientDataHolderVR.getInstance().vrSettings.seated) {
+        if (VRState.vrRunning && !ClientDataHolderVR.vrSettings.seated) {
             KeyboardHandler.setOverlayShowing(focused);
         }
     }

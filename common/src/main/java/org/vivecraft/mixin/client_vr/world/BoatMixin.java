@@ -1,6 +1,5 @@
 package org.vivecraft.mixin.client_vr.world;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.vehicle.Boat;
@@ -38,15 +37,13 @@ public abstract class BoatMixin extends Entity {
 
     @ModifyConstant(constant = @Constant(floatValue = 1F, ordinal = 0), method = "controlBoat()V")
     public float vivecraft$inputLeft(float f) {
-        Minecraft minecraft = Minecraft.getInstance();
-        float f1 = minecraft.player.input.leftImpulse;
+        float f1 = VRState.mc.player.input.leftImpulse;
         return f1;
     }
 
     @ModifyConstant(constant = @Constant(floatValue = 1F, ordinal = 1), method = "controlBoat()V")
     public float vivecraft$inputRight(float f) {
-        Minecraft minecraft = Minecraft.getInstance();
-        float f1 = minecraft.player.input.leftImpulse;
+        float f1 = VRState.mc.player.input.leftImpulse;
         return -f1;
     }
 
@@ -57,12 +54,11 @@ public abstract class BoatMixin extends Entity {
         }
 
         double mx, mz;
-        ClientDataHolderVR clientDataHolderVR = ClientDataHolderVR.getInstance();
 
-        if (this.inputUp && !clientDataHolderVR.vrSettings.seated) {
+        if (this.inputUp && !ClientDataHolderVR.vrSettings.seated) {
             //controller-based
-            float yaw = clientDataHolderVR.vrPlayer.vrdata_world_pre.getController(1).getYaw();
-            if (clientDataHolderVR.vrSettings.vehicleRotation) {
+            float yaw = ClientDataHolderVR.vrPlayer.vrdata_world_pre.getController(1).getYaw();
+            if (ClientDataHolderVR.vrSettings.vehicleRotation) {
                 //tank controls
                 float end = this.getYRot() % 360;
                 float start = yaw;
@@ -102,10 +98,10 @@ public abstract class BoatMixin extends Entity {
             }
         } else {
             //roomscale or vanilla behavior
-            if (clientDataHolderVR.rowTracker.isRowing() && !clientDataHolderVR.vrSettings.seated) {
+            if (ClientDataHolderVR.rowTracker.isRowing() && !ClientDataHolderVR.vrSettings.seated) {
 
-                this.deltaRotation += clientDataHolderVR.rowTracker.LOar / 1.5;
-                this.deltaRotation -= clientDataHolderVR.rowTracker.ROar / 1.5;
+                this.deltaRotation += ClientDataHolderVR.rowTracker.LOar / 1.5;
+                this.deltaRotation -= ClientDataHolderVR.rowTracker.ROar / 1.5;
     				/*
     				this.deltaRotation += mc.rowTracker.forces[0] *50;
     				this.deltaRotation -= mc.rowTracker.forces[1] *50;
@@ -118,7 +114,7 @@ public abstract class BoatMixin extends Entity {
                     this.inputRight = true;
                 }
 
-                f = 0.06f * clientDataHolderVR.rowTracker.Foar;
+                f = 0.06f * ClientDataHolderVR.rowTracker.Foar;
                 if (f > 0) {
                     this.inputUp = true;
                 }

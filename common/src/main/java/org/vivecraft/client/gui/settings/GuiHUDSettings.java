@@ -1,11 +1,11 @@
 package org.vivecraft.client.gui.settings;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import org.vivecraft.client.gui.framework.GuiVROption;
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
 import org.vivecraft.client.gui.framework.VROptionEntry;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.screenhandlers.GuiHandler;
 import org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler;
 import org.vivecraft.client_vr.settings.VRSettings;
@@ -29,7 +29,7 @@ public class GuiHUDSettings extends GuiVROptionsBase {
         new VROptionEntry(VRSettings.VrOptions.GUI_APPEAR_OVER_BLOCK),
         new VROptionEntry(VRSettings.VrOptions.PHYSICAL_KEYBOARD_SCALE),
         new VROptionEntry("vivecraft.options.screen.menuworld.button", (button, mousePos) -> {
-            Minecraft.getInstance().setScreen(new GuiMenuWorldSettings(this));
+            VRState.mc.setScreen(new GuiMenuWorldSettings(this));
             return true;
         }),
         new VROptionEntry(VRSettings.VrOptions.PHYSICAL_KEYBOARD_THEME),
@@ -57,7 +57,7 @@ public class GuiHUDSettings extends GuiVROptionsBase {
                 KeyboardHandler.physicalKeyboard.init();
             }
             if (button.getId() == VRSettings.VrOptions.MENU_ALWAYS_FOLLOW_FACE.ordinal()) {
-                GuiHandler.onScreenChanged(Minecraft.getInstance().screen, Minecraft.getInstance().screen, false);
+                GuiHandler.onScreenChanged(VRState.mc.screen, VRState.mc.screen, false);
             }
         }
     }

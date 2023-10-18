@@ -1,9 +1,9 @@
 package org.vivecraft.client_vr.gameplay.trackers;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec3;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 
 public class SwimTracker extends Tracker {
     Vec3 motion = Vec3.ZERO;
@@ -12,19 +12,15 @@ public class SwimTracker extends Tracker {
     final double riseSpeed = 0.005F;
     double swimspeed = 1.3F;
 
-    public SwimTracker(Minecraft mc, ClientDataHolderVR dh) {
-        super(mc, dh);
-    }
-
     public boolean isActive(LocalPlayer p) {
-        if (this.dh.vrSettings.seated) {
+        if (ClientDataHolderVR.vrSettings.seated) {
             return false;
-        } else if (!this.dh.vrSettings.realisticSwimEnabled) {
+        } else if (!ClientDataHolderVR.vrSettings.realisticSwimEnabled) {
             return false;
-        } else if (this.mc.screen != null) {
+        } else if (VRState.mc.screen != null) {
             return false;
         } else if (p != null && p.isAlive()) {
-            if (this.mc.gameMode == null) {
+            if (VRState.mc.gameMode == null) {
                 return false;
             } else if (!p.isInWater() && !p.isInLava()) {
                 return false;
@@ -39,12 +35,12 @@ public class SwimTracker extends Tracker {
     }
 
     public void doProcess(LocalPlayer player) {
-        Vec3 vec3 = this.dh.vrPlayer.vrdata_world_pre.getController(0).getPosition();
-        Vec3 vec31 = this.dh.vrPlayer.vrdata_world_pre.getController(1).getPosition();
+        Vec3 vec3 = ClientDataHolderVR.vrPlayer.vrdata_world_pre.getController(0).getPosition();
+        Vec3 vec31 = ClientDataHolderVR.vrPlayer.vrdata_world_pre.getController(1).getPosition();
         Vec3 vec32 = vec31.subtract(vec3).scale(0.5D).add(vec3);
-        Vec3 vec33 = this.dh.vrPlayer.vrdata_world_pre.getHeadPivot().subtract(0.0D, 0.3D, 0.0D);
-        Vec3 vec34 = vec32.subtract(vec33).normalize().add(this.dh.vrPlayer.vrdata_world_pre.hmd.getDirection()).scale(0.5D);
-        Vec3 vec35 = this.dh.vrPlayer.vrdata_world_pre.getController(0).getCustomVector(new Vec3(0.0D, 0.0D, -1.0D)).add(this.dh.vrPlayer.vrdata_world_pre.getController(1).getCustomVector(new Vec3(0.0D, 0.0D, -1.0D))).scale(0.5D);
+        Vec3 vec33 = ClientDataHolderVR.vrPlayer.vrdata_world_pre.getHeadPivot().subtract(0.0D, 0.3D, 0.0D);
+        Vec3 vec34 = vec32.subtract(vec33).normalize().add(ClientDataHolderVR.vrPlayer.vrdata_world_pre.hmd.getDirection()).scale(0.5D);
+        Vec3 vec35 = ClientDataHolderVR.vrPlayer.vrdata_world_pre.getController(0).getCustomVector(new Vec3(0.0D, 0.0D, -1.0D)).add(ClientDataHolderVR.vrPlayer.vrdata_world_pre.getController(1).getCustomVector(new Vec3(0.0D, 0.0D, -1.0D))).scale(0.5D);
         double d0 = vec35.add(vec34).length() / 2.0D;
         double d1 = vec33.distanceTo(vec32);
         double d2 = this.lastDist - d1;

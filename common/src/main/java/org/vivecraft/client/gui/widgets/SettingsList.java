@@ -1,7 +1,6 @@
 package org.vivecraft.client.gui.widgets;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -16,6 +15,7 @@ import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.server.config.ConfigBuilder;
 
 import java.util.Collections;
@@ -26,12 +26,12 @@ public class SettingsList extends ContainerObjectSelectionList<SettingsList.Base
     final Screen parent;
     int maxNameWidth;
 
-    public SettingsList(Screen parent, Minecraft minecraft, List<SettingsList.BaseEntry> entries) {
-        super(minecraft, parent.width + 45, parent.height, 20, parent.height - 32, 20);
+    public SettingsList(Screen parent, List<BaseEntry> entries) {
+        super(VRState.mc, parent.width + 45, parent.height, 20, parent.height - 32, 20);
         this.parent = parent;
         for (SettingsList.BaseEntry entry : entries) {
             int i;
-            if ((i = minecraft.font.width(entry.name)) > this.maxNameWidth) {
+            if ((i = VRState.mc.font.width(entry.name)) > this.maxNameWidth) {
                 this.maxNameWidth = i;
             }
             this.addEntry(entry);
@@ -58,12 +58,12 @@ public class SettingsList extends ContainerObjectSelectionList<SettingsList.Base
 
         public CategoryEntry(Component name) {
             super(name);
-            this.width = Minecraft.getInstance().font.width(this.name);
+            this.width = VRState.mc.font.width(this.name);
         }
 
         @Override
         public void render(GuiGraphics guiGraphics, int i, int j, int k, int l, int m, int n, int o, boolean bl, float f) {
-            guiGraphics.drawString(Minecraft.getInstance().font, this.name, Minecraft.getInstance().screen.width / 2 - this.width / 2, j + m - Minecraft.getInstance().font.lineHeight - 1, 0xFFFFFF);
+            guiGraphics.drawString(VRState.mc.font, this.name, VRState.mc.screen.width / 2 - this.width / 2, j + m - VRState.mc.font.lineHeight - 1, 0xFFFFFF);
         }
 
         @Override
@@ -143,7 +143,7 @@ public class SettingsList extends ContainerObjectSelectionList<SettingsList.Base
 
         @Override
         public void render(GuiGraphics guiGraphics, int i, int j, int k, int l, int m, int n, int o, boolean bl, float f) {
-            guiGraphics.drawString(Minecraft.getInstance().font, this.name, k + 90 - 140, j + m / 2 - Minecraft.getInstance().font.lineHeight / 2, 0xFFFFFF);
+            guiGraphics.drawString(VRState.mc.font, this.name, k + 90 - 140, j + m / 2 - VRState.mc.font.lineHeight / 2, 0xFFFFFF);
             this.valueWidget.setX(k + 105);
             this.valueWidget.setY(j);
             this.valueWidget.render(guiGraphics, n, o, f);

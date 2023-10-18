@@ -1,8 +1,8 @@
 package org.vivecraft.client_vr.gameplay;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 
 public class VRMovementStyle {
     public String name;
@@ -27,11 +27,9 @@ public class VRMovementStyle {
     public float endTeleportingSoundVolume;
     public boolean teleportOnRelease;
     public boolean arcAiming;
-    public ClientDataHolderVR dataholder;
     private static final ResourceLocation beamPng = new ResourceLocation("textures/entity/endercrystal/endercrystal_beam.png");
 
-    public VRMovementStyle(ClientDataHolderVR dataholder) {
-        this.dataholder = dataholder;
+    public VRMovementStyle() {
         this.setStyle("Arc");
     }
 
@@ -135,11 +133,11 @@ public class VRMovementStyle {
             this.arcAiming = true;
         } else {
             flag = false;
-            ClientDataHolderVR.getInstance().printChatMessage("Unknown teleport style requested: " + requestedStyle);
+            ClientDataHolderVR.printChatMessage("Unknown teleport style requested: " + requestedStyle);
         }
 
-        if (flag && Minecraft.getInstance() != null && dataholder != null) {
-            dataholder.printChatMessage("Teleport style (RCTRL-M): " + this.name);
+        if (flag && VRState.mc != null) {
+            ClientDataHolderVR.printChatMessage("Teleport style (RCTRL-M): " + this.name);
         }
     }
 }

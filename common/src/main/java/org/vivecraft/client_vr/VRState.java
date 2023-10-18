@@ -2,6 +2,7 @@ package org.vivecraft.client_vr;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.vivecraft.client.gui.screens.ErrorScreen;
 import org.vivecraft.client_vr.gameplay.VRPlayer;
@@ -14,6 +15,9 @@ import org.vivecraft.client_xr.render_pass.RenderPassManager;
 import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
 
 public class VRState {
+
+    @NotNull
+    public static Minecraft mc = Minecraft.getInstance();
 
     public static boolean vrRunning = false;
     public static boolean vrEnabled = false;
@@ -29,54 +33,53 @@ public class VRState {
             }
 
             vrInitialized = true;
-            ClientDataHolderVR dh = ClientDataHolderVR.getInstance();
-            if (dh.vrSettings.stereoProviderPluginID == VRSettings.VRProvider.OPENVR) {
-                dh.vr = new MCOpenVR(Minecraft.getInstance(), dh);
+            if (ClientDataHolderVR.vrSettings.stereoProviderPluginID == VRSettings.VRProvider.OPENVR) {
+                ClientDataHolderVR.vr = new MCOpenVR();
             } else {
-                dh.vr = new NullVR(Minecraft.getInstance(), dh);
+                ClientDataHolderVR.vr = new NullVR();
             }
-            if (!dh.vr.init()) {
-                throw new RenderConfigException("VR init Error", Component.translatable("vivecraft.messages.rendersetupfailed", dh.vr.initStatus + "\nVR provider: " + dh.vr.getName()));
+            if (!ClientDataHolderVR.vr.init()) {
+                throw new RenderConfigException("VR init Error", Component.translatable("vivecraft.messages.rendersetupfailed", ClientDataHolderVR.vr.initStatus + "\nVR provider: " + ClientDataHolderVR.vr.getName()));
             }
 
-            dh.vrRenderer = dh.vr.createVRRenderer();
-            dh.vrRenderer.lastGuiScale = Minecraft.getInstance().options.guiScale().get();
+            ClientDataHolderVR.vrRenderer = ClientDataHolderVR.vr.createVRRenderer();
+            ClientDataHolderVR.vrRenderer.lastGuiScale = mc.options.guiScale().get();
             try {
-                dh.vrRenderer.setupRenderConfiguration();
+                ClientDataHolderVR.vrRenderer.setupRenderConfiguration();
                 RenderPassManager.setVanillaRenderPass();
             } catch (RenderConfigException renderConfigException) {
-                throw new RenderConfigException("VR Render Error", Component.translatable("vivecraft.messages.rendersetupfailed", renderConfigException.error.getString() + "\nVR provider: " + dh.vr.getName()));
+                throw new RenderConfigException("VR Render Error", Component.translatable("vivecraft.messages.rendersetupfailed", renderConfigException.error.getString() + "\nVR provider: " + ClientDataHolderVR.vr.getName()));
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            dh.vrPlayer = new VRPlayer();
-            dh.vrPlayer.registerTracker(dh.backpackTracker);
-            dh.vrPlayer.registerTracker(dh.bowTracker);
-            dh.vrPlayer.registerTracker(dh.climbTracker);
-            dh.vrPlayer.registerTracker(dh.autoFood);
-            dh.vrPlayer.registerTracker(dh.jumpTracker);
-            dh.vrPlayer.registerTracker(dh.rowTracker);
-            dh.vrPlayer.registerTracker(dh.runTracker);
-            dh.vrPlayer.registerTracker(dh.sneakTracker);
-            dh.vrPlayer.registerTracker(dh.swimTracker);
-            dh.vrPlayer.registerTracker(dh.swingTracker);
-            dh.vrPlayer.registerTracker(dh.interactTracker);
-            dh.vrPlayer.registerTracker(dh.teleportTracker);
-            dh.vrPlayer.registerTracker(dh.horseTracker);
-            dh.vrPlayer.registerTracker(dh.vehicleTracker);
-            dh.vrPlayer.registerTracker(dh.crawlTracker);
-            dh.vrPlayer.registerTracker(dh.cameraTracker);
+            ClientDataHolderVR.vrPlayer = new VRPlayer();
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.backpackTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.bowTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.climbTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.autoFood);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.jumpTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.rowTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.runTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.sneakTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.swimTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.swingTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.interactTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.teleportTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.horseTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.vehicleTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.crawlTracker);
+            ClientDataHolderVR.vrPlayer.registerTracker(ClientDataHolderVR.cameraTracker);
 
-            dh.vr.postinit();
+            ClientDataHolderVR.vr.postinit();
 
-            dh.menuWorldRenderer = new MenuWorldRenderer();
+            ClientDataHolderVR.menuWorldRenderer = new MenuWorldRenderer();
 
-            dh.menuWorldRenderer.init();
+            ClientDataHolderVR.menuWorldRenderer.init();
         } catch (RenderConfigException renderConfigException) {
             vrEnabled = false;
             destroyVR(true);
-            Minecraft.getInstance().setScreen(new ErrorScreen(renderConfigException.title, renderConfigException.error));
+            mc.setScreen(new ErrorScreen(renderConfigException.title, renderConfigException.error));
         }
     }
 
@@ -85,26 +88,25 @@ public class VRState {
     }
 
     public static void destroyVR(boolean disableVRSetting) {
-        ClientDataHolderVR dh = ClientDataHolderVR.getInstance();
-        if (dh.vr != null) {
-            dh.vr.destroy();
+        if (ClientDataHolderVR.vr != null) {
+            ClientDataHolderVR.vr.destroy();
         }
-        dh.vr = null;
-        dh.vrPlayer = null;
-        if (dh.vrRenderer != null) {
-            dh.vrRenderer.destroy();
+        ClientDataHolderVR.vr = null;
+        ClientDataHolderVR.vrPlayer = null;
+        if (ClientDataHolderVR.vrRenderer != null) {
+            ClientDataHolderVR.vrRenderer.destroy();
         }
-        dh.vrRenderer = null;
-        if (dh.menuWorldRenderer != null) {
-            dh.menuWorldRenderer.completeDestroy();
-            dh.menuWorldRenderer = null;
+        ClientDataHolderVR.vrRenderer = null;
+        if (ClientDataHolderVR.menuWorldRenderer != null) {
+            ClientDataHolderVR.menuWorldRenderer.completeDestroy();
+            ClientDataHolderVR.menuWorldRenderer = null;
         }
         vrEnabled = false;
         vrInitialized = false;
         vrRunning = false;
         if (disableVRSetting) {
-            dh.vrSettings.vrEnabled = false;
-            dh.vrSettings.saveOptions();
+            ClientDataHolderVR.vrSettings.vrEnabled = false;
+            ClientDataHolderVR.vrSettings.saveOptions();
         }
     }
 

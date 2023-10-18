@@ -27,7 +27,7 @@ public class ResolutionControlModMixin {
     @Inject(at = @At("HEAD"), method = "updateFramebufferSize", remap = false)
     private void vivecraft$resizeVRBuffers(CallbackInfo ci) {
         if (VRState.vrRunning) {
-            ClientDataHolderVR.getInstance().vrRenderer.resizeFrameBuffers("");
+            ClientDataHolderVR.vrRenderer.resizeFrameBuffers("");
         }
     }
 

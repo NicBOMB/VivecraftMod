@@ -23,12 +23,10 @@ public class XRCamera extends Camera {
         ((CameraAccessor) this).setInitialized(true);
         ((CameraAccessor) this).setLevel(pLevel);
         ((CameraAccessor) this).setEntity(pRenderViewEntity);
-        ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();
-        RenderPass renderpass = dataholder.currentPass;
 
-        VRData.VRDevicePose eye = dataholder.vrPlayer.getVRDataWorld().getEye(renderpass);
-        if (renderpass == RenderPass.CENTER && dataholder.vrSettings.displayMirrorCenterSmooth > 0.0F) {
-            ((CameraAccessor) this).callSetPosition(RenderHelper.getSmoothCameraPosition(renderpass, dataholder.vrPlayer.getVRDataWorld()));
+        VRData.VRDevicePose eye = ClientDataHolderVR.vrPlayer.getVRDataWorld().getEye(ClientDataHolderVR.currentPass);
+        if (ClientDataHolderVR.currentPass == RenderPass.CENTER && ClientDataHolderVR.vrSettings.displayMirrorCenterSmooth > 0.0F) {
+            ((CameraAccessor) this).callSetPosition(RenderHelper.getSmoothCameraPosition(ClientDataHolderVR.currentPass, ClientDataHolderVR.vrPlayer.getVRDataWorld()));
         } else {
             ((CameraAccessor) this).callSetPosition(eye.getPosition());
         }
@@ -56,8 +54,8 @@ public class XRCamera extends Camera {
         if (RenderPassType.isVanilla()) {
             return super.isDetached();
         }
-        boolean renderSelf = ClientDataHolderVR.getInstance().currentPass == RenderPass.THIRD && ClientDataHolderVR.getInstance().vrSettings.displayMirrorMode == VRSettings.MirrorMode.THIRD_PERSON || ClientDataHolderVR.getInstance().currentPass == RenderPass.CAMERA;
-        return renderSelf || ClientDataHolderVR.getInstance().vrSettings.shouldRenderSelf;
+        boolean renderSelf = ClientDataHolderVR.currentPass == RenderPass.THIRD && ClientDataHolderVR.vrSettings.displayMirrorMode == VRSettings.MirrorMode.THIRD_PERSON || ClientDataHolderVR.currentPass == RenderPass.CAMERA;
+        return renderSelf || ClientDataHolderVR.vrSettings.shouldRenderSelf;
     }
 
     // some mods call this, when querying the sunrise color in the menu world

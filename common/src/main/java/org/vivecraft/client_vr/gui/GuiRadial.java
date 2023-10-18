@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import org.vivecraft.client.gui.framework.TwoHandedScreen;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.provider.MCVR;
 import org.vivecraft.client_vr.provider.openvr_lwjgl.VRInputAction;
 
@@ -14,8 +15,8 @@ public class GuiRadial extends TwoHandedScreen {
     String[] arr;
 
     public void init() {
-        this.arr = this.dataholder.vrSettings.vrRadialItems;
-        String[] astring = this.dataholder.vrSettings.vrRadialItemsAlt;
+        this.arr = ClientDataHolderVR.vrSettings.vrRadialItems;
+        String[] astring = ClientDataHolderVR.vrSettings.vrRadialItemsAlt;
         this.clearWidgets();
         int i = 8;
         int j = 120;

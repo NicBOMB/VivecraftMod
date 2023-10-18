@@ -42,6 +42,7 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.vivecraft.client.Xplat;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.mod_compat_vr.optifine.OptifineHelper;
 import org.vivecraft.mod_compat_vr.sodium.SodiumHelper;
@@ -64,7 +65,6 @@ public class MenuWorldRenderer {
 
     private static final ResourceLocation SNOW_LOCATION = new ResourceLocation("textures/environment/snow.png");
 
-    private final Minecraft mc;
     private DimensionSpecialEffects dimensionInfo;
     private FakeBlockAccess blockAccess;
     private final DynamicTexture lightTexture;
@@ -106,9 +106,8 @@ public class MenuWorldRenderer {
     private Set<TextureAtlasSprite> animatedSprites = null;
 
     public MenuWorldRenderer() {
-        this.mc = Minecraft.getInstance();
         this.lightTexture = new DynamicTexture(16, 16, false);
-        this.lightTextureLocation = mc.getTextureManager().register("vivecraft_light_map", this.lightTexture);
+        this.lightTextureLocation = VRState.mc.getTextureManager().register("vivecraft_light_map", this.lightTexture);
         this.lightPixels = this.lightTexture.getPixels();
         this.fogRenderer = new MenuFogRenderer(this);
         this.rand = new Random();
@@ -116,7 +115,7 @@ public class MenuWorldRenderer {
     }
 
     public void init() {
-        if (ClientDataHolderVR.getInstance().vrSettings.menuWorldSelection == VRSettings.MenuWorld.NONE) {
+        if (ClientDataHolderVR.vrSettings.menuWorldSelection == VRSettings.MenuWorld.NONE) {
             //VRSettings.logger.info("Main menu worlds disabled.");
             return;
         }
@@ -149,9 +148,9 @@ public class MenuWorldRenderer {
     public void render(PoseStack poseStack) {
 
         // temporarily disable fabulous to render the menu world
-        GraphicsStatus current = mc.options.graphicsMode().get();
+        GraphicsStatus current = VRState.mc.options.graphicsMode().get();
         if (current == GraphicsStatus.FABULOUS) {
-            mc.options.graphicsMode().set(GraphicsStatus.FANCY);
+            VRState.mc.options.graphicsMode().set(GraphicsStatus.FANCY);
         }
 
         turnOnLightLayer();
@@ -210,7 +209,7 @@ public class MenuWorldRenderer {
 
         poseStack.popPose();
         turnOffLightLayer();
-        mc.options.graphicsMode().set(current);
+        VRState.mc.options.graphicsMode().set(current);
     }
 
     private void renderChunkLayer(RenderType layer, Matrix4f modelView, Matrix4f Projection) {
@@ -227,8 +226,8 @@ public class MenuWorldRenderer {
     public void prepare() {
         if (vertexBuffers == null) {
             VRSettings.logger.info("MenuWorlds: Building geometry...");
-            boolean ao = mc.options.ambientOcclusion().get();
-            mc.options.ambientOcclusion().set(true);
+            boolean ao = VRState.mc.options.ambientOcclusion().get();
+            VRState.mc.options.ambientOcclusion().set(true);
 
             // disable redner regions during building, they mess with liquids
             boolean optifineRenderRegions = false;
@@ -251,7 +250,7 @@ public class MenuWorldRenderer {
                 animatedSprites = new HashSet<>();
 
                 // disable liquid chunk wrapping
-                ClientDataHolderVR.getInstance().skipStupidGoddamnChunkBoundaryClipping = true;
+                ClientDataHolderVR.skipStupidGoddamnChunkBoundaryClipping = true;
 
                 if (!SodiumHelper.isLoaded() || !SodiumHelper.hasIssuesWithParallelBlockBuilding()) {
                     // generate the data in parallel
@@ -278,11 +277,11 @@ public class MenuWorldRenderer {
                 copyVisibleTextures();
                 ready = true;
             } finally {
-                mc.options.ambientOcclusion().set(ao);
+                VRState.mc.options.ambientOcclusion().set(ao);
                 if (OptifineHelper.isOptifineLoaded()) {
                     OptifineHelper.setRenderRegions(optifineRenderRegions);
                 }
-                ClientDataHolderVR.getInstance().skipStupidGoddamnChunkBoundaryClipping = false;
+                ClientDataHolderVR.skipStupidGoddamnChunkBoundaryClipping = false;
             }
         }
     }
@@ -290,7 +289,7 @@ public class MenuWorldRenderer {
     private Pair<RenderType, BufferBuilder.RenderedBuffer> buildGeometryLayer(RenderType layer) {
         PoseStack thisPose = new PoseStack();
         int renderDistSquare = (renderDistance + 1) * (renderDistance + 1);
-        BlockRenderDispatcher blockRenderer = mc.getBlockRenderer();
+        BlockRenderDispatcher blockRenderer = VRState.mc.getBlockRenderer();
 
         BufferBuilder vertBuffer = new BufferBuilder(20 * 2097152);
         vertBuffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
@@ -322,7 +321,7 @@ public class MenuWorldRenderer {
                             c++;
                         }
                         if (state.getRenderShape() != RenderShape.INVISIBLE && ItemBlockRenderTypes.getChunkRenderType(state) == layer) {
-                            for (var quad : mc.getModelManager().getBlockModelShaper().getBlockModel(state).getQuads(state, null, randomSource)) {
+                            for (var quad : VRState.mc.getModelManager().getBlockModelShaper().getBlockModel(state).getQuads(state, null, randomSource)) {
                                 if (quad.getSprite().contents().getUniqueFrames().sum() > 1) {
                                     animatedSprites.add(quad.getSprite());
                                 }
@@ -671,7 +670,7 @@ public class MenuWorldRenderer {
     public void renderClouds(PoseStack poseStack, double x, double y, double z) {
         float cloudHeight = this.dimensionInfo.getCloudHeight();
 
-        if (!Float.isNaN(cloudHeight) && this.mc.options.getCloudsType() != CloudStatus.OFF) {
+        if (!Float.isNaN(cloudHeight) && VRState.mc.options.getCloudsType() != CloudStatus.OFF) {
             // setup clouds
 
             RenderSystem.disableCull();
@@ -682,7 +681,7 @@ public class MenuWorldRenderer {
 
             float cloudSizeXZ = 12.0f;
             float cloudSizeY = 4.0f;
-            double cloudOffset = ((float) ticks + mc.getFrameTime()) * 0.03f;
+            double cloudOffset = ((float) ticks + VRState.mc.getFrameTime()) * 0.03f;
             double cloudX = (x + cloudOffset) / 12.0;
             double cloudY = cloudHeight - y + 0.33;
             if (OptifineHelper.isOptifineLoaded()) {
@@ -703,13 +702,13 @@ public class MenuWorldRenderer {
             if (cloudXfloor != this.prevCloudX ||
                 cloudYfloor != this.prevCloudY ||
                 cloudZfloor != this.prevCloudZ ||
-                this.mc.options.getCloudsType() != this.prevCloudsType ||
+                VRState.mc.options.getCloudsType() != this.prevCloudsType ||
                 this.prevCloudColor.distanceToSqr(cloudColor) > 2.0E-4) {
                 this.prevCloudX = cloudXfloor;
                 this.prevCloudY = cloudYfloor;
                 this.prevCloudZ = cloudZfloor;
                 this.prevCloudColor = cloudColor;
-                this.prevCloudsType = this.mc.options.getCloudsType();
+                this.prevCloudsType = VRState.mc.options.getCloudsType();
                 this.generateClouds = true;
             }
             if (this.generateClouds) {
@@ -861,7 +860,7 @@ public class MenuWorldRenderer {
         }
         RenderSystem.depthMask(true);
         int count = -1;
-        float rainAnimationTime = this.ticks + mc.getFrameTime();
+        float rainAnimationTime = this.ticks + VRState.mc.getFrameTime();
         RenderSystem.setShader(GameRenderer::getParticleShader);
         turnOnLightLayer();
         BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
@@ -917,7 +916,7 @@ public class MenuWorldRenderer {
 
                     blend = ((1.0f - distance * distance) * 0.5f + 0.5f);
                     int x = this.ticks + rainX * rainX * 3121 + rainX * 45238971 + rainZ * rainZ * 418711 + rainZ * 13761 & 0x1F;
-                    yOffset = -((float) x + mc.getFrameTime()) / 32.0f * (3.0f + randomSource.nextFloat());
+                    yOffset = -((float) x + VRState.mc.getFrameTime()) / 32.0f * (3.0f + randomSource.nextFloat());
                 } else if (precipitation == Biome.Precipitation.SNOW) {
                     if (count != 1) {
                         if (count >= 0) {
@@ -930,7 +929,7 @@ public class MenuWorldRenderer {
 
                     blend = ((1.0f - distance * distance) * 0.3f + 0.5f);
                     xOffset = (float) (randomSource.nextDouble() + (double) rainAnimationTime * 0.01 * (double) ((float) randomSource.nextGaussian()));
-                    float ae = -((float) (this.ticks & 0x1FF) + mc.getFrameTime()) / 512.0f;
+                    float ae = -((float) (this.ticks & 0x1FF) + VRState.mc.getFrameTime()) / 512.0f;
                     float af = (float) (randomSource.nextDouble() + (double) (rainAnimationTime * (float) randomSource.nextGaussian()) * 0.001);
                     yOffset = ae + af;
 
@@ -1041,8 +1040,8 @@ public class MenuWorldRenderer {
             skyColorG = skyColorG * darkening + luminance * (1.0f - darkening);
             skyColorB = skyColorB * darkening + luminance * (1.0f - darkening);
         }
-        if (!mc.options.hideLightningFlash().get() && this.skyFlashTime > 0) {
-            float flash = (float) this.skyFlashTime - mc.getFrameTime();
+        if (!VRState.mc.options.hideLightningFlash().get() && this.skyFlashTime > 0) {
+            float flash = (float) this.skyFlashTime - VRState.mc.getFrameTime();
             if (flash > 1.0f) {
                 flash = 1.0f;
             }
@@ -1197,7 +1196,7 @@ public class MenuWorldRenderer {
 
     public void turnOnLightLayer() {
         RenderSystem.setShaderTexture(2, this.lightTextureLocation);
-        mc.getTextureManager().bindForSetup(this.lightTextureLocation);
+        VRState.mc.getTextureManager().bindForSetup(this.lightTextureLocation);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
     }
@@ -1282,7 +1281,7 @@ public class MenuWorldRenderer {
                         finalColor.set(Mth.clamp(finalColor.x, 0.0f, 1.0f), Mth.clamp(finalColor.y, 0.0f, 1.0f), Mth.clamp(finalColor.z, 0.0f, 1.0f));
                     }
 
-                    float gamma = this.mc.options.gamma().get().floatValue();
+                    float gamma = VRState.mc.options.gamma().get().floatValue();
                     Vector3f vector3f5 = new Vector3f(this.notGamma(finalColor.x), this.notGamma(finalColor.y), this.notGamma(finalColor.z));
                     finalColor.lerp(vector3f5, Math.max(0.0f, gamma /*- darknessGamma*/));
                     finalColor.lerp(new Vector3f(0.75f, 0.75f, 0.75f), 0.04f);
@@ -1332,7 +1331,7 @@ public class MenuWorldRenderer {
     }
 
     public Vec3 getEyePos() {
-        return ClientDataHolderVR.getInstance().vrPlayer.vrdata_room_post.hmd.getPosition();
+        return ClientDataHolderVR.vrPlayer.vrdata_room_post.hmd.getPosition();
     }
 
     private boolean isFluidTagged(Fluid fluid, TagKey<Fluid> tag) {
@@ -1479,7 +1478,7 @@ public class MenuWorldRenderer {
             if (this.menuWorldRenderer.renderDistanceChunks >= 4) {
                 float d0 = Mth.sin(this.menuWorldRenderer.getSunAngle()) > 0.0F ? -1.0F : 1.0F;
                 Vec3 vec3d2 = new Vec3(d0, 0.0F, 0.0F).yRot(0);
-                float f5 = (float) ClientDataHolderVR.getInstance().vrPlayer.vrdata_room_post.hmd.getDirection().yRot(menuWorldRenderer.worldRotation).dot(vec3d2);
+                float f5 = (float) ClientDataHolderVR.vrPlayer.vrdata_room_post.hmd.getDirection().yRot(menuWorldRenderer.worldRotation).dot(vec3d2);
 
                 if (f5 < 0.0F) {
                     f5 = 0.0F;

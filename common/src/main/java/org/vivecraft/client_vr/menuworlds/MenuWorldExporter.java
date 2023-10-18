@@ -4,7 +4,6 @@ import com.google.common.io.Files;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
@@ -31,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
 import org.vivecraft.client.Xplat;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.settings.VRSettings;
 
 import java.io.*;
@@ -109,7 +109,7 @@ public class MenuWorldExporter {
         dos.writeInt(level.dimensionType().minY());
         dos.writeFloat(level.dimensionType().ambientLight());
 
-        dos.writeFloat(switch (Minecraft.getInstance().player.getDirection()) {
+        dos.writeFloat(switch (VRState.mc.player.getDirection()) {
             case SOUTH -> 180.0f;
             case WEST -> -90.0f;
             case EAST -> 90.0f;

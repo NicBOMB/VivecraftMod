@@ -4,6 +4,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import org.vivecraft.client.gui.framework.GuiVROption;
 import org.vivecraft.client.gui.framework.GuiVROptionsBase;
+import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.settings.VRSettings;
 
 public class GuiFreeMoveSettings extends GuiVROptionsBase {
@@ -34,13 +35,13 @@ public class GuiFreeMoveSettings extends GuiVROptionsBase {
     public void init() {
         this.vrTitle = "vivecraft.options.screen.freemove";
 
-        if (this.dataholder.vrSettings.seated) {
+        if (ClientDataHolderVR.vrSettings.seated) {
             super.init(seatedSettings, true);
         } else {
             super.init(standingSettings, true);
         }
 
-        if (this.dataholder.vrSettings.useFOVReduction) {
+        if (ClientDataHolderVR.vrSettings.useFOVReduction) {
             super.init(fovRed, false);
         }
 

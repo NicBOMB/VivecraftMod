@@ -25,7 +25,7 @@ public class FabricGameRendererVRMixin {
         if (RenderPassType.isVanilla()) {
             s.mulPose(quaternion);
         } else {
-            RenderHelper.applyVRModelView(ClientDataHolderVR.getInstance().currentPass, s);
+            RenderHelper.applyVRModelView(ClientDataHolderVR.currentPass, s);
         }
     }
 

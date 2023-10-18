@@ -1,7 +1,6 @@
 package org.vivecraft.mixin.client_vr.blaze3d.platform;
 
 import com.mojang.blaze3d.platform.Window;
-import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,7 +31,7 @@ public abstract class WindowVRMixin {
 //				var swapchain = MCXRPlayClient.OPEN_XR_STATE.session.swapchain;
 //				cir.setReturnValue(swapchain.getRenderWidth());
 //			} else {
-            var mainTarget = Minecraft.getInstance().getMainRenderTarget();
+            var mainTarget = VRState.mc.getMainRenderTarget();
             cir.setReturnValue(mainTarget.viewWidth);
 //			}
         }
@@ -45,7 +44,7 @@ public abstract class WindowVRMixin {
 //				var swapchain = MCXRPlayClient.OPEN_XR_STATE.session.swapchain;
 //				cir.setReturnValue(swapchain.getRenderHeight());
 //			} else {
-            var mainTarget = Minecraft.getInstance().getMainRenderTarget();
+            var mainTarget = VRState.mc.getMainRenderTarget();
             cir.setReturnValue(mainTarget.viewHeight);
 //			}
         }
@@ -75,7 +74,7 @@ public abstract class WindowVRMixin {
     @Inject(method = "onResize", at = @At("HEAD"))
     private void vivecraft$resizeFrameBuffers(long l, int i, int j, CallbackInfo ci) {
         if (VRState.vrEnabled) {
-            ClientDataHolderVR.getInstance().vrRenderer.resizeFrameBuffers("Main Window Resized");
+            ClientDataHolderVR.vrRenderer.resizeFrameBuffers("Main Window Resized");
         }
     }
 

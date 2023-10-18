@@ -1,11 +1,11 @@
 package org.vivecraft.client_vr.gameplay.screenhandlers;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.vivecraft.client.utils.Utils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gui.GuiKeyboard;
 import org.vivecraft.client_vr.gui.PhysicalKeyboard;
 import org.vivecraft.client_vr.provider.ControllerType;
@@ -14,8 +14,6 @@ import org.vivecraft.common.utils.lwjgl.Vector3f;
 import org.vivecraft.common.utils.math.Vector3;
 
 public class KeyboardHandler {
-    public static Minecraft mc = Minecraft.getInstance();
-    public static ClientDataHolderVR dh = ClientDataHolderVR.getInstance();
     public static boolean Showing = false;
     public static GuiKeyboard UI = new GuiKeyboard();
     public static PhysicalKeyboard physicalKeyboard = new PhysicalKeyboard();
@@ -33,7 +31,7 @@ public class KeyboardHandler {
         if (ClientDataHolderVR.kiosk) {
             return false;
         } else {
-            if (dh.vrSettings.seated) {
+            if (ClientDataHolderVR.vrSettings.seated) {
                 showingState = false;
             }
 
@@ -41,18 +39,18 @@ public class KeyboardHandler {
 
             if (showingState) {
 
-                if (dh.vrSettings.physicalKeyboard) {
+                if (ClientDataHolderVR.vrSettings.physicalKeyboard) {
                     physicalKeyboard.show();
                 } else {
-                    UI.init(Minecraft.getInstance(), GuiHandler.scaledWidth, GuiHandler.scaledHeight);
+                    UI.init(VRState.mc, GuiHandler.scaledWidth, GuiHandler.scaledHeight);
                 }
 
                 Showing = true;
-                orientOverlay(mc.screen != null);
+                orientOverlay(VRState.mc.screen != null);
                 RadialHandler.setOverlayShowing(false, null);
 
-                if (dh.vrSettings.physicalKeyboard && mc.screen != null) {
-                    GuiHandler.onScreenChanged(mc.screen, mc.screen, false);
+                if (ClientDataHolderVR.vrSettings.physicalKeyboard && VRState.mc.screen != null) {
+                    GuiHandler.onScreenChanged(VRState.mc.screen, VRState.mc.screen, false);
                 }
             } else {
                 Showing = false;
@@ -67,13 +65,13 @@ public class KeyboardHandler {
         PointedR = false;
 
         if (Showing) {
-            if (!dh.vrSettings.seated) {
+            if (!ClientDataHolderVR.vrSettings.seated) {
                 if (Rotation_room != null) {
-                    if (dh.vrSettings.physicalKeyboard) {
+                    if (ClientDataHolderVR.vrSettings.physicalKeyboard) {
                         physicalKeyboard.process();
                     } else {
-                        Vec2 vec2 = GuiHandler.getTexCoordsForCursor(Pos_room, Rotation_room, mc.screen, GuiHandler.guiScale, dh.vrPlayer.vrdata_room_pre.getController(1));
-                        Vec2 vec21 = GuiHandler.getTexCoordsForCursor(Pos_room, Rotation_room, mc.screen, GuiHandler.guiScale, dh.vrPlayer.vrdata_room_pre.getController(0));
+                        Vec2 vec2 = GuiHandler.getTexCoordsForCursor(Pos_room, Rotation_room, VRState.mc.screen, GuiHandler.guiScale, ClientDataHolderVR.vrPlayer.vrdata_room_pre.getController(1));
+                        Vec2 vec21 = GuiHandler.getTexCoordsForCursor(Pos_room, Rotation_room, VRState.mc.screen, GuiHandler.guiScale, ClientDataHolderVR.vrPlayer.vrdata_room_pre.getController(0));
                         float f = vec21.x;
                         float f1 = vec21.y;
 
@@ -128,12 +126,12 @@ public class KeyboardHandler {
             keyboardForGui = guiRelative;
             Matrix4f matrix4f = new Matrix4f();
 
-            if (dh.vrSettings.physicalKeyboard) {
-                Vec3 vec3 = dh.vrPlayer.vrdata_room_pre.hmd.getPosition();
+            if (ClientDataHolderVR.vrSettings.physicalKeyboard) {
+                Vec3 vec3 = ClientDataHolderVR.vrPlayer.vrdata_room_pre.hmd.getPosition();
                 Vec3 vec31 = new Vec3(0.0D, -0.5D, 0.3D);
-                vec31 = vec31.yRot((float) Math.toRadians(-dh.vrPlayer.vrdata_room_pre.hmd.getYaw()));
+                vec31 = vec31.yRot((float) Math.toRadians(-ClientDataHolderVR.vrPlayer.vrdata_room_pre.hmd.getYaw()));
                 Pos_room = new Vec3(vec3.x + vec31.x, vec3.y + vec31.y, vec3.z + vec31.z);
-                float f = (float) Math.PI + (float) Math.toRadians(-dh.vrPlayer.vrdata_room_pre.hmd.getYaw());
+                float f = (float) Math.PI + (float) Math.toRadians(-ClientDataHolderVR.vrPlayer.vrdata_room_pre.hmd.getYaw());
                 Rotation_room = org.vivecraft.common.utils.math.Matrix4f.rotationY(f);
                 Rotation_room = org.vivecraft.common.utils.math.Matrix4f.multiply(Rotation_room, Utils.rotationXMatrix(2.5132742F));
             } else if (guiRelative && GuiHandler.guiRotation_room != null) {
@@ -151,11 +149,11 @@ public class KeyboardHandler {
                 Rotation_room.M[1][3] = 0.0F;
                 Rotation_room.M[2][3] = 0.0F;
             } else {
-                Vec3 vec33 = dh.vrPlayer.vrdata_room_pre.hmd.getPosition();
+                Vec3 vec33 = ClientDataHolderVR.vrPlayer.vrdata_room_pre.hmd.getPosition();
                 Vec3 vec34 = new Vec3(0.0D, -0.5D, -2.0D);
-                Vec3 vec36 = dh.vrPlayer.vrdata_room_pre.hmd.getCustomVector(vec34);
+                Vec3 vec36 = ClientDataHolderVR.vrPlayer.vrdata_room_pre.hmd.getCustomVector(vec34);
                 Pos_room = new Vec3(vec36.x / 2.0D + vec33.x, vec36.y / 2.0D + vec33.y, vec36.z / 2.0D + vec33.z);
-                Vec3 vec32 = dh.vrPlayer.vrdata_room_pre.hmd.getPosition();
+                Vec3 vec32 = ClientDataHolderVR.vrPlayer.vrdata_room_pre.hmd.getPosition();
                 Vector3 vector3 = new Vector3();
                 vector3.setX((float) (Pos_room.x - vec32.x));
                 vector3.setY((float) (Pos_room.y - vec32.y));
@@ -169,7 +167,7 @@ public class KeyboardHandler {
 
     public static void processBindings() {
         if (Showing) {
-            if (dh.vrSettings.physicalKeyboard) {
+            if (ClientDataHolderVR.vrSettings.physicalKeyboard) {
                 physicalKeyboard.processBindings();
                 return;
             }

@@ -24,9 +24,8 @@ public class GuiVROptionButton extends Button implements GuiVROption {
         super(x, y, width, height, Component.translatable(text), action, Button.DEFAULT_NARRATION);
         this.id = id;
         this.enumOptions = option;
-        ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();
 
-        if (option != null && dataholder.vrSettings.overrides.hasSetting(option) && dataholder.vrSettings.overrides.getSetting(option).isValueOverridden()) {
+        if (option != null && ClientDataHolderVR.vrSettings.overrides.hasSetting(option) && ClientDataHolderVR.vrSettings.overrides.getSetting(option).isValueOverridden()) {
             this.active = false;
         }
     }

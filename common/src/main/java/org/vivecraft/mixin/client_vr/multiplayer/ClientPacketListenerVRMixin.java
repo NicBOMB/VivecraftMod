@@ -14,9 +14,7 @@ import net.minecraft.network.protocol.game.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -37,14 +35,11 @@ public class ClientPacketListenerVRMixin {
 
     @Unique
     String vivecraft$lastMsg = null;
-    @Final
-    @Shadow
-    private Minecraft minecraft;
 
     @Inject(at = @At("TAIL"), method = "<init>")
     public void vivecraft$init(Minecraft minecraft, Screen screen, Connection connection, ServerData serverData, GameProfile gameProfile, WorldSessionTelemetryManager worldSessionTelemetryManager, CallbackInfo ci) {
         if (ClientNetworking.needsReset) {
-            ClientDataHolderVR.getInstance().vrSettings.overrides.resetAll();
+            ClientDataHolderVR.vrSettings.overrides.resetAll();
             ClientNetworking.resetServerSettings();
             ClientNetworking.displayedChatMessage = false;
             ClientNetworking.displayedChatWarning = false;
@@ -59,9 +54,9 @@ public class ClientPacketListenerVRMixin {
 
         if (VRState.vrInitialized) {
             // set the timer, even if vr is currently not running
-            ClientDataHolderVR.getInstance().vrPlayer.chatWarningTimer = 200;
-            ClientDataHolderVR.getInstance().vrPlayer.teleportWarning = true;
-            ClientDataHolderVR.getInstance().vrPlayer.vrSwitchWarning = false;
+            ClientDataHolderVR.vrPlayer.chatWarningTimer = 200;
+            ClientDataHolderVR.vrPlayer.teleportWarning = true;
+            ClientDataHolderVR.vrPlayer.vrSwitchWarning = false;
         }
     }
 
@@ -69,9 +64,9 @@ public class ClientPacketListenerVRMixin {
     public void vivecraft$disconnect(Component component, CallbackInfo ci) {
         VRServerPerms.INSTANCE.setTeleportSupported(false);
         if (VRState.vrInitialized) {
-            ClientDataHolderVR.getInstance().vrPlayer.setTeleportOverride(false);
+            ClientDataHolderVR.vrPlayer.setTeleportOverride(false);
         }
-        ClientDataHolderVR.getInstance().vrSettings.overrides.resetAll();
+        ClientDataHolderVR.vrSettings.overrides.resetAll();
     }
 
     @Inject(at = @At("TAIL"), method = "close")
@@ -91,7 +86,7 @@ public class ClientPacketListenerVRMixin {
 
     @Inject(at = @At("TAIL"), method = "handlePlayerChat")
     public void vivecraft$chat(ClientboundPlayerChatPacket clientboundPlayerChatPacket, CallbackInfo ci) {
-        if (VRState.vrRunning && (minecraft.player == null || vivecraft$lastMsg == null || clientboundPlayerChatPacket.sender() == minecraft.player.getUUID())) {
+        if (VRState.vrRunning && (VRState.mc.player == null || vivecraft$lastMsg == null || clientboundPlayerChatPacket.sender() == VRState.mc.player.getUUID())) {
             vivecraft$triggerHapticSound();
         }
         vivecraft$lastMsg = null;
@@ -99,7 +94,7 @@ public class ClientPacketListenerVRMixin {
 
     @Inject(at = @At("TAIL"), method = "handleSystemChat")
     public void vivecraft$chatSystem(ClientboundSystemChatPacket clientboundSystemChatPacket, CallbackInfo ci) {
-        if (VRState.vrRunning && (minecraft.player == null || vivecraft$lastMsg == null || clientboundSystemChatPacket.content().getString().contains(vivecraft$lastMsg))) {
+        if (VRState.vrRunning && (VRState.mc.player == null || vivecraft$lastMsg == null || clientboundSystemChatPacket.content().getString().contains(vivecraft$lastMsg))) {
             vivecraft$triggerHapticSound();
         }
         vivecraft$lastMsg = null;
@@ -107,15 +102,14 @@ public class ClientPacketListenerVRMixin {
 
     @Unique
     private void vivecraft$triggerHapticSound() {
-        ClientDataHolderVR dataholder = ClientDataHolderVR.getInstance();
-        if (dataholder.vrSettings.chatNotifications != VRSettings.ChatNotifications.NONE) {
-            if ((dataholder.vrSettings.chatNotifications == VRSettings.ChatNotifications.HAPTIC || dataholder.vrSettings.chatNotifications == VRSettings.ChatNotifications.BOTH) && !dataholder.vrSettings.seated) {
-                dataholder.vr.triggerHapticPulse(ControllerType.LEFT, 0.2F, 1000.0F, 1.0F);
+        if (ClientDataHolderVR.vrSettings.chatNotifications != VRSettings.ChatNotifications.NONE) {
+            if ((ClientDataHolderVR.vrSettings.chatNotifications == VRSettings.ChatNotifications.HAPTIC || ClientDataHolderVR.vrSettings.chatNotifications == VRSettings.ChatNotifications.BOTH) && !ClientDataHolderVR.vrSettings.seated) {
+                ClientDataHolderVR.vr.triggerHapticPulse(ControllerType.LEFT, 0.2F, 1000.0F, 1.0F);
             }
 
-            if (dataholder.vrSettings.chatNotifications == VRSettings.ChatNotifications.SOUND || dataholder.vrSettings.chatNotifications == VRSettings.ChatNotifications.BOTH) {
-                Vec3 vec3 = dataholder.vrPlayer.vrdata_world_pre.getController(1).getPosition();
-                minecraft.level.playLocalSound(vec3.x(), vec3.y(), vec3.z(), BuiltInRegistries.SOUND_EVENT.get(new ResourceLocation(dataholder.vrSettings.chatNotificationSound)), SoundSource.NEUTRAL, 0.3F, 0.1F, false);
+            if (ClientDataHolderVR.vrSettings.chatNotifications == VRSettings.ChatNotifications.SOUND || ClientDataHolderVR.vrSettings.chatNotifications == VRSettings.ChatNotifications.BOTH) {
+                Vec3 vec3 = ClientDataHolderVR.vrPlayer.vrdata_world_pre.getController(1).getPosition();
+                VRState.mc.level.playLocalSound(vec3.x(), vec3.y(), vec3.z(), BuiltInRegistries.SOUND_EVENT.get(new ResourceLocation(ClientDataHolderVR.vrSettings.chatNotificationSound)), SoundSource.NEUTRAL, 0.3F, 0.1F, false);
             }
         }
     }
@@ -126,15 +120,15 @@ public class ClientPacketListenerVRMixin {
         ClientNetworking.sendVersionInfo();
         if (VRState.vrInitialized) {
             // set the timer, even if vr is currently not running
-            ClientDataHolderVR.getInstance().vrPlayer.chatWarningTimer = 200;
-            ClientDataHolderVR.getInstance().vrPlayer.teleportWarning = true;
-            ClientDataHolderVR.getInstance().vrPlayer.vrSwitchWarning = false;
+            ClientDataHolderVR.vrPlayer.chatWarningTimer = 200;
+            ClientDataHolderVR.vrPlayer.teleportWarning = true;
+            ClientDataHolderVR.vrPlayer.vrSwitchWarning = false;
         }
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;setScreen(Lnet/minecraft/client/gui/screens/Screen;)V", ordinal = 0, shift = At.Shift.AFTER), method = "handleRespawn(Lnet/minecraft/network/protocol/game/ClientboundRespawnPacket;)V")
     public void vivecraft$respawn(ClientboundRespawnPacket packet, CallbackInfo callback) {
-        ClientDataHolderVR.getInstance().vrSettings.overrides.resetAll();
+        ClientDataHolderVR.vrSettings.overrides.resetAll();
     }
 
     @Inject(at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/network/protocol/game/ClientboundCustomPayloadPacket;getData()Lnet/minecraft/network/FriendlyByteBuf;"), method = "handleCustomPayload(Lnet/minecraft/network/protocol/game/ClientboundCustomPayloadPacket;)V", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)

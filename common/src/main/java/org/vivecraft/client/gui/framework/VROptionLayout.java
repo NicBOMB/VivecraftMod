@@ -111,7 +111,7 @@ public class VROptionLayout {
     }
 
     public String getButtonText() {
-        return this._title.isEmpty() && this._e != null ? ClientDataHolderVR.getInstance().vrSettings.getButtonDisplayString(this._e) : this._title;
+        return this._title.isEmpty() && this._e != null ? ClientDataHolderVR.vrSettings.getButtonDisplayString(this._e) : this._title;
     }
 
     public VRSettings.VrOptions getOption() {

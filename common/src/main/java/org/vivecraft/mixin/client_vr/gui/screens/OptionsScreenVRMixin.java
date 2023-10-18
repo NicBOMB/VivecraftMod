@@ -1,6 +1,5 @@
 package org.vivecraft.mixin.client_vr.gui.screens;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.screens.OptionsScreen;
@@ -15,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.vivecraft.client.gui.settings.GuiMainVRSettings;
 import org.vivecraft.client_vr.ClientDataHolderVR;
+import org.vivecraft.client_vr.VRState;
 
 @Mixin(OptionsScreen.class)
 public class OptionsScreenVRMixin extends Screen {
@@ -29,8 +29,8 @@ public class OptionsScreenVRMixin extends Screen {
         if (option == options.fov()) {
             return new Button.Builder( Component.translatable("vivecraft.options.screen.main.button"),  (p) ->
                 {
-                    Minecraft.getInstance().options.save();
-                    Minecraft.getInstance().setScreen(new GuiMainVRSettings(this));
+                    VRState.mc.options.save();
+                    VRState.mc.setScreen(new GuiMainVRSettings(this));
                 })
                 .size( k,  20)
                 .pos(i,  j)
@@ -44,19 +44,19 @@ public class OptionsScreenVRMixin extends Screen {
     // place below FOV slider
     @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;I)Lnet/minecraft/client/gui/layouts/LayoutElement;"))
     private int vivecraft$makeSpacer1wide(int layoutElement) {
-        return ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonEnabled ? 1 : 2;
+        return ClientDataHolderVR.vrSettings.vrSettingsButtonEnabled ? 1 : 2;
     }
 
     @Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;I)Lnet/minecraft/client/gui/layouts/LayoutElement;"), locals = LocalCapture.CAPTURE_FAILHARD)
     private void vivecraft$addVivecraftSettingsLeft(CallbackInfo ci, GridLayout gridLayout, GridLayout.RowHelper rowHelper) {
-        if (ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonEnabled && ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonPositionLeft) {
+        if (ClientDataHolderVR.vrSettings.vrSettingsButtonEnabled && ClientDataHolderVR.vrSettings.vrSettingsButtonPositionLeft) {
             vivecraft$addVivecraftButton(rowHelper);
         }
     }
 
     @Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/layouts/GridLayout$RowHelper;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;I)Lnet/minecraft/client/gui/layouts/LayoutElement;", shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD)
     private void vivecraft$addVivecraftSettingsRight(CallbackInfo ci, GridLayout gridLayout, GridLayout.RowHelper rowHelper) {
-        if (ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonEnabled && !ClientDataHolderVR.getInstance().vrSettings.vrSettingsButtonPositionLeft) {
+        if (ClientDataHolderVR.vrSettings.vrSettingsButtonEnabled && !ClientDataHolderVR.vrSettings.vrSettingsButtonPositionLeft) {
             vivecraft$addVivecraftButton(rowHelper);
         }
     }
@@ -65,8 +65,8 @@ public class OptionsScreenVRMixin extends Screen {
     private void vivecraft$addVivecraftButton(GridLayout.RowHelper rowHelper) {
         rowHelper.addChild(new Button.Builder(Component.translatable("vivecraft.options.screen.main.button"), (p) ->
         {
-            Minecraft.getInstance().options.save();
-            Minecraft.getInstance().setScreen(new GuiMainVRSettings(this));
+            VRState.mc.options.save();
+            VRState.mc.setScreen(new GuiMainVRSettings(this));
         })
             .build());
     }

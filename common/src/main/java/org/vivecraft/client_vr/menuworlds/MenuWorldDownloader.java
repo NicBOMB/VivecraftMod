@@ -48,7 +48,7 @@ public class MenuWorldDownloader {
 
     public static InputStream getRandomWorld() throws IOException, NoSuchAlgorithmException {
         init();
-        VRSettings settings = ClientDataHolderVR.getInstance().vrSettings;
+        VRSettings settings = ClientDataHolderVR.vrSettings;
 
         try {
             List<MenuWorldItem> worldList = new ArrayList<>();

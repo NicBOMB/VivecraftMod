@@ -1,7 +1,6 @@
 package org.vivecraft.client_vr.gameplay.trackers;
 
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundCustomPayloadPacket;
 import net.minecraft.tags.ItemTags;
@@ -15,8 +14,8 @@ import org.vivecraft.client.Xplat;
 import org.vivecraft.client.network.ClientNetworking;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRData;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.extensions.PlayerExtension;
-import org.vivecraft.client_vr.gameplay.VRPlayer;
 import org.vivecraft.client_vr.settings.VRSettings;
 import org.vivecraft.common.network.CommonNetworkHelper;
 import org.vivecraft.common.utils.math.Vector3;
@@ -45,10 +44,6 @@ public class BowTracker extends Tracker {
     int hapcounter = 0;
     int lasthapStep = 0;
 
-    public BowTracker(Minecraft mc, ClientDataHolderVR dh) {
-        super(mc, dh);
-    }
-
     public Vec3 getAimVector() {
         return this.aim;
     }
@@ -64,9 +59,9 @@ public class BowTracker extends Tracker {
     public static boolean isBow(ItemStack itemStack) {
         if (itemStack == ItemStack.EMPTY) {
             return false;
-        } else if (ClientDataHolderVR.getInstance().vrSettings.bowMode == VRSettings.BowMode.OFF) {
+        } else if (ClientDataHolderVR.vrSettings.bowMode == VRSettings.BowMode.OFF) {
             return false;
-        } else if (ClientDataHolderVR.getInstance().vrSettings.bowMode == VRSettings.BowMode.VANILLA) {
+        } else if (ClientDataHolderVR.vrSettings.bowMode == VRSettings.BowMode.VANILLA) {
             return itemStack.getItem() == Items.BOW;
         } else {
             return itemStack.getItem().getUseAnimation(itemStack) == UseAnim.BOW;
@@ -74,7 +69,7 @@ public class BowTracker extends Tracker {
     }
 
     public static boolean isHoldingBow(LivingEntity e, InteractionHand hand) {
-        return !ClientDataHolderVR.getInstance().vrSettings.seated && isBow(e.getItemInHand(hand));
+        return !ClientDataHolderVR.vrSettings.seated && isBow(e.getItemInHand(hand));
     }
 
     public static boolean isHoldingBowEither(LivingEntity e) {
@@ -84,7 +79,7 @@ public class BowTracker extends Tracker {
     public boolean isActive(LocalPlayer p) {
         if (p == null) {
             return false;
-        } else if (this.mc.gameMode == null) {
+        } else if (VRState.mc.gameMode == null) {
             return false;
         } else if (!p.isAlive()) {
             return false;
@@ -108,15 +103,13 @@ public class BowTracker extends Tracker {
     }
 
     public void doProcess(LocalPlayer player) {
-        VRData vrdata = this.dh.vrPlayer.vrdata_world_render;
+        VRData vrdata = ClientDataHolderVR.vrPlayer.vrdata_world_render;
 
         if (vrdata == null) {
-            vrdata = this.dh.vrPlayer.vrdata_world_pre;
+            vrdata = ClientDataHolderVR.vrPlayer.vrdata_world_pre;
         }
 
-        VRPlayer vrplayer = this.dh.vrPlayer;
-
-        if (this.dh.vrSettings.seated) {
+        if (ClientDataHolderVR.vrSettings.seated) {
             this.aim = vrdata.getController(0).getCustomVector(new Vec3(0.0D, 0.0D, 1.0D));
         } else {
             this.lastcontrollersDist = this.controllersDist;
@@ -124,11 +117,11 @@ public class BowTracker extends Tracker {
             this.lastpressed = this.pressed;
             this.lastDraw = this.currentDraw;
             this.lastcanDraw = this.canDraw;
-            this.maxDraw = (double) this.mc.player.getBbHeight() * 0.22D;
+            this.maxDraw = (double) VRState.mc.player.getBbHeight() * 0.22D;
 
             if (Xplat.isModLoaded("pehkui")) {
                 // this is meant to be relative to the base Bb height, not the scaled one
-                this.maxDraw /= PehkuiHelper.getPlayerBbScale(player, mc.getFrameTime());
+                this.maxDraw /= PehkuiHelper.getPlayerBbScale(player, VRState.mc.getFrameTime());
             }
 
             Vec3 vec3 = vrdata.getController(0).getPosition();
@@ -143,7 +136,7 @@ public class BowTracker extends Tracker {
             Vec3 vec35 = vrdata.getHand(1).getCustomVector(new Vec3(0.0D, -1.0D, 0.0D));
             Vector3 vector31 = new Vector3((float) vec35.x, (float) vec35.y, (float) vec35.z);
             this.controllersDot = (180D / Math.PI) * Math.acos(vector31.dot(vector3));
-            this.pressed = this.mc.options.keyAttack.isDown();
+            this.pressed = VRState.mc.options.keyAttack.isDown();
             float f = 0.15F * vrdata.worldScale;
             boolean flag = isHoldingBow(player, InteractionHand.MAIN_HAND);
             InteractionHand interactionhand = flag ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
@@ -186,17 +179,17 @@ public class BowTracker extends Tracker {
             if (!this.isDrawing && this.canDraw && this.pressed && !this.lastpressed) {
                 this.isDrawing = true;
                 //Minecraft.getInstance().physicalGuiManager.preClickAction();
-                this.mc.gameMode.useItem(player, interactionhand);
+                VRState.mc.gameMode.useItem(player, interactionhand);
             }
 
             if (this.isDrawing && !this.pressed && this.lastpressed && (double) this.getDrawPercent() > 0.0D) {
-                this.dh.vr.triggerHapticPulse(0, 500);
-                this.dh.vr.triggerHapticPulse(1, 3000);
+                ClientDataHolderVR.vr.triggerHapticPulse(0, 500);
+                ClientDataHolderVR.vr.triggerHapticPulse(1, 3000);
                 ServerboundCustomPayloadPacket serverboundcustompayloadpacket = ClientNetworking.getVivecraftClientPacket(CommonNetworkHelper.PacketDiscriminators.DRAW, ByteBuffer.allocate(4).putFloat(this.getDrawPercent()).array());
-                Minecraft.getInstance().getConnection().send(serverboundcustompayloadpacket);
-                this.mc.gameMode.releaseUsingItem(player);
+                VRState.mc.getConnection().send(serverboundcustompayloadpacket);
+                VRState.mc.gameMode.releaseUsingItem(player);
                 serverboundcustompayloadpacket = ClientNetworking.getVivecraftClientPacket(CommonNetworkHelper.PacketDiscriminators.DRAW, ByteBuffer.allocate(4).putFloat(0.0F).array());
-                Minecraft.getInstance().getConnection().send(serverboundcustompayloadpacket);
+                VRState.mc.getConnection().send(serverboundcustompayloadpacket);
                 this.isDrawing = false;
             }
 
@@ -205,8 +198,8 @@ public class BowTracker extends Tracker {
             }
 
             if (!this.isDrawing && this.canDraw && !this.lastcanDraw) {
-                this.dh.vr.triggerHapticPulse(1, 800);
-                this.dh.vr.triggerHapticPulse(0, 800);
+                ClientDataHolderVR.vr.triggerHapticPulse(1, 800);
+                ClientDataHolderVR.vr.triggerHapticPulse(0, 800);
             }
 
             if (this.isDrawing) {
@@ -237,15 +230,15 @@ public class BowTracker extends Tracker {
                 int i1 = (int) (d1 * 4.0D * 4.0D * 3.0D);
 
                 if (i1 % 2 == 0 && this.lasthapStep != i1) {
-                    this.dh.vr.triggerHapticPulse(0, j1);
+                    ClientDataHolderVR.vr.triggerHapticPulse(0, j1);
 
                     if (d1 == 1.0D) {
-                        this.dh.vr.triggerHapticPulse(1, j1);
+                        ClientDataHolderVR.vr.triggerHapticPulse(1, j1);
                     }
                 }
 
                 if (this.isCharged() && this.hapcounter % 4 == 0) {
-                    this.dh.vr.triggerHapticPulse(1, 200);
+                    ClientDataHolderVR.vr.triggerHapticPulse(1, 200);
                 }
 
                 this.lasthapStep = i1;

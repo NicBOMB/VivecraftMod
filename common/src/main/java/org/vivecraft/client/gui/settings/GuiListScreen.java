@@ -27,7 +27,7 @@ public abstract class GuiListScreen extends Screen {
         clearWidgets();
         double scrollAmount = list != null ? list.getScrollAmount() : 0.0D;
 
-        this.list = new SettingsList(this, minecraft, getEntries());
+        this.list = new SettingsList(this, getEntries());
         list.setScrollAmount(scrollAmount);
         this.addWidget(this.list);
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 100, this.height - 27, 200, 20).build());

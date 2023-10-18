@@ -33,14 +33,14 @@ public class ScreenUtils {
     }
 
     public static int getBGFrom() {
-        if (ClientDataHolderVR.getInstance().vrSettings == null || ClientDataHolderVR.getInstance().vrSettings.menuBackground) {
+        if (ClientDataHolderVR.vrSettings == null || ClientDataHolderVR.vrSettings.menuBackground) {
             return -1072689136;
         }
         return 0;
     }
 
     public static int getBGTo() {
-        if (ClientDataHolderVR.getInstance().vrSettings == null || ClientDataHolderVR.getInstance().vrSettings.menuBackground) {
+        if (ClientDataHolderVR.vrSettings == null || ClientDataHolderVR.vrSettings.menuBackground) {
             return -804253680;
         }
         return 0;

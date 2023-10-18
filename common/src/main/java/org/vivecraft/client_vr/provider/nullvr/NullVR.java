@@ -1,13 +1,12 @@
 package org.vivecraft.client_vr.provider.nullvr;
 
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
-import org.vivecraft.client.VivecraftVRMod;
 import org.vivecraft.client.utils.Utils;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.MethodHolder;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.screenhandlers.GuiHandler;
 import org.vivecraft.client_vr.provider.ControllerType;
 import org.vivecraft.client_vr.provider.MCVR;
@@ -23,8 +22,8 @@ public class NullVR extends MCVR {
     private boolean vrActive = true;
     private boolean vrActiveChangedLastFrame = false;
 
-    public NullVR(Minecraft mc, ClientDataHolderVR dh) {
-        super(mc, dh);
+    public NullVR() {
+        super();
         ome = this;
         this.hapticScheduler = new NullVRHapticScheduler();
     }
@@ -57,11 +56,9 @@ public class NullVR extends MCVR {
     @Override
     public boolean init() {
         if (!this.initialized) {
-            this.mc = Minecraft.getInstance();
-
             // only supports seated mode
             System.out.println("NullDriver. Forcing seated mode.");
-            this.dh.vrSettings.seated = true;
+            ClientDataHolderVR.vrSettings.seated = true;
 
             this.headIsTracking = false;
             Utils.Matrix4fSetIdentity(this.hmdPose);
@@ -82,14 +79,14 @@ public class NullVR extends MCVR {
     public void poll(long frameIndex) {
         if (this.initialized) {
 
-            this.mc.getProfiler().push("updatePose");
+            VRState.mc.getProfiler().push("updatePose");
 
             // don't permanently change the sensitivity
-            float xSens = this.dh.vrSettings.xSensitivity;
-            float xKey = this.dh.vrSettings.keyholeX;
+            float xSens = ClientDataHolderVR.vrSettings.xSensitivity;
+            float xKey = ClientDataHolderVR.vrSettings.keyholeX;
 
-            this.dh.vrSettings.xSensitivity = this.dh.vrSettings.ySensitivity * 1.636F * ((float) mc.getWindow().getScreenWidth() / (float) mc.getWindow().getScreenHeight());
-            this.dh.vrSettings.keyholeX = 1;
+            ClientDataHolderVR.vrSettings.xSensitivity = ClientDataHolderVR.vrSettings.ySensitivity * 1.636F * ((float) VRState.mc.getWindow().getScreenWidth() / (float) VRState.mc.getWindow().getScreenHeight());
+            ClientDataHolderVR.vrSettings.keyholeX = 1;
 
             this.updateAim();
 
@@ -101,8 +98,8 @@ public class NullVR extends MCVR {
             this.controllerPose[1].M[1][3] = 1.2F;
             this.controllerPose[1].M[2][3] = -0.5F;
 
-            this.dh.vrSettings.xSensitivity = xSens;
-            this.dh.vrSettings.keyholeX = xKey;
+            ClientDataHolderVR.vrSettings.xSensitivity = xSens;
+            ClientDataHolderVR.vrSettings.keyholeX = xKey;
 
 
             // point head in cursor direction
@@ -128,10 +125,10 @@ public class NullVR extends MCVR {
                 hmdRotation.M[2][1] = GuiHandler.guiRotation_room.M[2][1];
                 hmdRotation.M[2][2] = GuiHandler.guiRotation_room.M[2][2];
             }
-            this.mc.getProfiler().popPush("hmdSampling");
+            VRState.mc.getProfiler().popPush("hmdSampling");
             this.hmdSampling();
 
-            this.mc.getProfiler().pop();
+            VRState.mc.getProfiler().pop();
         }
     }
 

@@ -3,7 +3,6 @@ package org.vivecraft.client_vr.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -18,17 +17,16 @@ import org.joml.Quaternionf;
 import org.vivecraft.client.VivecraftVRMod;
 import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.ItemTags;
+import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.trackers.SwingTracker;
 import org.vivecraft.client_vr.gameplay.trackers.TelescopeTracker;
 import org.vivecraft.client_vr.provider.ControllerType;
 
 public class VivecraftItemRendering {
-    private static final ClientDataHolderVR dh = ClientDataHolderVR.getInstance();
 
     public static VivecraftItemTransformType getTransformType(ItemStack pStack, AbstractClientPlayer pPlayer, ItemRenderer itemRenderer) {
         VivecraftItemTransformType rendertype = VivecraftItemTransformType.Item;
         Item item = pStack.getItem();
-        Minecraft minecraft = Minecraft.getInstance();
 
         if (pStack.getUseAnimation() != UseAnim.EAT && pStack.getUseAnimation() != UseAnim.DRINK) {
             if (item instanceof BlockItem) {
@@ -37,7 +35,7 @@ public class VivecraftItemRendering {
                 if (block instanceof TorchBlock) {
                     rendertype = VivecraftItemTransformType.Block_Stick;
                 } else {
-                    BakedModel bakedmodel = itemRenderer.getModel(pStack, minecraft.level, minecraft.player, 0);
+                    BakedModel bakedmodel = itemRenderer.getModel(pStack, VRState.mc.level, VRState.mc.player, 0);
 
                     if (bakedmodel.isGui3d()) {
                         rendertype = VivecraftItemTransformType.Block_3D;
@@ -50,8 +48,8 @@ public class VivecraftItemRendering {
             } else if (pStack.getUseAnimation() == UseAnim.BOW) {
                 rendertype = VivecraftItemTransformType.Bow_Seated;
 
-                if (dh.bowTracker.isActive((LocalPlayer) pPlayer)) {
-                    if (dh.bowTracker.isDrawing) {
+                if (ClientDataHolderVR.bowTracker.isActive((LocalPlayer) pPlayer)) {
+                    if (ClientDataHolderVR.bowTracker.isDrawing) {
                         rendertype = VivecraftItemTransformType.Bow_Roomscale_Drawing;
                     } else {
                         rendertype = VivecraftItemTransformType.Bow_Roomscale;
@@ -89,7 +87,6 @@ public class VivecraftItemRendering {
     public static void applyThirdPersonItemTransforms(PoseStack pMatrixStack, VivecraftItemTransformType rendertype, boolean mainHand, AbstractClientPlayer pPlayer, float pEquippedProgress, float pPartialTicks, ItemStack pStack, InteractionHand pHand) {
         //all TODO
         int k = mainHand ? 1 : -1;
-        Minecraft minecraft = Minecraft.getInstance();
         double scale = 0.525D;
         double translateX = 0;
         double translateY = 0.05;
@@ -105,14 +102,13 @@ public class VivecraftItemRendering {
 
     public static void applyFirstPersonItemTransforms(PoseStack pMatrixStack, VivecraftItemTransformType rendertype, boolean mainHand, AbstractClientPlayer pPlayer, float pEquippedProgress, float pPartialTicks, ItemStack pStack, InteractionHand pHand) {
         int k = mainHand ? 1 : -1;
-        Minecraft minecraft = Minecraft.getInstance();
         double scale = 0.7D;
         double translateX = -0.05D;
         double translateY = 0.005D;
         double translateZ = 0.0D;
         boolean useLeftHandModelinLeftHand = false;
 
-        double gunAngle = dh.vr.getGunAngle();
+        double gunAngle = ClientDataHolderVR.vr.getGunAngle();
         Quaternionf rotation = Axis.YP.rotationDegrees(0.0F);
         Quaternionf preRotation = Axis.YP.rotationDegrees(0.0F);
         rotation.mul(Axis.XP.rotationDegrees((float) (-110.0D + gunAngle)));
@@ -134,14 +130,14 @@ public class VivecraftItemRendering {
             scale = 1.0D;
             int i = 0;
 
-            if (dh.vrSettings.reverseShootingEye) {
+            if (ClientDataHolderVR.vrSettings.reverseShootingEye) {
                 i = 1;
             }
 
-            Vec3 vec3 = dh.bowTracker.getAimVector();
+            Vec3 vec3 = ClientDataHolderVR.bowTracker.getAimVector();
             Vec3 vec31 = new Vec3(vec3.x, vec3.y, vec3.z);
-            Vec3 vec32 = dh.vrPlayer.vrdata_world_render.getHand(1).getCustomVector(new Vec3(0.0D, -1.0D, 0.0D));
-            Vec3 vec33 = dh.vrPlayer.vrdata_world_render.getHand(1).getCustomVector(new Vec3(0.0D, 0.0D, -1.0D));
+            Vec3 vec32 = ClientDataHolderVR.vrPlayer.vrdata_world_render.getHand(1).getCustomVector(new Vec3(0.0D, -1.0D, 0.0D));
+            Vec3 vec33 = ClientDataHolderVR.vrPlayer.vrdata_world_render.getHand(1).getCustomVector(new Vec3(0.0D, 0.0D, -1.0D));
             vec31.cross(vec32);
             double d4 = (180D / Math.PI) * Math.acos(vec31.dot(vec32));
             float f = (float) Math.toDegrees(Math.asin(vec31.y / vec31.length()));
@@ -169,13 +165,13 @@ public class VivecraftItemRendering {
 
             float f3 = (float) ((180D / Math.PI) * (double) f2);
 
-            if (dh.bowTracker.isCharged()) {
-                long j = Util.getMillis() - dh.bowTracker.startDrawTime;
+            if (ClientDataHolderVR.bowTracker.isCharged()) {
+                long j = Util.getMillis() - ClientDataHolderVR.bowTracker.startDrawTime;
                 translateX += 0.003D * Math.sin((double) j);
             }
 
             pMatrixStack.translate(0.0D, 0.0D, 0.1D);
-            pMatrixStack.last().pose().mul(dh.vrPlayer.vrdata_world_render.getController(1).getMatrix().transposed().toMCMatrix());
+            pMatrixStack.last().pose().mul(ClientDataHolderVR.vrPlayer.vrdata_world_render.getController(1).getMatrix().transposed().toMCMatrix());
             rotation.mul(Axis.YP.rotationDegrees(f1));
             rotation.mul(Axis.XP.rotationDegrees(-f));
             rotation.mul(Axis.ZP.rotationDegrees(-f3));
@@ -201,7 +197,7 @@ public class VivecraftItemRendering {
             translateZ = -0.075D;
             scale = 0.75D;
         } else if (rendertype == VivecraftItemTransformType.Noms) {
-            long l = minecraft.player.getUseItemRemainingTicks();
+            long l = VRState.mc.player.getUseItemRemainingTicks();
             rotation = Axis.ZP.rotationDegrees(180.0F);
             rotation.mul(Axis.XP.rotationDegrees(-135.0F));
             translateZ = translateZ + 0.006D * Math.sin((double) l);
@@ -231,7 +227,7 @@ public class VivecraftItemRendering {
                 rotation.mul(Axis.XP.rotationDegrees(-45.0F));
                 rotation.mul(Axis.XP.rotationDegrees((float) gunAngle));
             } else if (rendertype == VivecraftItemTransformType.Shield) {
-                boolean reverse = dh.vrSettings.reverseHands && !dh.vrSettings.seated;
+                boolean reverse = ClientDataHolderVR.vrSettings.reverseHands && !ClientDataHolderVR.vrSettings.seated;
                 if (reverse) {
                     k *= -1;
                 }
@@ -288,20 +284,20 @@ public class VivecraftItemRendering {
                     i1 = EnchantmentHelper.getRiptide(pStack);
 
                     if (i1 <= 0 || i1 > 0 && pPlayer.isInWaterOrRain()) {
-                        f4 = (float) pStack.getUseDuration() - ((float) minecraft.player.getUseItemRemainingTicks() - pPartialTicks + 1.0F);
+                        f4 = (float) pStack.getUseDuration() - ((float) VRState.mc.player.getUseItemRemainingTicks() - pPartialTicks + 1.0F);
 
                         if (f4 > 10.0F) {
                             f4 = 10.0F;
 
                             if (i1 > 0 && pPlayer.isInWaterOrRain()) {
-                                pMatrixStack.mulPose(Axis.ZP.rotationDegrees((float) (-dh.tickCounter * 10 * i1 % 360) - pPartialTicks * 10.0F * (float) i1));
+                                pMatrixStack.mulPose(Axis.ZP.rotationDegrees((float) (-ClientDataHolderVR.tickCounter * 10 * i1 % 360) - pPartialTicks * 10.0F * (float) i1));
                             }
 
-                            if (dh.frameIndex % 4L == 0L) {
-                                dh.vr.triggerHapticPulse(mainHand ? 0 : 1, 200);
+                            if (ClientDataHolderVR.frameIndex % 4L == 0L) {
+                                ClientDataHolderVR.vr.triggerHapticPulse(mainHand ? 0 : 1, 200);
                             }
 
-                            long j1 = Util.getMillis() - dh.bowTracker.startDrawTime;
+                            long j1 = Util.getMillis() - ClientDataHolderVR.bowTracker.startDrawTime;
                             translateX += 0.003D * Math.sin((double) j1);
                         }
                     }
@@ -310,7 +306,7 @@ public class VivecraftItemRendering {
                 if (pPlayer.isAutoSpinAttack()) {
                     i1 = 5;
                     translateZ += -0.15F;
-                    pMatrixStack.mulPose(Axis.ZP.rotationDegrees((float) (-dh.tickCounter * 10 * i1 % 360) - pPartialTicks * 10.0F * (float) i1));
+                    pMatrixStack.mulPose(Axis.ZP.rotationDegrees((float) (-ClientDataHolderVR.tickCounter * 10 * i1 % 360) - pPartialTicks * 10.0F * (float) i1));
                     flag5 = true;
                 }
 
@@ -329,7 +325,7 @@ public class VivecraftItemRendering {
                     rotation.mul(Axis.XP.rotationDegrees(40.0F));
                     scale = 0.8F;
                 } else if (rendertype == VivecraftItemTransformType.Tool) {
-                    boolean isClaws = dh.climbTracker.isClaws(pStack) && dh.climbTracker.isClimbeyClimb();
+                    boolean isClaws = ClientDataHolderVR.climbTracker.isClaws(pStack) && ClientDataHolderVR.climbTracker.isClimbeyClimb();
 
                     if (isClaws) {
                         rotation.mul(Axis.XP.rotationDegrees((float) (-gunAngle)));

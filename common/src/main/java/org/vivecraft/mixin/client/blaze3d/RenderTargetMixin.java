@@ -4,7 +4,6 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
@@ -15,6 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.vivecraft.client.extensions.RenderTargetExtension;
+import org.vivecraft.client_vr.VRState;
 
 @Debug(export = true)
 @Mixin(RenderTarget.class)
@@ -125,10 +125,9 @@ public abstract class RenderTargetMixin implements RenderTargetExtension {
         RenderSystem.depthMask(false);
         RenderSystem.viewport(0, 0, width, height);
         RenderSystem.disableBlend();
-        Minecraft minecraft = Minecraft.getInstance();
         RenderSystem.setShaderTexture(0, this.colorTextureId);
         if (instance == null) {
-            instance = minecraft.gameRenderer.blitShader;
+            instance = VRState.mc.gameRenderer.blitShader;
             instance.setSampler("DiffuseSampler", this.colorTextureId);
         } else {
             for (int k = 0; k < RenderSystemAccessor.getShaderTextures().length; ++k) {
@@ -182,8 +181,6 @@ public abstract class RenderTargetMixin implements RenderTargetExtension {
             RenderSystem.disableBlend();
         }
 
-        Minecraft minecraft = Minecraft.getInstance();
-
         float f = (float) width / (float) height;
         float f1 = (float) this.viewWidth / (float) this.viewHeight;
         float f2 = (float) width;
@@ -213,7 +210,7 @@ public abstract class RenderTargetMixin implements RenderTargetExtension {
         float f9 = (float) this.viewHeight / (float) this.height;
 
         if (instance == null) {
-            instance = minecraft.gameRenderer.blitShader;
+            instance = VRState.mc.gameRenderer.blitShader;
             instance.setSampler("DiffuseSampler", this.colorTextureId);
         } else {
             for (int k = 0; k < RenderSystemAccessor.getShaderTextures().length; ++k) {

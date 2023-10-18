@@ -8,9 +8,7 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -27,17 +25,13 @@ import java.util.function.Consumer;
 @Mixin(KeyboardHandler.class)
 public class KeyboardHandlerVRMixin {
 
-    @Final
-    @Shadow
-    private Minecraft minecraft;
-
     @Inject(at = @At(value = "FIELD", target = "Lnet/minecraft/client/KeyboardHandler;debugCrashKeyTime:J", ordinal = 0), method = "keyPress", cancellable = true)
     public void vivecraft$screenHandler(long l, int i, int j, int k, int m, CallbackInfo ci) {
         if (i == 256 && k == 1) {
             if (org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler.Showing) {
                 org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler.setOverlayShowing(false);
-                if (this.minecraft.screen instanceof ChatScreen) {
-                    minecraft.screen.onClose();
+                if (VRState.mc.screen instanceof ChatScreen) {
+                    VRState.mc.screen.onClose();
                 }
                 ci.cancel();
             }
@@ -58,7 +52,7 @@ public class KeyboardHandlerVRMixin {
         if (!VRState.vrRunning) {
             Screenshot.grab(file, renderTarget, consumer);
         } else {
-            ClientDataHolderVR.getInstance().grabScreenShot = true;
+            ClientDataHolderVR.grabScreenShot = true;
         }
     }
 
@@ -70,6 +64,6 @@ public class KeyboardHandlerVRMixin {
 
     @Inject(at = @At(value = "FIELD", target = "Lnet/minecraft/client/Options;hideGui:Z", ordinal = 1, shift = At.Shift.AFTER), method = "keyPress")
     public void vivecraft$saveHideGuiOptions(long l, int i, int j, int k, int m, CallbackInfo ci) {
-        ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+        ClientDataHolderVR.vrSettings.saveOptions();
     }
 }

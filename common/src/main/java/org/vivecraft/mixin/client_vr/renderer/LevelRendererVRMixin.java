@@ -4,7 +4,6 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.*;
 import net.minecraft.core.BlockPos;
@@ -64,9 +63,6 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
     @Unique
     private Entity vivecraft$renderedEntity;
 
-    @Final
-    @Shadow
-    private Minecraft minecraft;
     @Shadow
     private ClientLevel level;
     @Shadow
@@ -104,24 +100,24 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
 
     @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;floor(D)I", ordinal = 0), method = "renderSnowAndRain")
     public double vivecraft$rainX(double x) {
-        if (!RenderPassType.isVanilla() && (ClientDataHolderVR.getInstance().currentPass == RenderPass.LEFT || ClientDataHolderVR.getInstance().currentPass == RenderPass.RIGHT)) {
-            return ClientDataHolderVR.getInstance().vrPlayer.vrdata_world_render.getEye(RenderPass.CENTER).getPosition().x;
+        if (!RenderPassType.isVanilla() && (ClientDataHolderVR.currentPass == RenderPass.LEFT || ClientDataHolderVR.currentPass == RenderPass.RIGHT)) {
+            return ClientDataHolderVR.vrPlayer.vrdata_world_render.getEye(RenderPass.CENTER).getPosition().x;
         }
         return x;
     }
 
     @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;floor(D)I", ordinal = 1), method = "renderSnowAndRain")
     public double vivecraft$rainY(double y) {
-        if (!RenderPassType.isVanilla() && (ClientDataHolderVR.getInstance().currentPass == RenderPass.LEFT || ClientDataHolderVR.getInstance().currentPass == RenderPass.RIGHT)) {
-            return ClientDataHolderVR.getInstance().vrPlayer.vrdata_world_render.getEye(RenderPass.CENTER).getPosition().y;
+        if (!RenderPassType.isVanilla() && (ClientDataHolderVR.currentPass == RenderPass.LEFT || ClientDataHolderVR.currentPass == RenderPass.RIGHT)) {
+            return ClientDataHolderVR.vrPlayer.vrdata_world_render.getEye(RenderPass.CENTER).getPosition().y;
         }
         return y;
     }
 
     @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;floor(D)I", ordinal = 2), method = "renderSnowAndRain")
     public double vivecraft$rainZ(double z) {
-        if (!RenderPassType.isVanilla() && (ClientDataHolderVR.getInstance().currentPass == RenderPass.LEFT || ClientDataHolderVR.getInstance().currentPass == RenderPass.RIGHT)) {
-            return ClientDataHolderVR.getInstance().vrPlayer.vrdata_world_render.getEye(RenderPass.CENTER).getPosition().z;
+        if (!RenderPassType.isVanilla() && (ClientDataHolderVR.currentPass == RenderPass.LEFT || ClientDataHolderVR.currentPass == RenderPass.RIGHT)) {
+            return ClientDataHolderVR.vrPlayer.vrdata_world_render.getEye(RenderPass.CENTER).getPosition().z;
         }
         return z;
     }
@@ -129,7 +125,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
     @Inject(at = @At("TAIL"), method = "onResourceManagerReload")
     public void vivecraft$reinitVR(ResourceManager resourceManager, CallbackInfo ci) {
         if (VRState.vrInitialized) {
-            ClientDataHolderVR.getInstance().vrRenderer.reinitFrameBuffers("Resource Reload");
+            ClientDataHolderVR.vrRenderer.reinitFrameBuffers("Resource Reload");
         }
     }
 
@@ -147,7 +143,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
     // TODO maybe move to the ClientLevel
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;pollLightUpdates()V"), method = "renderLevel")
     public void vivecraft$onePollLightUpdates(ClientLevel instance) {
-        if (RenderPassType.isVanilla() || ClientDataHolderVR.getInstance().currentPass == RenderPass.LEFT) {
+        if (RenderPassType.isVanilla() || ClientDataHolderVR.currentPass == RenderPass.LEFT) {
             instance.pollLightUpdates();
         }
     }
@@ -155,7 +151,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
     // TODO maybe move to the LevelLightEngine
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/lighting/LevelLightEngine;runLightUpdates()I"), method = "renderLevel")
     public int vivecraft$oneLightingUpdates(LevelLightEngine instance) {
-        if (RenderPassType.isVanilla() || ClientDataHolderVR.getInstance().currentPass == RenderPass.LEFT) {
+        if (RenderPassType.isVanilla() || ClientDataHolderVR.currentPass == RenderPass.LEFT) {
             return instance.runLightUpdates();
         } else {
             return 0;
@@ -170,7 +166,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
         method = "renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V ")
     public void vivecraft$stencil(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f matrix4f, CallbackInfo info) {
         if (!RenderPassType.isVanilla()) {
-            this.minecraft.getProfiler().popPush("stencil");
+            VRState.mc.getProfiler().popPush("stencil");
             VREffectsHelper.drawEyeStencil(false);
         }
     }
@@ -187,17 +183,17 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
     @Inject(at = @At("HEAD"), method = "renderEntity")
     public void vivecraft$captureEntityRestoreLoc(Entity entity, double d, double e, double f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, CallbackInfo ci) {
         this.vivecraft$capturedEntity = entity;
-        if (!RenderPassType.isVanilla() && vivecraft$capturedEntity == minecraft.getCameraEntity()) {
-            ((GameRendererExtension) minecraft.gameRenderer).vivecraft$restoreRVEPos((LivingEntity) vivecraft$capturedEntity);
+        if (!RenderPassType.isVanilla() && vivecraft$capturedEntity == VRState.mc.getCameraEntity()) {
+            ((GameRendererExtension) VRState.mc.gameRenderer).vivecraft$restoreRVEPos((LivingEntity) vivecraft$capturedEntity);
         }
         this.vivecraft$renderedEntity = vivecraft$capturedEntity;
     }
 
     @Inject(at = @At("TAIL"), method = "renderEntity")
     public void vivecraft$restoreLoc2(Entity entity, double d, double e, double f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, CallbackInfo ci) {
-        if (!RenderPassType.isVanilla() && vivecraft$capturedEntity == minecraft.getCameraEntity()) {
-            ((GameRendererExtension) minecraft.gameRenderer).vivecraft$cacheRVEPos((LivingEntity) vivecraft$capturedEntity);
-            ((GameRendererExtension) minecraft.gameRenderer).vivecraft$setupRVE();
+        if (!RenderPassType.isVanilla() && vivecraft$capturedEntity == VRState.mc.getCameraEntity()) {
+            ((GameRendererExtension) VRState.mc.gameRenderer).vivecraft$cacheRVEPos((LivingEntity) vivecraft$capturedEntity);
+            ((GameRendererExtension) VRState.mc.gameRenderer).vivecraft$setupRVE();
         }
         this.vivecraft$renderedEntity = null;
     }
@@ -215,8 +211,8 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
                 OptifineHelper.beginOutlineShader();
             }
             for (int c = 0; c < 2; c++) {
-                if (ClientDataHolderVR.getInstance().interactTracker.isInteractActive(c) && (ClientDataHolderVR.getInstance().interactTracker.inBlockHit[c] != null || ClientDataHolderVR.getInstance().interactTracker.bukkit[c])) {
-                    BlockPos blockpos = ClientDataHolderVR.getInstance().interactTracker.inBlockHit[c] != null ? ClientDataHolderVR.getInstance().interactTracker.inBlockHit[c].getBlockPos() : BlockPos.containing(ClientDataHolderVR.getInstance().vrPlayer.vrdata_world_render.getController(c).getPosition());
+                if (ClientDataHolderVR.interactTracker.isInteractActive(c) && (ClientDataHolderVR.interactTracker.inBlockHit[c] != null || ClientDataHolderVR.interactTracker.bukkit[c])) {
+                    BlockPos blockpos = ClientDataHolderVR.interactTracker.inBlockHit[c] != null ? ClientDataHolderVR.interactTracker.inBlockHit[c].getBlockPos() : BlockPos.containing(ClientDataHolderVR.vrPlayer.vrdata_world_render.getController(c).getPosition());
                     BlockState blockstate = this.level.getBlockState(blockpos);
                     this.renderHitOutline(poseStack, this.renderBuffers.bufferSource().getBuffer(RenderType.lines()), camera.getEntity(), d, e, g, blockpos, blockstate);
                 }
@@ -233,7 +229,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
     @ModifyVariable(at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;hitResult:Lnet/minecraft/world/phys/HitResult;", ordinal = 1), method = "renderLevel", ordinal = 0, argsOnly = true)
     public boolean vivecraft$noBlockoutlineOnInteract(boolean renderBlockOutline) {
         // don't draw the block outline when the interaction outline is active
-        return renderBlockOutline && (RenderPassType.isVanilla() || !(ClientDataHolderVR.getInstance().interactTracker.isInteractActive(0) && (ClientDataHolderVR.getInstance().interactTracker.inBlockHit[0] != null || ClientDataHolderVR.getInstance().interactTracker.bukkit[0])));
+        return renderBlockOutline && (RenderPassType.isVanilla() || !(ClientDataHolderVR.interactTracker.isInteractActive(0) && (ClientDataHolderVR.interactTracker.inBlockHit[0] != null || ClientDataHolderVR.interactTracker.bukkit[0])));
     }
 
     @Unique
@@ -253,14 +249,14 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
         if (RenderPassType.isVanilla()) {
             return;
         }
-        vivecraft$menuHandleft = ((GameRendererExtension) gameRenderer).vivecraft$isInMenuRoom() || this.minecraft.screen != null || KeyboardHandler.Showing;
-        vivecraft$menuhandright = vivecraft$menuHandleft || ClientDataHolderVR.getInstance().interactTracker.hotbar >= 0 && ClientDataHolderVR.getInstance().vrSettings.vrTouchHotbar;
+        vivecraft$menuHandleft = ((GameRendererExtension) gameRenderer).vivecraft$isInMenuRoom() || VRState.mc.screen != null || KeyboardHandler.Showing;
+        vivecraft$menuhandright = vivecraft$menuHandleft || ClientDataHolderVR.interactTracker.hotbar >= 0 && ClientDataHolderVR.vrSettings.vrTouchHotbar;
 
         if (transparencyChain != null) {
             VREffectsHelper.renderVRFabulous(f, (LevelRenderer) (Object) this, vivecraft$menuhandright, vivecraft$menuHandleft, poseStack);
         } else {
             VREffectsHelper.renderVrFast(f, false, vivecraft$menuhandright, vivecraft$menuHandleft, poseStack);
-            if (ShadersHelper.isShaderActive() && ClientDataHolderVR.getInstance().vrSettings.shaderGUIRender == VRSettings.ShaderGUIRender.BEFORE_TRANSLUCENT_SOLID) {
+            if (ShadersHelper.isShaderActive() && ClientDataHolderVR.vrSettings.shaderGUIRender == VRSettings.ShaderGUIRender.BEFORE_TRANSLUCENT_SOLID) {
                 // shaders active, and render gui before translucents
                 VREffectsHelper.renderVrFast(f, true, vivecraft$menuhandright, vivecraft$menuHandleft, poseStack);
                 vivecraft$guiRendered = true;
@@ -275,7 +271,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
             return;
         }
 
-        if (transparencyChain == null && (!ShadersHelper.isShaderActive() || ClientDataHolderVR.getInstance().vrSettings.shaderGUIRender == VRSettings.ShaderGUIRender.AFTER_TRANSLUCENT)) {
+        if (transparencyChain == null && (!ShadersHelper.isShaderActive() || ClientDataHolderVR.vrSettings.shaderGUIRender == VRSettings.ShaderGUIRender.AFTER_TRANSLUCENT)) {
             // no shaders, or shaders, and gui after translucents
             VREffectsHelper.renderVrFast(f, true, vivecraft$menuhandright, vivecraft$menuHandleft, poseStack);
             vivecraft$guiRendered = true;
@@ -303,7 +299,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
 
     @Inject(at = @At("HEAD"), method = "levelEvent")
     public void vivecraft$shakeOnSound(int i, BlockPos blockPos, int j, CallbackInfo ci) {
-        boolean playerNearAndVR = VRState.vrRunning && this.minecraft.player != null && this.minecraft.player.isAlive() && this.minecraft.player.blockPosition().distSqr(blockPos) < 25.0D;
+        boolean playerNearAndVR = VRState.vrRunning && VRState.mc.player != null && VRState.mc.player.isAlive() && VRState.mc.player.blockPosition().distSqr(blockPos) < 25.0D;
         if (playerNearAndVR) {
             switch (i) {
                 /* pre 1.19.4, they are now separate
@@ -312,20 +308,20 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
                         1013,   // WOODEN_TRAPDOOR_CLOSE
                         1014,   // FENCE_GATE_CLOSE
                         1036    // IRON_TRAPDOOR_CLOSE
-                        -> ClientDataHolderVR.getInstance().vr.triggerHapticPulse(0, 250);
+                        -> ClientDataHolderVR.vr.triggerHapticPulse(0, 250);
                  */
                 case 1019,      // ZOMBIE_ATTACK_WOODEN_DOOR
                     1020,   // ZOMBIE_ATTACK_IRON_DOOR
                     1021    // ZOMBIE_BREAK_WOODEN_DOOR
                     -> {
-                    ClientDataHolderVR.getInstance().vr.triggerHapticPulse(0, 750);
-                    ClientDataHolderVR.getInstance().vr.triggerHapticPulse(1, 750);
+                    ClientDataHolderVR.vr.triggerHapticPulse(0, 750);
+                    ClientDataHolderVR.vr.triggerHapticPulse(1, 750);
                 }
                 case 1030 ->    // ANVIL_USE
-                    ClientDataHolderVR.getInstance().vr.triggerHapticPulse(0, 500);
+                    ClientDataHolderVR.vr.triggerHapticPulse(0, 500);
                 case 1031 -> {  // ANVIL_LAND
-                    ClientDataHolderVR.getInstance().vr.triggerHapticPulse(0, 1250);
-                    ClientDataHolderVR.getInstance().vr.triggerHapticPulse(1, 1250);
+                    ClientDataHolderVR.vr.triggerHapticPulse(0, 1250);
+                    ClientDataHolderVR.vr.triggerHapticPulse(1, 1250);
                 }
             }
         }
@@ -335,7 +331,7 @@ public abstract class LevelRendererVRMixin implements ResourceManagerReloadListe
     public void vivecraft$restorePostChain(CallbackInfo ci) {
         if (VRState.vrInitialized) {
             vivecraft$restoreVanillaPostChains();
-            ClientDataHolderVR.getInstance().vrRenderer.reinitFrameBuffers("Outline/Transparency shaders Reloaded");
+            ClientDataHolderVR.vrRenderer.reinitFrameBuffers("Outline/Transparency shaders Reloaded");
         }
     }
 

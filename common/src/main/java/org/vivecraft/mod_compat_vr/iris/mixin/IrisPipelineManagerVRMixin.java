@@ -69,9 +69,9 @@ public class IrisPipelineManagerVRMixin implements PipelineManagerExtension {
         // this also runs on game startup, when the renderpassManager isn't initialized yet
         if (VRState.vrInitialized && RenderPassManager.INSTANCE != null) {
             vivecraft$currentWorldRenderPass = RenderPassManager.wrp;
-            RenderPass currentRenderPass = ClientDataHolderVR.getInstance().currentPass;
+            RenderPass currentRenderPass = ClientDataHolderVR.currentPass;
             RenderPassManager.setVanillaRenderPass();
-            ClientDataHolderVR.getInstance().currentPass = currentRenderPass;
+            ClientDataHolderVR.currentPass = currentRenderPass;
         }
     }
 
@@ -125,7 +125,7 @@ public class IrisPipelineManagerVRMixin implements PipelineManagerExtension {
                 // set to currently needed renderpass again
                 if (vivecraft$currentWorldRenderPass != null) {
                     RenderPassManager.setWorldRenderPass(vivecraft$currentWorldRenderPass);
-                } else if (ClientDataHolderVR.getInstance().currentPass == RenderPass.GUI) {
+                } else if (ClientDataHolderVR.currentPass == RenderPass.GUI) {
                     RenderPassManager.setGUIRenderPass();
                 } else {
                     RenderPassManager.setVanillaRenderPass();
@@ -134,8 +134,8 @@ public class IrisPipelineManagerVRMixin implements PipelineManagerExtension {
             vivecraft$vrPipelinesCurrentDimension = vivecraft$vrPipelinesPerDimension.get(newDimension);
 
             if (!RenderPassType.isVanilla()) {
-                if (ClientDataHolderVR.getInstance().currentPass != null) {
-                    pipeline = vivecraft$vrPipelinesCurrentDimension.get(ClientDataHolderVR.getInstance().currentPass);
+                if (ClientDataHolderVR.currentPass != null) {
+                    pipeline = vivecraft$vrPipelinesCurrentDimension.get(ClientDataHolderVR.currentPass);
                 } else {
                     pipeline = vivecraft$vrPipelinesCurrentDimension.get(RenderPass.LEFT);
                 }
@@ -163,7 +163,7 @@ public class IrisPipelineManagerVRMixin implements PipelineManagerExtension {
 
     @Unique
     private WorldRenderingPipeline vivecraft$getCurrentVRPipeline(Object key) {
-        return vivecraft$vrPipelinesPerDimension.get(key).get(ClientDataHolderVR.getInstance().currentPass);
+        return vivecraft$vrPipelinesPerDimension.get(key).get(ClientDataHolderVR.currentPass);
     }
 
     @Inject(method = "destroyPipeline", at = @At(value = "INVOKE", target = "Ljava/util/Map;clear()V"), remap = false)

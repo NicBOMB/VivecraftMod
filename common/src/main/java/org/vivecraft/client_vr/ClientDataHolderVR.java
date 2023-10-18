@@ -1,6 +1,5 @@
 package org.vivecraft.client_vr;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import org.vivecraft.client_vr.gameplay.VRPlayer;
 import org.vivecraft.client_vr.gameplay.trackers.*;
@@ -19,63 +18,56 @@ public class ClientDataHolderVR {
     public static boolean viewonly;
     public static ModelResourceLocation thirdPersonCameraModel = new ModelResourceLocation("vivecraft", "camcorder", "");
     public static ModelResourceLocation thirdPersonCameraDisplayModel = new ModelResourceLocation("vivecraft", "camcorder_display", "");
-    private static ClientDataHolderVR INSTANCE;
-
-    public VRPlayer vrPlayer;
-    public MCVR vr;
-    public VRRenderer vrRenderer;
-    public MenuWorldRenderer menuWorldRenderer;
-    public BackpackTracker backpackTracker = new BackpackTracker(Minecraft.getInstance(), this);
-    public BowTracker bowTracker = new BowTracker(Minecraft.getInstance(), this);
-    public SwimTracker swimTracker = new SwimTracker(Minecraft.getInstance(), this);
-    public EatingTracker autoFood = new EatingTracker(Minecraft.getInstance(), this);
-    public JumpTracker jumpTracker = new JumpTracker(Minecraft.getInstance(), this);
-    public SneakTracker sneakTracker = new SneakTracker(Minecraft.getInstance(), this);
-    public ClimbTracker climbTracker = new ClimbTracker(Minecraft.getInstance(), this);
-    public RunTracker runTracker = new RunTracker(Minecraft.getInstance(), this);
-    public RowTracker rowTracker = new RowTracker(Minecraft.getInstance(), this);
-    public TeleportTracker teleportTracker = new TeleportTracker(Minecraft.getInstance(), this);
-    public SwingTracker swingTracker = new SwingTracker(Minecraft.getInstance(), this);
-    public HorseTracker horseTracker = new HorseTracker(Minecraft.getInstance(), this);
-    public VehicleTracker vehicleTracker = new VehicleTracker(Minecraft.getInstance(), this);
-    public InteractTracker interactTracker = new InteractTracker(Minecraft.getInstance(), this);
-    public CrawlTracker crawlTracker = new CrawlTracker(Minecraft.getInstance(), this);
-    public CameraTracker cameraTracker = new CameraTracker(Minecraft.getInstance(), this);
-    public VRSettings vrSettings;
-    public boolean integratedServerLaunchInProgress = false;
-    public boolean grabScreenShot = false;
-    public long frameIndex = 0L;
-    public RenderPass currentPass;
-    public int tickCounter;
-    public float watereffect;
-    public float portaleffect;
-    public float pumpkineffect;
+    public static VRPlayer vrPlayer;
+    public static MCVR vr;
+    public static VRRenderer vrRenderer;
+    public static MenuWorldRenderer menuWorldRenderer;
+    public static BackpackTracker backpackTracker = new BackpackTracker();
+    public static BowTracker bowTracker = new BowTracker();
+    public static SwimTracker swimTracker = new SwimTracker();
+    public static EatingTracker autoFood = new EatingTracker();
+    public static JumpTracker jumpTracker = new JumpTracker();
+    public static SneakTracker sneakTracker = new SneakTracker();
+    public static ClimbTracker climbTracker = new ClimbTracker();
+    public static RunTracker runTracker = new RunTracker();
+    public static RowTracker rowTracker = new RowTracker();
+    public static TeleportTracker teleportTracker = new TeleportTracker();
+    public static SwingTracker swingTracker = new SwingTracker();
+    public static HorseTracker horseTracker = new HorseTracker();
+    public static VehicleTracker vehicleTracker = new VehicleTracker();
+    public static InteractTracker interactTracker = new InteractTracker();
+    public static CrawlTracker crawlTracker = new CrawlTracker();
+    public static CameraTracker cameraTracker = new CameraTracker();
+    public static VRSettings vrSettings;
+    public static boolean integratedServerLaunchInProgress = false;
+    public static boolean grabScreenShot = false;
+    public static long frameIndex = 0L;
+    public static RenderPass currentPass;
+    public static int tickCounter;
+    public static float watereffect;
+    public static float portaleffect;
+    public static float pumpkineffect;
     public static boolean isfphand;
-    public boolean isFirstPass;
-    long mirroNotifyStart;
-    String mirrorNotifyText;
-    boolean mirrorNotifyClear;
-    long mirroNotifyLen;
+    public static boolean isFirstPass;
+    static long mirroNotifyStart;
+    static String mirrorNotifyText;
+    static boolean mirrorNotifyClear;
+    static long mirroNotifyLen;
 
     // showed chat notifications
-    public boolean showedUpdateNotification;
+    public static boolean showedUpdateNotification;
 
-    public boolean skipStupidGoddamnChunkBoundaryClipping;
+    public static boolean skipStupidGoddamnChunkBoundaryClipping;
 
 
-    public static ClientDataHolderVR getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new ClientDataHolderVR();
-        }
-        return INSTANCE;
-    }
+    private ClientDataHolderVR() {}
 
-    public void printChatMessage(String string) {
+    public static void printChatMessage(String string) {
         // TODO Auto-generated method stub
 
     }
 
-    public void print(String string) {
+    public static void print(String string) {
         string = string.replace("\n", "\n[Minecrift] ");
         System.out.println("[Minecrift] " + string);
     }

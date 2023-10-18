@@ -1,6 +1,5 @@
 package org.vivecraft.client.gui.widgets;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -8,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import org.lwjgl.glfw.GLFW;
+import org.vivecraft.client_vr.VRState;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class TextScrollWidget extends AbstractWidget {
     public TextScrollWidget(int x, int y, int width, int height, String text) {
         super(x, y, width, height, Component.literal(""));
 
-        formattedText = Minecraft.getInstance().font.getSplitter().splitLines(text, width - scrollBarWidth * 2, Style.EMPTY);
+        formattedText = VRState.mc.font.getSplitter().splitLines(text, width - scrollBarWidth * 2, Style.EMPTY);
 
         initScroll();
     }
@@ -36,7 +36,7 @@ public class TextScrollWidget extends AbstractWidget {
     public TextScrollWidget(int x, int y, int width, int height, Component text) {
         super(x, y, width, height, Component.literal(""));
 
-        formattedText = Minecraft.getInstance().font.getSplitter().splitLines(text, width - scrollBarWidth * 2, Style.EMPTY);
+        formattedText = VRState.mc.font.getSplitter().splitLines(text, width - scrollBarWidth * 2, Style.EMPTY);
         initScroll();
     }
 
@@ -69,7 +69,7 @@ public class TextScrollWidget extends AbstractWidget {
 
         // draw text
         for (int line = 0; line + currentLine < formattedText.size() && line < maxLines; line++) {
-            guiGraphics.drawString(Minecraft.getInstance().font, formattedText.get(line + currentLine).getString(), getX() + padding, getY() + padding + line * 12, 16777215);
+            guiGraphics.drawString(VRState.mc.font, formattedText.get(line + currentLine).getString(), getX() + padding, getY() + padding + line * 12, 16777215);
         }
 
         float scrollbarStart = scrollSteps == 0 ? 0 : currentLine / (float) scrollSteps * scrollBarOffset;

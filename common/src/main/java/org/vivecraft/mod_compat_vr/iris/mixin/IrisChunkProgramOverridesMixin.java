@@ -41,7 +41,7 @@ public class IrisChunkProgramOverridesMixin implements IrisChunkProgramOverrides
     public void vivecraft$createAllPipelinesShadersSodiumProcessing(SodiumTerrainPipeline sodiumTerrainPipeline, Object chunkVertexType, Method createShadersMethod) throws InvocationTargetException, IllegalAccessException {
         if (VRState.vrInitialized) {
             WorldRenderPass current = RenderPassManager.wrp;
-            RenderPass currentPass = ClientDataHolderVR.getInstance().currentPass;
+            RenderPass currentPass = ClientDataHolderVR.currentPass;
 
             RenderPassManager.renderPassType = RenderPassType.WORLD_ONLY;
             for (RenderPass renderPass : RenderPass.values()) {
@@ -66,7 +66,7 @@ public class IrisChunkProgramOverridesMixin implements IrisChunkProgramOverrides
             createShadersMethod.invoke(this, ((PipelineManagerExtension) Iris.getPipelineManager()).vivecraft$getVanillaPipeline().getSodiumTerrainPipeline(), chunkVertexType);
             if (current != null) {
                 RenderPassManager.setWorldRenderPass(current);
-                ClientDataHolderVR.getInstance().currentPass = currentPass;
+                ClientDataHolderVR.currentPass = currentPass;
             }
         } else {
             createShadersMethod.invoke(this, sodiumTerrainPipeline, chunkVertexType);
@@ -76,7 +76,7 @@ public class IrisChunkProgramOverridesMixin implements IrisChunkProgramOverrides
     @Redirect(method = "getProgramOverride", at = @At(value = "INVOKE", target = "Ljava/util/EnumMap;get(Ljava/lang/Object;)Ljava/lang/Object;"), remap = false)
     public Object vivecraft$getVRPipelineShaders(EnumMap<IrisTerrainPass, GlProgram<IrisChunkShaderInterface>> instance, Object key) {
         // return shader of the current RenderPass
-        return !RenderPassType.isVanilla() ? vivecraft$pipelinePrograms.get(ClientDataHolderVR.getInstance().currentPass).get((IrisTerrainPass) key) : instance.get((IrisTerrainPass) key);
+        return !RenderPassType.isVanilla() ? vivecraft$pipelinePrograms.get(ClientDataHolderVR.currentPass).get((IrisTerrainPass) key) : instance.get((IrisTerrainPass) key);
     }
 
     @Inject(method = "deleteShaders", at = @At("HEAD"), remap = false)
